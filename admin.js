@@ -1,13 +1,13 @@
 /* =========================================================
-   QUAD CLINIC - ADMIN & APPOINTMENT JAVASCRIPT
+   QUAD CLINIC - STRICT VALIDATION (STAFF & PATIENT ENTRY)
    ========================================================= */
 
-const DB_STAFF_KEY = 'quad_clinic_staff_clean_v4';
-const DB_PATIENT_KEY = 'quad_clinic_patients_clean_v4';
-const DB_BOOKINGS_KEY = 'quad_clinic_bookings_clean_v4';
+const DB_STAFF_KEY = 'quad_clinic_staff_strict_v7';
+const DB_PATIENT_KEY = 'quad_clinic_patients_strict_v7';
+const DB_BOOKINGS_KEY = 'quad_clinic_bookings_strict_v7';
 const SESSION_KEY = 'quad_clinic_user_session';
 
-// Doctor Consultation 30-Minute Time Slots by Shift
+// Standard 30-Minute Shifts
 const MORNING_SLOTS = [
   "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM"
 ];
@@ -16,8 +16,7 @@ const AFTERNOON_SLOTS = [
   "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM"
 ];
 
-// Initial Staff: Only Doctors have department, fee, and shift.
-// Receptionist, Lab Tech, and Pharmacist do not have fees, slots, or shifts.
+// Seed Staff
 const DEFAULT_STAFF = [
   { 
     id: '1', 
@@ -25,13 +24,14 @@ const DEFAULT_STAFF = [
     role: 'Doctor', 
     dept: 'Cardiology',
     gender: 'Male',
+    bloodGroup: 'O+',
     dob: '1984-05-12',
     joiningDate: '2020-01-15',
     email: 'arun@quadclinic.com', 
     contact: '9447112233', 
-    salary: '1,20,000', 
-    fee: '₹750', 
-    shift: 'Both', // 9am-12pm & 2pm-4pm
+    salary: '120000', 
+    fee: '750', 
+    shift: 'Both',
     status: 'Active', 
     password: 'doc123' 
   },
@@ -41,13 +41,14 @@ const DEFAULT_STAFF = [
     role: 'Doctor', 
     dept: 'General Medicine',
     gender: 'Male',
+    bloodGroup: 'B+',
     dob: '1982-10-24',
     joiningDate: '2019-06-01',
     email: 'doctor@quadclinic.com', 
     contact: '9447122334', 
-    salary: '95,000', 
-    fee: '₹500', 
-    shift: 'Morning', // 9am-12pm
+    salary: '95000', 
+    fee: '500', 
+    shift: 'Morning',
     status: 'Active', 
     password: 'doc123' 
   },
@@ -57,13 +58,14 @@ const DEFAULT_STAFF = [
     role: 'Doctor', 
     dept: 'Pediatrics',
     gender: 'Female',
+    bloodGroup: 'A+',
     dob: '1988-03-18',
     joiningDate: '2021-08-10',
     email: 'meera@quadclinic.com', 
     contact: '9895233445', 
-    salary: '90,000', 
-    fee: '₹600', 
-    shift: 'Afternoon', // 2pm-4pm
+    salary: '90000', 
+    fee: '600', 
+    shift: 'Afternoon',
     status: 'Active', 
     password: 'doc123' 
   },
@@ -73,12 +75,13 @@ const DEFAULT_STAFF = [
     role: 'Doctor', 
     dept: 'Orthopedics',
     gender: 'Female',
+    bloodGroup: 'AB+',
     dob: '1985-11-05',
     joiningDate: '2020-11-20',
     email: 'deepa@quadclinic.com', 
     contact: '9895001122', 
-    salary: '95,000', 
-    fee: '₹650', 
+    salary: '95000', 
+    fee: '650', 
     shift: 'Both',
     status: 'Active', 
     password: 'doc123' 
@@ -89,12 +92,13 @@ const DEFAULT_STAFF = [
     role: 'Doctor', 
     dept: 'Dermatology',
     gender: 'Male',
+    bloodGroup: 'O-',
     dob: '1986-07-29',
     joiningDate: '2022-03-01',
     email: 'sanjay@quadclinic.com', 
     contact: '9811223344', 
-    salary: '85,000', 
-    fee: '₹500', 
+    salary: '85000', 
+    fee: '500', 
     shift: 'Both',
     status: 'Active', 
     password: 'doc123' 
@@ -105,11 +109,12 @@ const DEFAULT_STAFF = [
     role: 'Receptionist', 
     dept: 'Administration',
     gender: 'Female',
+    bloodGroup: 'A+',
     dob: '1998-09-14',
     joiningDate: '2023-02-15',
     email: 'reception@quadclinic.com', 
     contact: '9847011223', 
-    salary: '24,000', 
+    salary: '24000', 
     fee: null, 
     shift: null, 
     status: 'Active', 
@@ -121,11 +126,12 @@ const DEFAULT_STAFF = [
     role: 'Lab Technician', 
     dept: 'Pathology',
     gender: 'Male',
+    bloodGroup: 'B-',
     dob: '1995-12-03',
     joiningDate: '2022-07-10',
     email: 'lab@quadclinic.com', 
     contact: '9746344556', 
-    salary: '28,500', 
+    salary: '28500', 
     fee: null, 
     shift: null, 
     status: 'Active', 
@@ -137,11 +143,12 @@ const DEFAULT_STAFF = [
     role: 'Pharmacist', 
     dept: 'Dispensary',
     gender: 'Female',
+    bloodGroup: 'O+',
     dob: '1996-04-22',
     joiningDate: '2023-01-05',
     email: 'pharmacy@quadclinic.com', 
     contact: '9633455667', 
-    salary: '30,000', 
+    salary: '30000', 
     fee: null, 
     shift: null, 
     status: 'Active', 
@@ -149,14 +156,14 @@ const DEFAULT_STAFF = [
   }
 ];
 
-// Initial Patients matching demo records
+// Seed Patients
 const DEFAULT_PATIENTS = [
-  { id: '1', mmr: 'MMR1003', name: 'jaii', gender: 'Female', dob: '2000-08-15', email: 'jaii@gmail.com', phone: '45678' },
-  { id: '2', mmr: 'MMR1171', name: 'lol', gender: 'Female', dob: '1998-02-10', email: 'lol@gmail.com', phone: '123823293' },
-  { id: '3', mmr: 'MMR4186', name: 'new', gender: 'Female', dob: '1995-11-25', email: 'new@gmail.com', phone: '9876543' }
+  { id: '1', mmr: 'MMR1003', name: 'jaii', gender: 'Female', bloodGroup: 'O+', dob: '2000-08-15', email: 'jaii@gmail.com', phone: '9846012345' },
+  { id: '2', mmr: 'MMR1171', name: 'lol', gender: 'Female', bloodGroup: 'A+', dob: '1998-02-10', email: 'lol@gmail.com', phone: '8123823293' },
+  { id: '3', mmr: 'MMR4186', name: 'new', gender: 'Female', bloodGroup: 'B+', dob: '1995-11-25', email: 'new@gmail.com', phone: '7987654321' }
 ];
 
-// Initial Bookings (Matches reference screenshot exactly)
+// Seed Bookings matching image reference
 const DEFAULT_BOOKINGS = [
   {
     id: 'BOK-101',
@@ -164,7 +171,8 @@ const DEFAULT_BOOKINGS = [
     patientEmail: 'jaii@gmail.com',
     patientName: 'jaii',
     patientGender: 'Female',
-    patientPhone: '45678',
+    patientBloodGroup: 'O+',
+    patientPhone: '9846012345',
     doctor: 'Dr. Arun',
     dept: 'Cardiology',
     date: '2026-11-18',
@@ -178,7 +186,8 @@ const DEFAULT_BOOKINGS = [
     patientEmail: 'lol@gmail.com',
     patientName: 'lol',
     patientGender: 'Female',
-    patientPhone: '123823293',
+    patientBloodGroup: 'A+',
+    patientPhone: '8123823293',
     doctor: 'Dr. Sanjay Patel',
     dept: 'Dermatology',
     date: '2026-11-18',
@@ -192,7 +201,8 @@ const DEFAULT_BOOKINGS = [
     patientEmail: 'new@gmail.com',
     patientName: 'new',
     patientGender: 'Female',
-    patientPhone: '9876543',
+    patientBloodGroup: 'B+',
+    patientPhone: '7987654321',
     doctor: 'Dr. Arun',
     dept: 'Cardiology',
     date: '2026-11-18',
@@ -226,6 +236,69 @@ function saveData() {
   localStorage.setItem(DB_BOOKINGS_KEY, JSON.stringify(bookingList));
 }
 
+// Convert "09:30 AM" + "YYYY-MM-DD" into Date object for accurate time checking
+function parseSlotDateTime(dateStr, slotStr) {
+  const [time, modifier] = slotStr.split(' ');
+  let [hours, minutes] = time.split(':').map(Number);
+
+  if (modifier === 'PM' && hours < 12) hours += 12;
+  if (modifier === 'AM' && hours === 12) hours = 0;
+
+  const d = new Date(dateStr);
+  d.setHours(hours, minutes, 0, 0);
+  return d;
+}
+
+/* =========================================================
+   STRICT VALIDATION FUNCTIONS
+   ========================================================= */
+
+// Calculate exact age in years from YYYY-MM-DD
+function calculateAge(dobString) {
+  const birth = new Date(dobString);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+// Name: Minimum 3 letters, alphabets and spaces/dots only
+function isValidName(name) {
+  const trimmed = (name || '').trim();
+  const regex = /^[A-Za-z. ]{3,}$/;
+  return regex.test(trimmed);
+}
+
+// Phone: Exactly 10 digits starting with 6, 7, 8, or 9
+function isValidPhone(phone) {
+  const regex = /^[6-9]\d{9}$/;
+  return regex.test((phone || '').trim());
+}
+
+// Email: Standard email structure
+function isValidEmail(email) {
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return regex.test((email || '').trim());
+}
+
+// Blood Groups: Only real human groups
+function isValidBloodGroup(bg) {
+  const validGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+  return validGroups.includes(bg);
+}
+
+// Date: Cannot be in the future
+function isNotFutureDate(dateStr) {
+  if (!dateStr) return false;
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  const inputDate = new Date(dateStr);
+  return inputDate <= today;
+}
+
 /* =========================================================
    1. LOGIN
    ========================================================= */
@@ -254,6 +327,12 @@ function handleLogin(event) {
   const username = document.getElementById('loginUser').value.trim().toLowerCase();
   const password = document.getElementById('loginPass').value.trim();
 
+  if (!role) {
+    msg.textContent = 'Please select a system role.';
+    msg.style.display = 'block';
+    return;
+  }
+
   // Admin Login
   if (role === 'Admin') {
     if ((username === 'admin@quadclinic.com' || username === 'admin') && password === 'admin123') {
@@ -276,7 +355,7 @@ function handleLogin(event) {
       return;
     }
     if (patient.phone !== password) {
-      msg.textContent = 'Invalid password. (Password is your phone number).';
+      msg.textContent = 'Invalid password. (Your password is your registered 10-digit phone number).';
       msg.style.display = 'block';
       return;
     }
@@ -338,12 +417,15 @@ function showPatientView(patient) {
   document.getElementById('displayName').textContent = patient.name;
   document.getElementById('displayPhone').textContent = patient.phone;
   document.getElementById('displayGender').textContent = patient.gender || 'Female';
+  document.getElementById('displayBloodGroup').textContent = patient.bloodGroup || 'O+';
 
-  // Date default to today
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('selectDate').value = today;
+  // Appointment date default to today; cannot select past
+  const todayStr = new Date().toISOString().split('T')[0];
+  const datePicker = document.getElementById('selectDate');
+  datePicker.min = todayStr;
+  datePicker.value = todayStr;
 
-  // Department default
+  // Initialize Department
   const dept = document.getElementById('selectDept');
   dept.value = 'Cardiology';
   onDepartmentChanged('Cardiology');
@@ -353,11 +435,12 @@ function showPatientView(patient) {
 
 function onDepartmentChanged(dept) {
   const docSelect = document.getElementById('selectDoctor');
-  const docs = staffList.filter(s => s.role === 'Doctor' && s.dept === dept);
+  const docs = staffList.filter(s => s.role === 'Doctor' && s.dept === dept && s.status !== 'Inactive');
 
   if (docs.length === 0) {
     docSelect.innerHTML = `<option value="" disabled selected>No doctors available in ${dept}</option>`;
-    document.getElementById('slotsContainer').innerHTML = '<span style="font-size:12px; color:#666;">No slots.</span>';
+    document.getElementById('slotsContainer').innerHTML = '<span style="font-size:12px; color:#888;">No slots available.</span>';
+    document.getElementById('chosenSlotValue').value = '';
     return;
   }
 
@@ -368,42 +451,56 @@ function onDepartmentChanged(dept) {
 function refreshTimeSlotButtons() {
   const staffId = document.getElementById('selectDoctor').value;
   const doc = staffList.find(s => s.id === staffId && s.role === 'Doctor');
-  const date = document.getElementById('selectDate').value;
+  const dateVal = document.getElementById('selectDate').value;
   const container = document.getElementById('slotsContainer');
 
-  if (!doc) {
-    container.innerHTML = '<span style="font-size:12px; color:#666;">Select a doctor.</span>';
+  if (!doc || !dateVal) {
+    container.innerHTML = '<span style="font-size:12px; color:#888;">Select doctor and date.</span>';
+    document.getElementById('chosenSlotValue').value = '';
     return;
   }
 
   const shiftType = doc.shift || 'Both';
+  const now = new Date();
 
-  // Check booked slots for this doctor on this date
+  // Find all booked slots for this doctor on the chosen date
   const booked = bookingList
-    .filter(b => b.doctor === doc.name && b.date === date && b.status === 'Confirmed')
+    .filter(b => b.doctor === doc.name && b.date === dateVal && b.status === 'Confirmed')
     .map(b => b.slot);
 
   let firstAvailable = null;
   let html = '';
 
-  // Morning Shift (09:00 AM - 12:00 PM)
+  // Render Morning Slots (09:00 AM - 12:00 PM)
   if (shiftType === 'Morning' || shiftType === 'Both') {
     html += '<div class="shift-section-title">Morning Shift (09:00 AM - 12:00 PM)</div><div class="slots-row">';
     MORNING_SLOTS.forEach(slot => {
       const isBooked = booked.includes(slot);
-      if (!isBooked && !firstAvailable) firstAvailable = slot;
-      html += `<button type="button" class="slot-btn" ${isBooked ? 'disabled' : `onclick="pickSlot('${slot}', this)"`}>${slot}</button>`;
+      const slotTime = parseSlotDateTime(dateVal, slot);
+      const isPast = slotTime < now;
+      const isDisabled = isBooked || isPast;
+
+      if (!isDisabled && !firstAvailable) firstAvailable = slot;
+
+      let btnTitle = isBooked ? 'Slot already booked' : (isPast ? 'Time has passed' : 'Available');
+      html += `<button type="button" class="slot-btn" title="${btnTitle}" ${isDisabled ? 'disabled' : `onclick="pickSlot('${slot}', this)"`}>${slot}</button>`;
     });
     html += '</div>';
   }
 
-  // Afternoon Shift (02:00 PM - 04:00 PM)
+  // Render Afternoon Slots (02:00 PM - 04:00 PM)
   if (shiftType === 'Afternoon' || shiftType === 'Both') {
     html += '<div class="shift-section-title">Afternoon Shift (02:00 PM - 04:00 PM)</div><div class="slots-row">';
     AFTERNOON_SLOTS.forEach(slot => {
       const isBooked = booked.includes(slot);
-      if (!isBooked && !firstAvailable) firstAvailable = slot;
-      html += `<button type="button" class="slot-btn" ${isBooked ? 'disabled' : `onclick="pickSlot('${slot}', this)"`}>${slot}</button>`;
+      const slotTime = parseSlotDateTime(dateVal, slot);
+      const isPast = slotTime < now;
+      const isDisabled = isBooked || isPast;
+
+      if (!isDisabled && !firstAvailable) firstAvailable = slot;
+
+      let btnTitle = isBooked ? 'Slot already booked' : (isPast ? 'Time has passed' : 'Available');
+      html += `<button type="button" class="slot-btn" title="${btnTitle}" ${isDisabled ? 'disabled' : `onclick="pickSlot('${slot}', this)"`}>${slot}</button>`;
     });
     html += '</div>';
   }
@@ -414,7 +511,7 @@ function refreshTimeSlotButtons() {
     const defaultBtn = Array.from(container.querySelectorAll('.slot-btn')).find(b => !b.disabled);
     if (defaultBtn) pickSlot(firstAvailable, defaultBtn);
   } else {
-    document.getElementById('selectedTimeNotice').textContent = 'Selected Time: No slots available for this date';
+    document.getElementById('selectedTimeNotice').textContent = 'Selected Time: No available slots for this selection';
     document.getElementById('chosenSlotValue').value = '';
   }
 }
@@ -438,14 +535,21 @@ function handleConfirmBooking(event) {
   const slot = document.getElementById('chosenSlotValue').value;
 
   if (!slot) {
-    alert("Please select a 30-minute time slot.");
+    alert("Please select a valid, active 30-minute time slot.");
     return;
   }
 
-  // Prevent double booking
+  const slotDateTime = parseSlotDateTime(date, slot);
+  if (slotDateTime < new Date()) {
+    alert("Cannot book a time slot that has already passed.");
+    refreshTimeSlotButtons();
+    return;
+  }
+
+  // Prevent double booking collision
   const exists = bookingList.find(b => b.doctor === doc.name && b.date === date && b.slot === slot && b.status === 'Confirmed');
   if (exists) {
-    alert("This slot has already been booked. Please pick another available slot.");
+    alert("This slot has just been reserved. Please pick another available time slot.");
     refreshTimeSlotButtons();
     return;
   }
@@ -456,19 +560,20 @@ function handleConfirmBooking(event) {
     patientEmail: session.email,
     patientName: session.name,
     patientGender: session.gender || 'Female',
+    patientBloodGroup: session.bloodGroup || 'O+',
     patientPhone: session.phone,
     doctor: doc.name,
     dept,
     date,
     slot,
-    fee: doc.fee,
+    fee: `₹${doc.fee || 500}`,
     status: 'Confirmed'
   };
 
   bookingList.unshift(newBooking);
   saveData();
 
-  alert(`Appointment Confirmed!\nDoctor: ${doc.name}\nDate: ${date}\nTime: ${slot}\nFee: ${doc.fee}`);
+  alert(`Appointment Confirmed!\nDoctor: ${doc.name}\nDate: ${date}\nTime: ${slot}\nFee: ₹${doc.fee || 500}`);
   refreshTimeSlotButtons();
   renderPatientHistory(session.email);
 }
@@ -528,6 +633,7 @@ function switchAdminTab(tabName) {
   } else if (tabName === 'patients') {
     document.getElementById('tabPatients').style.display = 'block';
     document.getElementById('tabPatientBtn').classList.add('active');
+    initAdminPatientEntryForm();
     renderAdminPatientTable();
   }
 }
@@ -539,34 +645,48 @@ function filterByRole(role) {
 
 function toggleDoctorFields(role) {
   const box = document.getElementById('doctorExtraFields');
-  // Strictly display only when role is Doctor
   box.style.display = (role === 'Doctor') ? 'block' : 'none';
   if (role === 'Doctor' && !document.getElementById('doctorFee').value) {
-    document.getElementById('doctorFee').value = '₹500';
+    document.getElementById('doctorFee').value = '500';
   }
 }
 
 function openAddForm(presetRole) {
-  document.getElementById('staffForm').reset();
+  const form = document.getElementById('staffForm');
+  form.reset();
   document.getElementById('editStaffId').value = '';
   document.getElementById('formTitle').textContent = 'Add Staff Details';
-  document.getElementById('saveBtn').textContent = 'Submit';
+  document.getElementById('saveBtn').textContent = 'Submit Record';
+
+  const alertBox = document.getElementById('staffValidationAlert');
+  alertBox.style.display = 'none';
 
   const role = presetRole || 'Receptionist';
   document.getElementById('staffRole').value = role;
   toggleDoctorFields(role);
 
+  const maleRadio = form.querySelector('input[name="staffGender"][value="Male"]');
+  if (maleRadio) maleRadio.checked = true;
+
   document.getElementById('staffPass').value = 'staff123';
   switchAdminTab('add');
 }
 
+/* =========================================================
+   STAFF SUBMIT WITH STRICT VALIDATIONS
+   ========================================================= */
 function handleStaffSubmit(event) {
   event.preventDefault();
+  const alertBox = document.getElementById('staffValidationAlert');
+  alertBox.style.display = 'none';
 
+  const form = document.getElementById('staffForm');
   const editId = document.getElementById('editStaffId').value;
   const role = document.getElementById('staffRole').value;
   const name = document.getElementById('staffName').value.trim();
-  const gender = document.getElementById('staffGender').value;
+  const genderChecked = form.querySelector('input[name="staffGender"]:checked');
+  const gender = genderChecked ? genderChecked.value : '';
+  const bloodGroup = document.getElementById('staffBloodGroup').value;
   const dob = document.getElementById('staffDOB').value;
   const joiningDate = document.getElementById('staffJoiningDate').value;
   const email = document.getElementById('staffEmail').value.trim();
@@ -575,16 +695,62 @@ function handleStaffSubmit(event) {
   const password = document.getElementById('staffPass').value.trim();
   const status = document.getElementById('staffStatus').value;
 
-  // Restrict department, fee & shift slots strictly to Doctor role only
+  // 1. Name Check
+  if (!isValidName(name)) {
+    showStaffValidationError("Name must be at least 3 letters long, letters and spaces only.");
+    return;
+  }
+
+  // 2. DOB Check
+  if (!isNotFutureDate(dob)) {
+    showStaffValidationError("Date of Birth is invalid or in the future.");
+    return;
+  }
+
+  // Age calculation
+  const age = calculateAge(dob);
+
+  // 3. Age Restrictions
+  if (role === 'Doctor' && age <= 27) {
+    showStaffValidationError(`Doctor age must be strictly greater than 27 years. (Current: ${age} years).`);
+    return;
+  }
+  if (role !== 'Doctor' && age < 21) {
+    showStaffValidationError(`${role} age must be at least 21 years old. (Current: ${age} years).`);
+    return;
+  }
+
+  // 4. Joining Date Check
+  if (!isNotFutureDate(joiningDate)) {
+    showStaffValidationError("Joining Date cannot be in the future.");
+    return;
+  }
+  if (new Date(joiningDate) < new Date(dob)) {
+    showStaffValidationError("Joining Date cannot precede Date of Birth.");
+    return;
+  }
+
+  // 5. Phone Validation (6-9 start, exactly 10 digits)
+  if (!isValidPhone(contact)) {
+    showStaffValidationError("Phone Number must be exactly 10 digits and start with 6, 7, 8, or 9.");
+    return;
+  }
+
+  // 6. Email Validation
+  if (!isValidEmail(email)) {
+    showStaffValidationError("Please enter a valid email address.");
+    return;
+  }
+
   const isDoc = (role === 'Doctor');
-  const dept = isDoc ? document.getElementById('doctorDept').value : 'General';
-  const fee = isDoc ? (document.getElementById('doctorFee').value.trim() || '₹500') : null;
-  const shift = isDoc ? document.getElementById('doctorShiftType').value : null;
+  let dept = isDoc ? document.getElementById('doctorDept').value : 'Support';
+  let fee = isDoc ? (document.getElementById('doctorFee').value.trim() || '500') : null;
+  let shift = isDoc ? document.getElementById('doctorShiftType').value : null;
 
   if (editId) {
     const idx = staffList.findIndex(s => s.id === editId);
     if (idx !== -1) {
-      staffList[idx] = { id: editId, name, role, dept, gender, dob, joiningDate, email, contact, salary, fee, shift, status, password };
+      staffList[idx] = { id: editId, name, role, dept, gender, bloodGroup, dob, joiningDate, email, contact, salary, fee, shift, status, password };
     }
   } else {
     const newMember = {
@@ -593,6 +759,7 @@ function handleStaffSubmit(event) {
       role,
       dept,
       gender,
+      bloodGroup,
       dob,
       joiningDate,
       email,
@@ -609,6 +776,12 @@ function handleStaffSubmit(event) {
   saveData();
   setFilter('ALL');
   switchAdminTab('table');
+}
+
+function showStaffValidationError(message) {
+  const alertBox = document.getElementById('staffValidationAlert');
+  alertBox.textContent = message;
+  alertBox.style.display = 'block';
 }
 
 function setFilter(role) {
@@ -635,20 +808,19 @@ function renderTable() {
   const theadRow = document.getElementById('staffTableHeaderRow');
   const tbody = document.getElementById('staffTableBody');
   const query = (document.getElementById('searchInput').value || '').toLowerCase();
-
   const isDoctorView = (currentFilter === 'Doctor');
 
-  // Dynamically configure clean table header without awkward empty columns for Staff
   if (isDoctorView) {
     theadRow.innerHTML = `
       <th>Name</th>
       <th>Role</th>
       <th>Department</th>
       <th>Gender</th>
+      <th>Blood</th>
       <th>DOB</th>
       <th>Joined</th>
       <th>Email</th>
-      <th>Consultation Fee</th>
+      <th>Fee</th>
       <th>Shift Schedule</th>
       <th>Status</th>
       <th>Password</th>
@@ -660,6 +832,7 @@ function renderTable() {
       <th>Role</th>
       <th>Department</th>
       <th>Gender</th>
+      <th>Blood</th>
       <th>DOB</th>
       <th>Joined</th>
       <th>Email</th>
@@ -674,12 +847,13 @@ function renderTable() {
     const queryMatch = !query || 
       s.name.toLowerCase().includes(query) || 
       s.email.toLowerCase().includes(query) || 
-      s.dept.toLowerCase().includes(query);
+      s.dept.toLowerCase().includes(query) ||
+      (s.contact && s.contact.includes(query));
     return roleMatch && queryMatch;
   });
 
   if (filtered.length === 0) {
-    const colCount = isDoctorView ? 12 : 10;
+    const colCount = isDoctorView ? 13 : 11;
     tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; color: #888;">No staff records found.</td></tr>`;
     return;
   }
@@ -695,10 +869,11 @@ function renderTable() {
           <td>${s.role}</td>
           <td>${s.dept}</td>
           <td>${s.gender}</td>
+          <td><strong>${s.bloodGroup || 'O+'}</strong></td>
           <td>${s.dob || 'N/A'}</td>
           <td>${s.joiningDate || 'N/A'}</td>
           <td>${s.email}</td>
-          <td>${s.fee || '₹500'}</td>
+          <td>₹${s.fee || '500'}</td>
           <td>${shiftDesc}</td>
           <td>
             <span class="status-tag ${statusClass}" onclick="toggleStaffStatus('${s.id}')" title="Click to toggle status">
@@ -714,13 +889,13 @@ function renderTable() {
       `;
     }
 
-    // Clean Staff Row: Completely free of Fee / Shift columns
     return `
       <tr>
         <td>${s.name}</td>
         <td>${s.role}</td>
         <td>${s.dept}</td>
         <td>${s.gender}</td>
+        <td><strong>${s.bloodGroup || 'O+'}</strong></td>
         <td>${s.dob || 'N/A'}</td>
         <td>${s.joiningDate || 'N/A'}</td>
         <td>${s.email}</td>
@@ -743,10 +918,15 @@ function editStaff(id) {
   const s = staffList.find(item => item.id === id);
   if (!s) return;
 
+  const form = document.getElementById('staffForm');
   document.getElementById('editStaffId').value = s.id;
   document.getElementById('staffRole').value = s.role;
   document.getElementById('staffName').value = s.name;
-  document.getElementById('staffGender').value = s.gender || 'Male';
+
+  const radio = form.querySelector(`input[name="staffGender"][value="${s.gender}"]`);
+  if (radio) radio.checked = true;
+
+  document.getElementById('staffBloodGroup').value = s.bloodGroup || 'O+';
   document.getElementById('staffDOB').value = s.dob || '';
   document.getElementById('staffJoiningDate').value = s.joiningDate || '';
   document.getElementById('staffEmail').value = s.email;
@@ -758,12 +938,12 @@ function editStaff(id) {
   toggleDoctorFields(s.role);
   if (s.role === 'Doctor') {
     document.getElementById('doctorDept').value = s.dept || 'Cardiology';
-    document.getElementById('doctorFee').value = s.fee || '₹500';
+    document.getElementById('doctorFee').value = s.fee || '500';
     document.getElementById('doctorShiftType').value = s.shift || 'Both';
   }
 
   document.getElementById('formTitle').textContent = `Edit Details - ${s.name}`;
-  document.getElementById('saveBtn').textContent = 'Update';
+  document.getElementById('saveBtn').textContent = 'Update Record';
   switchAdminTab('add');
 }
 
@@ -778,7 +958,233 @@ function deleteStaff(id) {
   }
 }
 
-// 4. Admin Patient Bookings Table (Exact match to uploaded screenshot)
+/* =========================================================
+   4. PATIENT ENTRY INLINE FORM & STRICT VALIDATIONS
+   ========================================================= */
+
+function initAdminPatientEntryForm() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('newPtDate');
+  dateInput.min = todayStr;
+  if (!dateInput.value) dateInput.value = todayStr;
+
+  const deptSelect = document.getElementById('newPtDept');
+  if (!deptSelect.value) deptSelect.value = 'General Medicine';
+  onAdminPatientDeptChange(deptSelect.value);
+}
+
+function onAdminPatientDeptChange(dept) {
+  const docSelect = document.getElementById('newPtDoctor');
+  const availableDocs = staffList.filter(s => s.role === 'Doctor' && s.dept === dept && s.status !== 'Inactive');
+
+  if (availableDocs.length === 0) {
+    docSelect.innerHTML = `<option value="" disabled selected>No active doctors in ${dept}</option>`;
+    document.getElementById('newPtSlot').innerHTML = '<option value="" disabled selected>No slots</option>';
+    return;
+  }
+
+  docSelect.innerHTML = availableDocs.map(d => `<option value="${d.id}">${d.name} (Fee: ₹${d.fee || 500})</option>`).join('');
+  onAdminPatientDoctorChange(availableDocs[0].id);
+}
+
+function onAdminPatientDoctorChange(staffId) {
+  onAdminPatientDateChange();
+}
+
+function onAdminPatientDateChange() {
+  const staffId = document.getElementById('newPtDoctor').value;
+  const doc = staffList.find(s => s.id === staffId && s.role === 'Doctor');
+  const dateVal = document.getElementById('newPtDate').value;
+  const slotSelect = document.getElementById('newPtSlot');
+
+  if (!doc || !dateVal) {
+    slotSelect.innerHTML = '<option value="" disabled selected>Select doctor and date</option>';
+    return;
+  }
+
+  const shiftType = doc.shift || 'Both';
+  const now = new Date();
+
+  // Find booked slots for this doctor on selected date
+  const booked = bookingList
+    .filter(b => b.doctor === doc.name && b.date === dateVal && b.status === 'Confirmed')
+    .map(b => b.slot);
+
+  let candidateSlots = [];
+  if (shiftType === 'Morning' || shiftType === 'Both') {
+    candidateSlots = candidateSlots.concat(MORNING_SLOTS);
+  }
+  if (shiftType === 'Afternoon' || shiftType === 'Both') {
+    candidateSlots = candidateSlots.concat(AFTERNOON_SLOTS);
+  }
+
+  const availableSlots = candidateSlots.filter(slot => {
+    const isBooked = booked.includes(slot);
+    const slotDateTime = parseSlotDateTime(dateVal, slot);
+    const isPast = slotDateTime < now;
+    return !isBooked && !isPast;
+  });
+
+  if (availableSlots.length === 0) {
+    slotSelect.innerHTML = '<option value="" disabled selected>No slots available for this date</option>';
+    return;
+  }
+
+  slotSelect.innerHTML = availableSlots.map(slot => `<option value="${slot}">${slot}</option>`).join('');
+}
+
+function handlePatientEntrySubmit(event) {
+  event.preventDefault();
+  const alertBox = document.getElementById('patientValidationAlert');
+  alertBox.style.display = 'none';
+
+  const form = document.getElementById('patientEntryForm');
+  const name = document.getElementById('newPtName').value.trim();
+  const genderChecked = form.querySelector('input[name="newPtGender"]:checked');
+  const gender = genderChecked ? genderChecked.value : '';
+  const bloodGroup = document.getElementById('newPtBloodGroup').value;
+  const dob = document.getElementById('newPtDOB').value;
+  const phone = document.getElementById('newPtPhone').value.trim();
+  const email = document.getElementById('newPtEmail').value.trim().toLowerCase();
+  const dept = document.getElementById('newPtDept').value;
+  const doctorId = document.getElementById('newPtDoctor').value;
+  const date = document.getElementById('newPtDate').value;
+  const slot = document.getElementById('newPtSlot').value;
+
+  // 1. Name validation
+  if (!isValidName(name)) {
+    showPatientEntryError("Patient Name must be at least 3 letters long, alphabets and spaces only (no numbers or special characters).");
+    return;
+  }
+
+  // 2. Gender validation
+  if (!gender) {
+    showPatientEntryError("Please select a gender option.");
+    return;
+  }
+
+  // 3. Blood Group validation
+  if (!isValidBloodGroup(bloodGroup)) {
+    showPatientEntryError("Invalid blood group selected. Must be a valid human blood group.");
+    return;
+  }
+
+  // 4. DOB validation: cannot be in future
+  if (!isNotFutureDate(dob)) {
+    showPatientEntryError("Patient Date of Birth cannot be empty or in the future.");
+    return;
+  }
+
+  // 5. Phone validation: exactly 10 digits starting with 6, 7, 8, or 9
+  if (!isValidPhone(phone)) {
+    showPatientEntryError("Phone Number must be exactly 10 digits and start with 6, 7, 8, or 9 (digits only).");
+    return;
+  }
+
+  // 6. Email validation
+  if (!isValidEmail(email)) {
+    showPatientEntryError("Please enter a valid patient email address.");
+    return;
+  }
+
+  // Check duplicate patient email or phone
+  const duplicate = patientList.find(p => p.email.toLowerCase() === email || p.phone === phone);
+  if (duplicate) {
+    showPatientEntryError(`A patient is already registered with this email or phone number (MMR: ${duplicate.mmr}, Name: ${duplicate.name}).`);
+    return;
+  }
+
+  // 7. Doctor and Slot validations
+  const doc = staffList.find(s => s.id === doctorId && s.role === 'Doctor');
+  if (!doc) {
+    showPatientEntryError("Please select a valid doctor.");
+    return;
+  }
+
+  if (!date) {
+    showPatientEntryError("Please select an appointment date.");
+    return;
+  }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (date < todayStr) {
+    showPatientEntryError("Appointment date cannot be in the past.");
+    return;
+  }
+
+  if (!slot) {
+    showPatientEntryError("Please select an available 30-minute time slot.");
+    return;
+  }
+
+  const slotDateTime = parseSlotDateTime(date, slot);
+  if (slotDateTime < new Date()) {
+    showPatientEntryError("Selected time slot has already passed.");
+    onAdminPatientDateChange();
+    return;
+  }
+
+  // Prevent double booking
+  const conflict = bookingList.find(b => b.doctor === doc.name && b.date === date && b.slot === slot && b.status === 'Confirmed');
+  if (conflict) {
+    showPatientEntryError("This time slot has just been reserved. Please select another slot.");
+    onAdminPatientDateChange();
+    return;
+  }
+
+  // Generate Automatic Unique MMR
+  const mmr = `MMR${Math.floor(1000 + Math.random() * 9000)}`;
+
+  const newPatient = {
+    id: Date.now().toString(),
+    mmr,
+    name,
+    gender,
+    bloodGroup,
+    dob,
+    email,
+    phone
+  };
+
+  const newBooking = {
+    id: `BOK-${Date.now().toString().slice(-4)}`,
+    mmr,
+    patientEmail: email,
+    patientName: name,
+    patientGender: gender,
+    patientBloodGroup: bloodGroup,
+    patientPhone: phone,
+    doctor: doc.name,
+    dept,
+    date,
+    slot,
+    fee: `₹${doc.fee || 500}`,
+    status: 'Confirmed'
+  };
+
+  patientList.push(newPatient);
+  bookingList.push(newBooking);
+  saveData();
+
+  renderAdminPatientTable();
+  resetPatientEntryForm();
+  alert(`Patient Registered & Appointment Confirmed!\nMMR: ${mmr}\nName: ${name}\nAssigned Doctor: ${doc.name}\nDate: ${date}\nSlot: ${slot}\nPatient Password: ${phone}`);
+}
+
+function showPatientEntryError(message) {
+  const alertBox = document.getElementById('patientValidationAlert');
+  alertBox.textContent = message;
+  alertBox.style.display = 'block';
+  alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetPatientEntryForm() {
+  const form = document.getElementById('patientEntryForm');
+  form.reset();
+  document.getElementById('patientValidationAlert').style.display = 'none';
+  initAdminPatientEntryForm();
+}
+
 function renderAdminPatientTable() {
   const tbody = document.getElementById('patientTableBody');
   tbody.innerHTML = bookingList.map(b => {
@@ -787,6 +1193,7 @@ function renderAdminPatientTable() {
         <td>${b.mmr || 'MMR1003'}</td>
         <td>${b.patientName}</td>
         <td>${b.patientGender || 'Female'}</td>
+        <td><strong>${b.patientBloodGroup || 'O+'}</strong></td>
         <td>${b.patientPhone}</td>
         <td>${b.doctor}</td>
         <td>${b.dept}</td>
@@ -799,58 +1206,6 @@ function renderAdminPatientTable() {
       </tr>
     `;
   }).join('');
-}
-
-function openAddPatientModal() {
-  const name = prompt("Enter Patient Name:");
-  if (!name) return;
-  const email = prompt("Enter Patient Email:");
-  if (!email) return;
-  const phone = prompt("Enter Patient Phone Number (Password):");
-  if (!phone) return;
-  const gender = prompt("Enter Gender (Male/Female/Other):", "Female") || "Female";
-  const dob = prompt("Enter Patient DOB (YYYY-MM-DD):", "2000-01-01") || "2000-01-01";
-
-  // Prompt for Department
-  const dept = prompt("Enter Department (Cardiology, General Medicine, Pediatrics, Orthopedics, Dermatology):", "General Medicine") || "General Medicine";
-
-  // Assign Doctor in that department
-  const docs = staffList.filter(s => s.role === 'Doctor' && s.dept.toLowerCase() === dept.toLowerCase());
-  const assigned = docs.length > 0 ? docs[0] : (staffList.find(s => s.role === 'Doctor') || { name: 'Dr. Arun', dept: 'Cardiology', fee: '₹750' });
-
-  const mmr = `MMR${Math.floor(1000 + Math.random() * 9000)}`;
-  const today = new Date().toISOString().split('T')[0];
-
-  const newPatient = {
-    id: Date.now().toString(),
-    mmr,
-    name,
-    gender,
-    dob,
-    email,
-    phone
-  };
-
-  const newBooking = {
-    id: `BOK-${Date.now().toString().slice(-4)}`,
-    mmr,
-    patientEmail: email,
-    patientName: name,
-    patientGender: gender,
-    patientPhone: phone,
-    doctor: assigned.name,
-    dept: assigned.dept,
-    date: today,
-    slot: '09:00 AM',
-    fee: assigned.fee,
-    status: 'Confirmed'
-  };
-
-  patientList.push(newPatient);
-  bookingList.push(newBooking);
-  saveData();
-  renderAdminPatientTable();
-  alert(`Patient Added: ${name}\nMMR: ${mmr}\nDept: ${assigned.dept}\nDoctor: ${assigned.name}\nSlot: ${today} at 09:00 AM`);
 }
 
 function deleteBooking(id) {

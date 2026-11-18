@@ -27,7 +27,7 @@
       <h3>User Login</h3>
       <p class="hint">Select your role and enter credentials to continue</p>
 
-      <form id="loginForm" onsubmit="handleLogin(event)">
+      <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
         <div class="form-group">
           <label for="loginRole">Select Role</label>
           <select id="loginRole" onchange="handleRoleChange(this.value)" required>
@@ -56,7 +56,7 @@
 
       <div id="loginMsg" class="error-text" style="display: none;"></div>
       <div id="patientNotice" class="info-text" style="display: none;">
-        Patient sign-in: Use registered <strong>Email</strong> as username and <strong>Phone Number</strong> as password. Demo: <code>jaii@gmail.com</code> / <code>45678</code>[cite: 1, 2].
+        Patient sign-in: Use registered <strong>Email</strong> as username and <strong>Phone Number</strong> as password. Demo: <code>jaii@gmail.com</code> / <code>9846012345</code>[cite: 1, 2].
       </div>
     </div>
   </main>
@@ -74,16 +74,17 @@
       <!-- Patient Details Header -->
       <div class="patient-info">
         <h3>Patient Details</h3>
-        <p><strong>MMR:</strong> <span id="displayMMR">MMR1003</span></p>
-        <p><strong>Name:</strong> <span id="displayName">jaii</span></p>
-        <p><strong>Phone:</strong> <span id="displayPhone">45678</span></p>
-        <p><strong>Gender:</strong> <span id="displayGender">Female</span></p>
+        <p><strong>MMR:</strong> <span id="displayMMR">MMR1003</span>[cite: 1, 2]</p>
+        <p><strong>Name:</strong> <span id="displayName">jaii</span>[cite: 1, 2]</p>
+        <p><strong>Phone:</strong> <span id="displayPhone">9846012345</span></p>
+        <p><strong>Gender:</strong> <span id="displayGender">Female</span>[cite: 2]</p>
+        <p><strong>Blood Group:</strong> <span id="displayBloodGroup">O+</span></p>
       </div>
 
       <hr class="line-break" />
 
       <!-- Form matching the reference screenshot -->
-      <form id="patientBookingForm" onsubmit="handleConfirmBooking(event)">
+      <form id="patientBookingForm" onsubmit="handleConfirmBooking(event)" novalidate>
         <div class="form-block">
           <h2>Select Department</h2>
           <select id="selectDept" class="input-normal" onchange="onDepartmentChanged(this.value)" required>
@@ -180,12 +181,14 @@
       <div class="form-container">
         <h3 id="formTitle">Add Staff Details</h3>
         
-        <form id="staffForm" onsubmit="handleStaffSubmit(event)">
+        <div id="staffValidationAlert" class="error-text" style="display: none; margin-bottom: 15px;"></div>
+
+        <form id="staffForm" onsubmit="handleStaffSubmit(event)" novalidate>
           <input type="hidden" id="editStaffId" value="" />
 
           <div class="form-grid">
             <div class="form-group">
-              <label for="staffRole">Role</label>
+              <label for="staffRole">Role *</label>
               <select id="staffRole" onchange="toggleDoctorFields(this.value)" required>
                 <option value="Receptionist">Receptionist</option>
                 <option value="Doctor">Doctor</option>
@@ -195,51 +198,72 @@
             </div>
 
             <div class="form-group">
-              <label for="staffName">Name</label>
-              <input type="text" id="staffName" placeholder="Full Name" required />
+              <label for="staffName">Name (At least 3 letters, alphabets only) *</label>
+              <input type="text" id="staffName" placeholder="Dr. Arun / Anjali Menon" required />
             </div>
 
             <div class="form-group">
-              <label for="staffGender">Gender</label>
-              <select id="staffGender" required>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+              <label>Gender *</label>
+              <div class="radio-inline-group">
+                <label><input type="radio" name="staffGender" value="Male" checked /> Male</label>
+                <label><input type="radio" name="staffGender" value="Female" /> Female</label>
+                <label><input type="radio" name="staffGender" value="Other" /> Other</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="staffBloodGroup">Blood Group *</label>
+              <select id="staffBloodGroup" required>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="staffDOB">Date of Birth (DOB)</label>
+              <label for="staffDOB">Date of Birth (DOB) *</label>
               <input type="date" id="staffDOB" required />
+              <small class="field-hint">Doctor: Age &gt; 27 yrs | Staff: Age &ge; 21 yrs</small>
             </div>
 
             <div class="form-group">
-              <label for="staffJoiningDate">Joining Date</label>
+              <label for="staffJoiningDate">Joining Date *</label>
               <input type="date" id="staffJoiningDate" required />
+              <small class="field-hint">Cannot be in the future</small>
             </div>
 
             <div class="form-group">
-              <label for="staffEmail">Login Email</label>
+              <label for="staffEmail">Official Email *</label>
               <input type="email" id="staffEmail" placeholder="staff@quadclinic.com" required />
             </div>
 
             <div class="form-group">
-              <label for="staffContact">Contact Number</label>
-              <input type="text" id="staffContact" placeholder="10-digit mobile number" required />
+              <label for="staffContact">Phone Number (10 digits starting with 6,7,8,9) *</label>
+              <input type="tel" id="staffContact" placeholder="9847011223" maxlength="10" required />
             </div>
 
             <div class="form-group">
-              <label for="staffSalary">Monthly Salary</label>
-              <input type="text" id="staffSalary" placeholder="45,000" required />
+              <label for="staffSalary">Monthly Salary (INR) *</label>
+              <input type="number" id="staffSalary" placeholder="45000" min="5000" required />
+            </div>
+
+            <div class="form-group">
+              <label for="staffPass">Login Password *</label>
+              <input type="text" id="staffPass" placeholder="staff123" required />
             </div>
           </div>
 
-          <!-- Doctor-ONLY Specific Fields (Hidden for Staff) -->
+          <!-- Doctor-ONLY Specific Fields -->
           <div id="doctorExtraFields" class="doctor-sub-box" style="display: none;">
             <h4>Doctor Specialty, Consultation Fee &amp; Shifts</h4>
             <div class="form-grid">
               <div class="form-group">
-                <label for="doctorDept">Department</label>
+                <label for="doctorDept">Department *</label>
                 <select id="doctorDept">
                   <option value="Cardiology">Cardiology</option>
                   <option value="General Medicine">General Medicine</option>
@@ -250,12 +274,12 @@
               </div>
 
               <div class="form-group">
-                <label for="doctorFee">Consultation Fee (INR)</label>
-                <input type="text" id="doctorFee" placeholder="₹500" />
+                <label for="doctorFee">Consultation Fee (INR) *</label>
+                <input type="number" id="doctorFee" placeholder="500" min="100" />
               </div>
 
               <div class="form-group span-2">
-                <label for="doctorShiftType">Doctor Consultation Shift (30-Minute Slots)</label>
+                <label for="doctorShiftType">Doctor Consultation Shift (30-Minute Slots) *</label>
                 <select id="doctorShiftType">
                   <option value="Both">Both Shifts: Morning (9 AM - 12 PM) &amp; Afternoon (2 PM - 4 PM)</option>
                   <option value="Morning">Morning Shift Only (09:00 AM - 12:00 PM)</option>
@@ -267,11 +291,6 @@
 
           <div class="form-grid">
             <div class="form-group">
-              <label for="staffPass">Password</label>
-              <input type="text" id="staffPass" placeholder="staff123" required />
-            </div>
-
-            <div class="form-group">
               <label for="staffStatus">Status</label>
               <select id="staffStatus">
                 <option value="Active">Active</option>
@@ -282,14 +301,14 @@
           </div>
 
           <div class="button-row">
-            <button type="submit" class="btn-standard" id="saveBtn">Submit</button>
+            <button type="submit" class="btn-standard" id="saveBtn">Submit Record</button>
             <button type="button" class="btn-cancel" onclick="switchAdminTab('table')">Cancel</button>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- 3C. Staff Directory Table (No unwanted Doctor Fee/Shift column) -->
+    <!-- 3C. Staff Directory Table -->
     <div id="tabTable" class="tab-content" style="display: none;">
       <div class="table-container">
         <div class="table-bar">
@@ -306,7 +325,7 @@
         <table class="grid-table">
           <thead>
             <tr id="staffTableHeaderRow">
-              <!-- Dynamically structured depending on whether Doctor or General Staff is viewed -->
+              <!-- Dynamically populated based on filter -->
             </tr>
           </thead>
           <tbody id="staffTableBody">
@@ -316,12 +335,104 @@
       </div>
     </div>
 
-    <!-- 3D. Patient Directory Table (Exact match to uploaded screenshot) -->
+    <!-- 3D. Patient Directory Table & Dedicated Patient Entry Section -->
     <div id="tabPatients" class="tab-content" style="display: none;">
+      
+      <!-- INLINE PATIENT ENTRY FORM WITH STRICT VALIDATIONS -->
+      <div class="form-container" id="patientEntrySection" style="margin-bottom: 24px;">
+        <h3>Patient Registration &amp; Appointment Booking</h3>
+        <p class="hint">Register patient with full validations. Generates automatic MMR.</p>
+
+        <div id="patientValidationAlert" class="error-text" style="display: none; margin-bottom: 15px;"></div>
+
+        <form id="patientEntryForm" onsubmit="handlePatientEntrySubmit(event)" novalidate>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="newPtName">Full Name (At least 3 letters, alphabets only) *</label>
+              <input type="text" id="newPtName" placeholder="e.g. John Mathew" required />
+            </div>
+
+            <div class="form-group">
+              <label>Gender *</label>
+              <div class="radio-inline-group">
+                <label><input type="radio" name="newPtGender" value="Male" checked /> Male</label>
+                <label><input type="radio" name="newPtGender" value="Female" /> Female</label>
+                <label><input type="radio" name="newPtGender" value="Other" /> Other</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="newPtBloodGroup">Blood Group *</label>
+              <select id="newPtBloodGroup" required>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+" selected>O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="newPtDOB">Date of Birth (DOB) *</label>
+              <input type="date" id="newPtDOB" required />
+              <small class="field-hint">Cannot be in the future</small>
+            </div>
+
+            <div class="form-group">
+              <label for="newPtPhone">Phone Number (10 digits starting with 6,7,8,9) *</label>
+              <input type="tel" id="newPtPhone" placeholder="9846012345" maxlength="10" required />
+            </div>
+
+            <div class="form-group">
+              <label for="newPtEmail">Email Address (Login Username) *</label>
+              <input type="email" id="newPtEmail" placeholder="patient@gmail.com" required />
+            </div>
+
+            <div class="form-group">
+              <label for="newPtDept">Department *</label>
+              <select id="newPtDept" onchange="onAdminPatientDeptChange(this.value)" required>
+                <option value="Cardiology">Cardiology</option>
+                <option value="General Medicine" selected>General Medicine</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="Dermatology">Dermatology</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="newPtDoctor">Assign Doctor *</label>
+              <select id="newPtDoctor" onchange="onAdminPatientDoctorChange(this.value)" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="newPtDate">Appointment Date *</label>
+              <input type="date" id="newPtDate" onchange="onAdminPatientDateChange()" required />
+            </div>
+
+            <div class="form-group">
+              <label for="newPtSlot">Time Slot (30 Mins) *</label>
+              <select id="newPtSlot" required>
+                <!-- Populated dynamically based on doctor shift & availability -->
+              </select>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" class="btn-standard">Register &amp; Book Appointment</button>
+            <button type="button" class="btn-cancel" onclick="resetPatientEntryForm()">Clear Form</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- PATIENT APPOINTMENTS DIRECTORY TABLE -->
       <div class="table-container">
         <div class="table-bar">
-          <h4>Patient Records &amp; Appointments</h4>
-          <button class="btn-sm" onclick="openAddPatientModal()">+ Walk-In Patient</button>
+          <h4>Patient Records &amp; Appointments[cite: 2]</h4>
         </div>
 
         <table class="grid-table">
@@ -330,6 +441,7 @@
               <th>MMR</th>
               <th>Name</th>
               <th>Gender</th>
+              <th>Blood</th>
               <th>Phone (Password)</th>
               <th>Doctor</th>
               <th>Department</th>
