@@ -13,20 +13,22 @@ const ADMIN_ACCOUNT = {
   displayName: 'Mr.ADMIN'
 };
 
-// Teammate Dashboard Pages (Update file names here if your teammates named theirs differently)
-const ROLE_REDIRECT_PAGES = {
-  'Receptionist':   'receptionist.html',
-  'Doctor':         'doctor.html',
-  'Lab Technician': 'lab.html',
-  'Pharmacist':     'pharmacist.html'
+// Default Role Accounts for testing all roles immediately
+const DEFAULT_ROLE_ACCOUNTS = {
+  'Receptionist':   { email: 'reception@quadclinic.com', pass: 'rec123',   empId: 'EMP-1001', name: 'Anjali Menon' },
+  'Doctor':         { email: 'doctor@quadclinic.com',    pass: 'doc123',   empId: 'EMP-1002', name: 'Dr. Arvind Nair' },
+  'Lab Technician': { email: 'lab@quadclinic.com',       pass: 'lab123',   empId: 'EMP-1004', name: 'Rahul Vijayan' },
+  'Pharmacist':     { email: 'pharmacy@quadclinic.com',  pass: 'pharm123', empId: 'EMP-1005', name: 'Sneha Thomas' }
 };
 
-// Default Role Accounts (Also checks staff added by Admin in localStorage)
-const DEFAULT_ROLE_ACCOUNTS = {
-  'Receptionist':   { email: 'reception@quadclinic.com', pass: 'rec123' },
-  'Doctor':         { email: 'doctor@quadclinic.com',    pass: 'doc123' },
-  'Lab Technician': { email: 'lab@quadclinic.com',       pass: 'lab123' },
-  'Pharmacist':     { email: 'pharmacy@quadclinic.com',  pass: 'pharm123' }
+// Optional external teammate files:
+// Keep null so it NEVER triggers "Cannot GET /receptionist.html".
+// When your teammates merge their HTML files later, you can set e.g. 'Receptionist': 'receptionist.html'
+const EXTERNAL_TEAMMATE_FILES = {
+  'Receptionist':   null,
+  'Doctor':         null,
+  'Lab Technician': null,
+  'Pharmacist':     null
 };
 
 const DEFAULT_STAFF = [
@@ -144,15 +146,21 @@ function isAdminAuthenticated() {
 // Blocks any non-admin from invoking Admin UI or CRUD operations
 function requireAdminAuth() {
   if (!isAdminAuthenticated()) {
-    lockDownToLogin('Unauthorized access blocked. Please log in as Administrator.');
+    lockDownToLogin('Unauthorized access blocked. Administrator privileges required.');
     return false;
   }
   return true;
 }
 
+function hideAllTopViews() {
+  document.getElementById('view-login').classList.remove('active');
+  document.getElementById('view-admin').classList.remove('active');
+  document.getElementById('view-staff-portal').classList.remove('active');
+}
+
 function lockDownToLogin(errorMessage) {
   sessionStorage.removeItem(SESSION_KEY);
-  document.getElementById('view-admin').classList.remove('active');
+  hideAllTopViews();
   document.getElementById('view-login').classList.add('active');
 
   if (errorMessage) {
@@ -179,6 +187,18 @@ function showLoginError(msg) {
   }
 }
 
+function handleRoleSelectionChange(selectedRole) {
+  clearLoginError();
+  const emailInput = document.getElementById('loginEmail');
+  if (!emailInput) return;
+
+  if (selectedRole === 'Admin') {
+    emailInput.placeholder = 'Admin Email (admin@quadclinic.com)';
+  } else {
+    emailInput.placeholder = `${selectedRole} Email or EMP ID (e.g. EMP-1001)`;
+  }
+}
+
 function handleLoginSubmit(event) {
   event.preventDefault();
   clearLoginError();
@@ -192,18 +212,19 @@ function handleLoginSubmit(event) {
     return;
   }
 
+  // =========================================================
   // CASE 1: ADMINISTRATOR LOGIN (Strictly checks Admin credentials)
+  // =========================================================
   if (role === 'Admin') {
     const isValidAdminUser =
       emailInput === ADMIN_ACCOUNT.email || emailInput === ADMIN_ACCOUNT.username;
     const isValidAdminPass = passwordInput === ADMIN_ACCOUNT.password;
 
     if (!isValidAdminUser || !isValidAdminPass) {
-      showLoginError('Invalid Administrator credentials. Access denied.');
+      showLoginError('Invalid Administrator credentials. Use admin@quadclinic.com / admin123.');
       return;
     }
 
-    // Grant Admin Session
     const adminSession = {
       role: 'Admin',
       name: ADMIN_ACCOUNT.displayName,
@@ -214,48 +235,73 @@ function handleLoginSubmit(event) {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(adminSession));
     localStorage.setItem('quad_logged_in_user', JSON.stringify(adminSession));
 
-    // Unlock Admin Portal
-    document.getElementById('view-login').classList.remove('active');
+    hideAllTopViews();
     document.getElementById('view-admin').classList.add('active');
     openAdminSubscreen('home');
     showToast('Authenticated as Administrator (Mr.ADMIN).');
     return;
   }
 
+  // =========================================================
   // CASE 2: NON-ADMIN ROLES (Receptionist, Doctor, Lab Technician, Pharmacist)
-  // Prevent Admin email from logging in under another role
-  if (emailInput === ADMIN_ACCOUNT.email) {
-    showLoginError('Role mismatch: Administrator credentials cannot log in as ' + role + '.');
+  // =========================================================
+  if (emailInput === ADMIN_ACCOUNT.email || emailInput === ADMIN_ACCOUNT.username) {
+    showLoginError(`Role Mismatch: Administrator account cannot log in as ${role}.`);
     return;
   }
 
-  // Verify against Default Role Account OR Staff registered by Admin in localStorage
   const roleDefault = DEFAULT_ROLE_ACCOUNTS[role];
   const matchedDefault =
     roleDefault &&
     emailInput === roleDefault.email.toLowerCase() &&
     passwordInput === roleDefault.pass;
 
+  // Check if a staff member added by Admin in localStorage matches the selected Role
   const matchedStaffMember = staffList.find(
     staff =>
       staff.role === role &&
       (staff.empId.toLowerCase() === emailInput ||
        staff.name.toLowerCase() === emailInput) &&
-      (passwordInput === staff.empId || passwordInput === roleDefault?.pass || passwordInput === '123456')
+      (passwordInput.toLowerCase() === staff.empId.toLowerCase() ||
+       passwordInput === roleDefault?.pass ||
+       passwordInput === '123456')
   );
 
-  if (!matchedDefault && !matchedStaffMember) {
+  // Check if user entered an EMP ID belonging to a DIFFERENT role
+  const wrongRoleRecord = staffList.find(
+    staff =>
+      staff.role !== role &&
+      (staff.empId.toLowerCase() === emailInput || staff.name.toLowerCase() === emailInput)
+  );
+
+  if (wrongRoleRecord) {
     showLoginError(
-      `Invalid ${role} credentials. Use your registered EMP ID / Email and password.`
+      `Access Denied: ${wrongRoleRecord.name} (${wrongRoleRecord.empId}) is registered as ${wrongRoleRecord.role}, not ${role}.`
     );
     return;
   }
 
-  // Save session for the other role and IMMEDIATELY redirect away from admin.html
+  if (!matchedDefault && !matchedStaffMember) {
+    showLoginError(
+      `Invalid ${role} credentials. Use ${roleDefault.email} / ${roleDefault.pass} or your assigned EMP ID.`
+    );
+    return;
+  }
+
+  const resolvedRecord = matchedStaffMember || staffList.find(s => s.empId === roleDefault.empId) || {
+    empId: roleDefault.empId,
+    name: roleDefault.name,
+    role: role,
+    contact: 'Verified Clinic Line',
+    address: 'Quad Clinic Campus'
+  };
+
   const staffSession = {
     role: role,
-    empId: matchedStaffMember ? matchedStaffMember.empId : 'DEFAULT',
-    name: matchedStaffMember ? matchedStaffMember.name : role,
+    empId: resolvedRecord.empId,
+    name: resolvedRecord.name,
+    contact: resolvedRecord.contact || 'N/A',
+    address: resolvedRecord.address || 'N/A',
     email: emailInput,
     authenticated: true,
     loginTime: new Date().toISOString()
@@ -264,28 +310,131 @@ function handleLoginSubmit(event) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(staffSession));
   localStorage.setItem('quad_logged_in_user', JSON.stringify(staffSession));
 
-  const targetPage = ROLE_REDIRECT_PAGES[role];
-  if (targetPage) {
-    // Strictly redirect to the teammate's dashboard page — never show view-admin
-    window.location.href = targetPage;
+  // If an external teammate HTML file is explicitly configured, redirect there;
+  // Otherwise open the built-in isolated Staff Portal view so "Cannot GET" NEVER happens.
+  const externalFile = EXTERNAL_TEAMMATE_FILES[role];
+  if (externalFile) {
+    window.location.href = externalFile;
   } else {
-    showLoginError(`No dashboard page configured for role: ${role}`);
+    openIsolatedStaffPortal(staffSession);
   }
 }
 
-function logoutAdmin() {
+function logoutSession() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('quad_logged_in_user');
-  document.getElementById('quadLoginForm').reset();
+  const form = document.getElementById('quadLoginForm');
+  if (form) form.reset();
   clearLoginError();
 
-  document.getElementById('view-admin').classList.remove('active');
+  hideAllTopViews();
   document.getElementById('view-login').classList.add('active');
   showToast('Logged out securely.');
 }
 
 function handleForgotPassword() {
   showToast('Please contact the Clinic System Administrator to reset your password.');
+}
+
+/* =========================================================
+   ISOLATED STAFF PORTAL VIEW (STRICTLY BLOCKS ADMIN ACCESS)
+   ========================================================= */
+function openIsolatedStaffPortal(session) {
+  hideAllTopViews();
+  document.getElementById('view-staff-portal').classList.add('active');
+
+  document.getElementById('staffPortalRoleHeading').textContent = session.role.toUpperCase();
+  document.getElementById('staffPortalUserName').textContent = session.name;
+  document.getElementById('staffPortalEmpId').textContent = session.empId;
+
+  const doctors = staffList.filter(s => s.role === 'Doctor');
+  const doctorRows = doctors
+    .map(
+      d => `
+      <tr>
+        <td><strong>${escapeHtml(d.empId)}</strong></td>
+        <td>${escapeHtml(d.name)}</td>
+        <td>${escapeHtml(d.contact)}</td>
+        <td>Available</td>
+      </tr>`
+    )
+    .join('');
+
+  const roleModules = {
+    'Receptionist': {
+      title: 'Receptionist Front-Desk Workspace',
+      summary: 'Authorized for Patient Registration, Token Queue & Doctor Appointment Scheduling only.',
+      tableHeaders: ['Doctor EMP ID', 'Doctor Name', 'Clinic Contact', 'OPD Status'],
+      tableRows: doctorRows || '<tr><td colspan="4">No doctors registered yet.</td></tr>'
+    },
+    'Doctor': {
+      title: 'Doctor Consultation & OPD Workspace',
+      summary: 'Authorized for Patient Consultation, Diagnosis Notes, Lab Orders & Prescriptions only.',
+      tableHeaders: ['Token / ID', 'Doctor On Duty', 'Department Contact', 'Session Status'],
+      tableRows: `
+        <tr>
+          <td><strong>${escapeHtml(session.empId)}</strong></td>
+          <td>${escapeHtml(session.name)}</td>
+          <td>${escapeHtml(session.contact)}</td>
+          <td>Active OPD Consultation</td>
+        </tr>`
+    },
+    'Lab Technician': {
+      title: 'Clinical Laboratory Diagnostics Workspace',
+      summary: 'Authorized for Sample Collection, Hematology/Biochemistry Tests & Lab Report Entry only.',
+      tableHeaders: ['Technician ID', 'Assigned Specialist', 'Lab Contact', 'Equipment Status'],
+      tableRows: `
+        <tr>
+          <td><strong>${escapeHtml(session.empId)}</strong></td>
+          <td>${escapeHtml(session.name)}</td>
+          <td>${escapeHtml(session.contact)}</td>
+          <td>Diagnostics Online</td>
+        </tr>`
+    },
+    'Pharmacist': {
+      title: 'Pharmacy Dispensing & Inventory Workspace',
+      summary: 'Authorized for Prescription Verification, Medicine Dispensing & Stock Alerts only.',
+      tableHeaders: ['Pharmacist ID', 'On-Duty Pharmacist', 'Dispensary Contact', 'Counter Status'],
+      tableRows: `
+        <tr>
+          <td><strong>${escapeHtml(session.empId)}</strong></td>
+          <td>${escapeHtml(session.name)}</td>
+          <td>${escapeHtml(session.contact)}</td>
+          <td>Dispensary Open</td>
+        </tr>`
+    }
+  };
+
+  const cfg = roleModules[session.role] || roleModules['Receptionist'];
+
+  document.getElementById('staffPortalContent').innerHTML = `
+    <div class="staff-portal-banner">
+      <h2>${escapeHtml(cfg.title)}</h2>
+      <span class="rbac-lock-badge">Admin Controls Locked (${escapeHtml(session.role)} Role)</span>
+    </div>
+
+    <div class="staff-profile-card">
+      <div><strong>Authenticated Staff</strong>${escapeHtml(session.name)}</div>
+      <div><strong>Assigned Role</strong>${escapeHtml(session.role)}</div>
+      <div><strong>Employee ID</strong>${escapeHtml(session.empId)}</div>
+      <div><strong>Access Scope</strong>${escapeHtml(cfg.summary)}</div>
+    </div>
+
+    <div class="wf-table-frame">
+      <table class="wf-grid-table">
+        <thead>
+          <tr>
+            ${cfg.tableHeaders.map(h => `<th>${escapeHtml(h)}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${cfg.tableRows}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  showToast(`Logged in as ${session.role}: ${session.name}`);
 }
 
 /* =========================================================
@@ -425,7 +574,7 @@ function handleSaveStaff(event) {
     };
     staffList.unshift(newRecord);
     saveDatabase();
-    showToast(`Added ${role}: ${name} (${empId})`);
+    showToast(`Added ${role}: ${name} (${empId}). They can now log in with ${empId}.`);
   }
 
   setRoleFilter('ALL');
@@ -570,15 +719,21 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// On Page Load: Check if an active Admin session exists; otherwise lock down to Login
+// Restore active session on refresh without allowing unauthorized role escalation
 window.addEventListener('DOMContentLoaded', () => {
   loadDatabase();
 
-  if (isAdminAuthenticated()) {
-    document.getElementById('view-login').classList.remove('active');
+  const session = getActiveSession();
+  if (!session || !session.authenticated) {
+    lockDownToLogin();
+    return;
+  }
+
+  if (session.role === 'Admin') {
+    hideAllTopViews();
     document.getElementById('view-admin').classList.add('active');
     openAdminSubscreen('home');
   } else {
-    lockDownToLogin();
+    openIsolatedStaffPortal(session);
   }
 });
