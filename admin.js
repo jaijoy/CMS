@@ -1,10 +1,10 @@
 /* =========================================================
-   QUAD CLINIC - NORMAL ADMIN & APPOINTMENT JAVASCRIPT
+   QUAD CLINIC - ADMIN & APPOINTMENT JAVASCRIPT
    ========================================================= */
 
-const DB_STAFF_KEY = 'quad_clinic_staff_normal_v1';
-const DB_PATIENT_KEY = 'quad_clinic_patients_normal_v1';
-const DB_BOOKINGS_KEY = 'quad_clinic_bookings_normal_v1';
+const DB_STAFF_KEY = 'quad_clinic_staff_clean_v2';
+const DB_PATIENT_KEY = 'quad_clinic_patients_clean_v2';
+const DB_BOOKINGS_KEY = 'quad_clinic_bookings_clean_v2';
 const SESSION_KEY = 'quad_clinic_user_session';
 
 // Receptionist's exact dummySchedules
@@ -36,15 +36,17 @@ const dummySchedules = [
   }
 ];
 
-// Initial Staff/Doctor List (Includes Dr. Arun in Cardiology matching image)[cite: 4]
+// Initial Staff/Doctor List: No EMP ID; contains DOB, Joining Date, and Gender
 const DEFAULT_STAFF = [
   { 
     id: '1', 
     doctorId: 1,
-    empId: 'EMP-1001', 
     name: 'Dr. Arun', 
     role: 'Doctor', 
     dept: 'Cardiology',
+    gender: 'Male',
+    dob: '1984-05-12',
+    joiningDate: '2020-01-15',
     email: 'arun@quadclinic.com', 
     contact: '9447112233', 
     salary: '1,20,000', 
@@ -56,10 +58,12 @@ const DEFAULT_STAFF = [
   { 
     id: '2', 
     doctorId: 2,
-    empId: 'EMP-1002', 
     name: 'Dr. Arvind Nair', 
     role: 'Doctor', 
     dept: 'General Medicine',
+    gender: 'Male',
+    dob: '1982-10-24',
+    joiningDate: '2019-06-01',
     email: 'doctor@quadclinic.com', 
     contact: '9447122334', 
     salary: '95,000', 
@@ -71,10 +75,12 @@ const DEFAULT_STAFF = [
   { 
     id: '3', 
     doctorId: 3,
-    empId: 'EMP-1003', 
     name: 'Dr. Meera Krishnan', 
     role: 'Doctor', 
     dept: 'Pediatrics',
+    gender: 'Female',
+    dob: '1988-03-18',
+    joiningDate: '2021-08-10',
     email: 'meera@quadclinic.com', 
     contact: '9895233445', 
     salary: '90,000', 
@@ -86,10 +92,12 @@ const DEFAULT_STAFF = [
   { 
     id: '4', 
     doctorId: 4,
-    empId: 'EMP-1004', 
     name: 'Dr. Deepa Thomas', 
     role: 'Doctor', 
     dept: 'Orthopedics',
+    gender: 'Female',
+    dob: '1985-11-05',
+    joiningDate: '2020-11-20',
     email: 'deepa@quadclinic.com', 
     contact: '9895001122', 
     salary: '95,000', 
@@ -101,10 +109,12 @@ const DEFAULT_STAFF = [
   { 
     id: '5', 
     doctorId: 5,
-    empId: 'EMP-1005', 
     name: 'Dr. Sanjay Patel', 
     role: 'Doctor', 
     dept: 'Dermatology',
+    gender: 'Male',
+    dob: '1986-07-29',
+    joiningDate: '2022-03-01',
     email: 'sanjay@quadclinic.com', 
     contact: '9811223344', 
     salary: '85,000', 
@@ -116,10 +126,12 @@ const DEFAULT_STAFF = [
   { 
     id: '6', 
     doctorId: null,
-    empId: 'EMP-1006', 
     name: 'Anjali Menon', 
     role: 'Receptionist', 
     dept: 'Front Desk Administration',
+    gender: 'Female',
+    dob: '1998-09-14',
+    joiningDate: '2023-02-15',
     email: 'reception@quadclinic.com', 
     contact: '9847011223', 
     salary: '24,000', 
@@ -131,10 +143,12 @@ const DEFAULT_STAFF = [
   { 
     id: '7', 
     doctorId: null,
-    empId: 'EMP-1007', 
     name: 'Rahul Vijayan', 
     role: 'Lab Technician', 
     dept: 'Diagnostic Pathology',
+    gender: 'Male',
+    dob: '1995-12-03',
+    joiningDate: '2022-07-10',
     email: 'lab@quadclinic.com', 
     contact: '9746344556', 
     salary: '28,500', 
@@ -146,10 +160,12 @@ const DEFAULT_STAFF = [
   { 
     id: '8', 
     doctorId: null,
-    empId: 'EMP-1008', 
     name: 'Sneha Thomas', 
     role: 'Pharmacist', 
     dept: 'Clinical Dispensary',
+    gender: 'Female',
+    dob: '1996-04-22',
+    joiningDate: '2023-01-05',
     email: 'pharmacy@quadclinic.com', 
     contact: '9633455667', 
     salary: '30,000', 
@@ -160,10 +176,10 @@ const DEFAULT_STAFF = [
   }
 ];
 
-// Initial Patients (Matches MMR1003, jaii, 45678)[cite: 4]
+// Initial Patients
 const DEFAULT_PATIENTS = [
-  { id: '1', mmr: 'MMR1003', name: 'jaii', email: 'jaii@gmail.com', phone: '45678' },
-  { id: '2', mmr: 'MMR1004', name: 'John Mathew', email: 'john@gmail.com', phone: '9846012345' }
+  { id: '1', mmr: 'MMR1003', name: 'jaii', gender: 'Female', dob: '2000-08-15', email: 'jaii@gmail.com', phone: '45678' },
+  { id: '2', mmr: 'MMR1004', name: 'John Mathew', gender: 'Male', dob: '1992-04-10', email: 'john@gmail.com', phone: '9846012345' }
 ];
 
 // Initial Bookings
@@ -226,7 +242,7 @@ function handleRoleChange(role) {
     passLabel.textContent = 'Password (Phone Number)';
   } else {
     tip.style.display = 'none';
-    userLabel.textContent = 'Email or Employee ID';
+    userLabel.textContent = 'Email Address';
     passLabel.textContent = 'Password';
   }
 }
@@ -275,7 +291,7 @@ function handleLogin(event) {
   // Staff Login
   const staff = staffList.find(s => 
     s.role === role && 
-    (s.email.toLowerCase() === username || s.empId.toLowerCase() === username || s.name.toLowerCase() === username)
+    (s.email.toLowerCase() === username || s.name.toLowerCase() === username)
   );
 
   if (!staff) {
@@ -311,7 +327,7 @@ function handleLogout() {
 }
 
 /* =========================================================
-   2. PATIENT BOOKING UI (MATCHES IMAGE SPEC)[cite: 4]
+   2. PATIENT BOOKING UI
    ========================================================= */
 function showPatientView(patient) {
   document.getElementById('loginView').style.display = 'none';
@@ -319,16 +335,17 @@ function showPatientView(patient) {
   document.getElementById('patientView').style.display = 'block';
   document.getElementById('navUserBar').style.display = 'none';
 
-  // Header Details[cite: 4]
+  // Populate Header Details
   document.getElementById('displayMMR').textContent = patient.mmr || 'MMR1003';
   document.getElementById('displayName').textContent = patient.name;
   document.getElementById('displayPhone').textContent = patient.phone;
+  document.getElementById('displayGender').textContent = patient.gender || 'Not specified';
 
-  // Date default to today[cite: 4]
+  // Default to today
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('selectDate').value = today;
 
-  // Department default[cite: 4]
+  // Default Department
   const dept = document.getElementById('selectDept');
   dept.value = 'Cardiology';
   onDepartmentChanged('Cardiology');
@@ -364,7 +381,7 @@ function refreshTimeSlotButtons() {
   const sch = getDoctorSchedule(doc.scheduleId || doc.doctorId || 1);
   const slots = sch.slots;
 
-  // Check booked slots for this doctor on this date
+  // Identify booked slots for this doctor on this date
   const booked = bookingList
     .filter(b => b.doctor === doc.name && b.date === date && b.status === 'Confirmed')
     .map(b => b.slot);
@@ -423,7 +440,7 @@ function handleConfirmBooking(event) {
     return;
   }
 
-  // Prevent conflict
+  // Prevent double booking
   const exists = bookingList.find(b => b.doctor === doc.name && b.date === date && b.slot === slot && b.status === 'Confirmed');
   if (exists) {
     alert("This slot is already booked. Please pick another.");
@@ -535,8 +552,6 @@ function openAddForm(presetRole) {
   document.getElementById('staffRole').value = role;
   toggleDoctorFields(role);
 
-  const nextNum = staffList.length + 1001;
-  document.getElementById('staffEmpId').value = `EMP-${nextNum}`;
   document.getElementById('staffPass').value = 'staff123';
 
   switchAdminTab('add');
@@ -547,8 +562,10 @@ function handleStaffSubmit(event) {
 
   const editId = document.getElementById('editStaffId').value;
   const role = document.getElementById('staffRole').value;
-  const empId = document.getElementById('staffEmpId').value.trim();
   const name = document.getElementById('staffName').value.trim();
+  const gender = document.getElementById('staffGender').value;
+  const dob = document.getElementById('staffDOB').value;
+  const joiningDate = document.getElementById('staffJoiningDate').value;
   const email = document.getElementById('staffEmail').value.trim();
   const contact = document.getElementById('staffContact').value.trim();
   const salary = document.getElementById('staffSalary').value.trim();
@@ -564,16 +581,18 @@ function handleStaffSubmit(event) {
   if (editId) {
     const idx = staffList.findIndex(s => s.id === editId);
     if (idx !== -1) {
-      staffList[idx] = { id: editId, doctorId, empId, name, role, dept, email, contact, salary, fee, scheduleId, status, password };
+      staffList[idx] = { id: editId, doctorId, name, role, dept, gender, dob, joiningDate, email, contact, salary, fee, scheduleId, status, password };
     }
   } else {
     const newMember = {
       id: Date.now().toString(),
       doctorId,
-      empId,
       name,
       role,
       dept,
+      gender,
+      dob,
+      joiningDate,
       email,
       contact,
       salary,
@@ -619,13 +638,12 @@ function renderTable() {
     const queryMatch = !query || 
       s.name.toLowerCase().includes(query) || 
       s.email.toLowerCase().includes(query) || 
-      s.dept.toLowerCase().includes(query) || 
-      s.empId.toLowerCase().includes(query);
+      s.dept.toLowerCase().includes(query);
     return roleMatch && queryMatch;
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #888;">No staff records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #888;">No staff records found.</td></tr>`;
     return;
   }
 
@@ -640,10 +658,12 @@ function renderTable() {
 
     return `
       <tr>
-        <td><strong>${s.empId}</strong></td>
         <td>${s.name}</td>
         <td>${s.role}</td>
         <td>${s.dept}</td>
+        <td>${s.gender}</td>
+        <td>${s.dob || 'N/A'}</td>
+        <td>${s.joiningDate || 'N/A'}</td>
         <td>${s.email}</td>
         <td>${scheduleText}</td>
         <td>
@@ -667,8 +687,10 @@ function editStaff(id) {
 
   document.getElementById('editStaffId').value = s.id;
   document.getElementById('staffRole').value = s.role;
-  document.getElementById('staffEmpId').value = s.empId;
   document.getElementById('staffName').value = s.name;
+  document.getElementById('staffGender').value = s.gender || 'Male';
+  document.getElementById('staffDOB').value = s.dob || '';
+  document.getElementById('staffJoiningDate').value = s.joiningDate || '';
   document.getElementById('staffEmail').value = s.email;
   document.getElementById('staffContact').value = s.contact;
   document.getElementById('staffSalary').value = s.salary;
@@ -692,7 +714,7 @@ function deleteStaff(id) {
   const s = staffList.find(item => item.id === id);
   if (!s) return;
 
-  if (confirm(`Delete ${s.name} (${s.empId})?`)) {
+  if (confirm(`Delete ${s.name}?`)) {
     staffList = staffList.filter(item => item.id !== id);
     saveData();
     renderTable();
@@ -702,21 +724,25 @@ function deleteStaff(id) {
 // 4. Admin Patient Bookings Table
 function renderAdminPatientTable() {
   const tbody = document.getElementById('patientTableBody');
-  tbody.innerHTML = bookingList.map(b => `
-    <tr>
-      <td>${b.mmr || 'MMR1003'}</td>
-      <td>${b.patientName}</td>
-      <td>${b.patientPhone}</td>
-      <td>${b.doctor}</td>
-      <td>${b.dept}</td>
-      <td>${b.date}</td>
-      <td>${b.slot}</td>
-      <td>${b.fee}</td>
-      <td>
-        <button class="btn-action-del" onclick="deleteBooking('${b.id}')">Cancel</button>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = bookingList.map(b => {
+    const pt = patientList.find(p => p.email.toLowerCase() === b.patientEmail.toLowerCase()) || {};
+    return `
+      <tr>
+        <td>${b.mmr || 'MMR1003'}</td>
+        <td>${b.patientName}</td>
+        <td>${pt.gender || 'Female'}</td>
+        <td>${b.patientPhone}</td>
+        <td>${b.doctor}</td>
+        <td>${b.dept}</td>
+        <td>${b.date}</td>
+        <td>${b.slot}</td>
+        <td>${b.fee}</td>
+        <td>
+          <button class="btn-action-del" onclick="deleteBooking('${b.id}')">Cancel</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function openAddPatientModal() {
@@ -726,9 +752,15 @@ function openAddPatientModal() {
   if (!email) return;
   const phone = prompt("Enter Patient Phone Number (Password):");
   if (!phone) return;
+  const gender = prompt("Enter Gender (Male/Female/Other):", "Female") || "Female";
+  const dob = prompt("Enter Patient DOB (YYYY-MM-DD):", "2000-01-01") || "2000-01-01";
 
-  const docs = staffList.filter(s => s.role === 'Doctor');
-  const assigned = docs.length > 0 ? docs[0] : { name: 'Dr. Arun', dept: 'Cardiology', fee: '₹750' };
+  // Prompt for Department
+  const dept = prompt("Enter Department (Cardiology, General Medicine, Pediatrics, Orthopedics, Dermatology):", "General Medicine") || "General Medicine";
+
+  // Find an available doctor in that department
+  const docs = staffList.filter(s => s.role === 'Doctor' && s.dept.toLowerCase() === dept.toLowerCase());
+  const assigned = docs.length > 0 ? docs[0] : (staffList.find(s => s.role === 'Doctor') || { name: 'Dr. Arun', dept: 'Cardiology', fee: '₹750' });
 
   const mmr = `MMR${Math.floor(1000 + Math.random() * 9000)}`;
   const today = new Date().toISOString().split('T')[0];
@@ -737,6 +769,8 @@ function openAddPatientModal() {
     id: Date.now().toString(),
     mmr,
     name,
+    gender,
+    dob,
     email,
     phone
   };
@@ -759,7 +793,7 @@ function openAddPatientModal() {
   bookingList.push(newBooking);
   saveData();
   renderAdminPatientTable();
-  alert(`Patient Added: ${name}\nMMR: ${mmr}\nSlot: ${today} at 09:00 AM`);
+  alert(`Patient Added: ${name}\nMMR: ${mmr}\nDept: ${assigned.dept}\nDoctor: ${assigned.name}\nSlot: ${today} at 09:00 AM`);
 }
 
 function deleteBooking(id) {
