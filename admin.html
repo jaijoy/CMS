@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MULTI - SPECIALITY | QUAD CLINIC — Login & Administrator Portal</title>
+  <title>MULTI - SPECIALITY | QUAD CLINIC — Clinic Management System</title>
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
@@ -79,7 +79,7 @@
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
                   </svg>
                 </div>
-                <select id="loginRole" class="login-select" onchange="clearLoginError()" required>
+                <select id="loginRole" class="login-select" onchange="handleRoleSelectionChange(this.value)" required>
                   <option value="" disabled selected>Select Role</option>
                   <option value="Admin">Administrator</option>
                   <option value="Receptionist">Receptionist</option>
@@ -100,7 +100,7 @@
                   type="text"
                   id="loginEmail"
                   class="login-input"
-                  placeholder="Email address"
+                  placeholder="Email address or EMP ID"
                   oninput="clearLoginError()"
                   required
                 />
@@ -192,7 +192,7 @@
           <div class="admin-sidebar-top">
             <div class="admin-role-heading" id="sidebarRoleTitle">ADMINISTRATOR</div>
 
-            <!-- Monitor + Person Avatar Circle (Click to return to Admin Home) -->
+            <!-- Monitor + Person Avatar Circle -->
             <div class="admin-avatar-circle" id="sidebarAvatarCircle" onclick="openAdminSubscreen('home')" title="Return to Administrator Home">
               <svg viewBox="0 0 84 84">
                 <rect x="14" y="18" width="42" height="29" rx="3" fill="none" stroke="#111" stroke-width="3.2"/>
@@ -221,7 +221,7 @@
           </div>
 
           <!-- Bottom Logout Button -->
-          <button type="button" class="logout-btn-wireframe" id="sidebarLogoutBtn" onclick="logoutAdmin()">
+          <button type="button" class="logout-btn-wireframe" id="sidebarLogoutBtn" onclick="logoutSession()">
             <svg viewBox="0 0 36 32" width="28" height="25">
               <path d="M18 4 h12 v24 h-12" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
               <path d="M24 16 H5 M12 9 L4 16 L12 23" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -399,7 +399,7 @@
                 <table class="wf-grid-table">
                   <thead>
                     <tr>
-                      <th style="width: 13%;">EMP ID</th>
+                      <th style="width: 13%;">PatientId / EMP ID</th>
                       <th style="width: 21%;">Name</th>
                       <th style="width: 14%;">Contact</th>
                       <th style="width: 10%;">Gender</th>
@@ -421,6 +421,87 @@
       </div>
 
       <!-- Bottom Footer Strip -->
+      <div class="wireframe-bottom-strip"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       VIEW 3: ISOLATED STAFF PORTAL (FOR RECEPTIONIST / DOCTOR / LAB / PHARMACIST)
+       Strictly prevents "Cannot GET /..." while blocking Admin access
+       ========================================================= -->
+  <div id="view-staff-portal" class="app-view">
+    <div class="wireframe-window">
+
+      <!-- Top Dark Navy Social Bar -->
+      <div class="navy-social-bar">
+        <div class="social-left">
+          <span>Follow Us on Social Media</span>
+          <a href="javascript:void(0)" class="social-square">f</a>
+          <a href="javascript:void(0)" class="social-square">t</a>
+          <a href="javascript:void(0)" class="social-square">ig</a>
+          <a href="javascript:void(0)" class="social-square">in</a>
+        </div>
+        <div class="social-right">
+          <a href="javascript:void(0)">Privacy Policy</a> |
+          <a href="javascript:void(0)">Disclaimer</a> |
+          <a href="javascript:void(0)">Contact</a>
+        </div>
+      </div>
+
+      <!-- Clinic Banner -->
+      <div class="clinic-banner">
+        <div class="clinic-brand-left">
+          <div class="clinic-logo-circle" aria-hidden="true">
+            <svg viewBox="0 0 64 64">
+              <circle cx="15" cy="17" r="4" fill="#ffffff"/>
+              <path d="M10 23 h10 l-1.5 11 h-7 z" fill="#ffffff"/>
+              <circle cx="27" cy="16" r="4" fill="#ffffff"/>
+              <path d="M22 22 h10 v12 h-10 z" fill="#ffffff"/>
+              <circle cx="43" cy="24" r="9" fill="#ffffff"/>
+              <path d="M28 54 c0-10 7-16 15-16 s15 6 15 16 z" fill="#ffffff"/>
+            </svg>
+          </div>
+          <h1 class="clinic-title">MULTI - SPECIALITY | QUAD CLINIC</h1>
+        </div>
+        <div class="shield-emblem">
+          <svg viewBox="0 0 54 60" width="44" height="48">
+            <path d="M27 3 L49 11 V28 C49 43 39 53 27 57 C15 53 5 43 5 28 V11 Z" fill="#f7f9fc" stroke="#333333" stroke-width="3"/>
+            <path d="M27 16 V40 M15 28 H39" stroke="#333333" stroke-width="6" stroke-linecap="square"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Staff Role Layout -->
+      <div class="admin-split-layout">
+        <aside class="admin-sidebar">
+          <div class="admin-sidebar-top">
+            <div class="admin-role-heading" id="staffPortalRoleHeading">RECEPTIONIST</div>
+            <div class="admin-avatar-circle">
+              <svg viewBox="0 0 84 84">
+                <circle cx="42" cy="30" r="14" fill="#001253"/>
+                <path d="M18 68 c0-14 11-22 24-22 s24 8 24 22 z" fill="#001253"/>
+              </svg>
+            </div>
+            <div class="admin-user-label" id="staffPortalUserName">Staff Member</div>
+            <div class="staff-emp-pill" id="staffPortalEmpId">EMP-1001</div>
+          </div>
+
+          <button type="button" class="logout-btn-wireframe" onclick="logoutSession()">
+            <svg viewBox="0 0 36 32" width="28" height="25">
+              <path d="M18 4 h12 v24 h-12" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+              <path d="M24 16 H5 M12 9 L4 16 L12 23" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="logout-text">Logout</span>
+          </button>
+        </aside>
+
+        <main class="admin-workspace">
+          <div class="staff-portal-stage" id="staffPortalContent">
+            <!-- Dynamically rendered based on whether Receptionist, Doctor, Lab Technician, or Pharmacist logged in -->
+          </div>
+        </main>
+      </div>
+
       <div class="wireframe-bottom-strip"></div>
     </div>
   </div>
