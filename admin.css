@@ -16,8 +16,6 @@
   --login-green: #008000;
   --login-green-hover: #006600;
   --submit-blue: #0088ff;
-  --edit-blue: #2374d8;
-  --delete-red: #d91b2e;
 }
 
 body {
@@ -25,67 +23,7 @@ body {
   background-color: var(--bg-page);
   color: #111111;
   min-height: 100vh;
-  padding-bottom: 32px;
-}
-
-/* =========================================================
-   TOP DEMO NAVIGATION BAR
-   ========================================================= */
-.instructor-bar {
-  background: #0d1636;
-  color: #ffffff;
-  padding: 9px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-size: 12.5px;
-  border-bottom: 2px solid #283b80;
-  position: sticky;
-  top: 0;
-  z-index: 900;
-}
-
-.bar-left,
-.bar-right {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
-.badge-live {
-  background: #18a558;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 10.5px;
-  padding: 3px 8px;
-  border-radius: 3px;
-  letter-spacing: 0.4px;
-}
-
-.screen-pill {
-  background: rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.15s;
-}
-
-.screen-pill:hover {
-  background: rgba(255, 255, 255, 0.24);
-  color: #ffffff;
-}
-
-.screen-pill.active {
-  background: #3b82f6;
-  color: #ffffff;
-  border-color: #60a5fa;
-  font-weight: 700;
+  padding: 24px 0;
 }
 
 /* =========================================================
@@ -94,7 +32,7 @@ body {
 .app-view {
   display: none;
   max-width: 1030px;
-  margin: 20px auto;
+  margin: 0 auto;
   padding: 0 14px;
 }
 
@@ -191,7 +129,7 @@ body {
 }
 
 /* =========================================================
-   SCREEN 1: LOGIN UI DESIGN FOR ALL MODULE
+   VIEW 1: LOGIN UI DESIGN FOR ALL MODULE
    ========================================================= */
 .login-stage {
   background: var(--panel-gray);
@@ -323,10 +261,11 @@ body {
   color: #a30f1e;
   font-size: 12.5px;
   border-radius: 5px;
+  font-weight: 600;
 }
 
 /* =========================================================
-   ADMINISTRATOR LAYOUT (SIDEBAR + WORKSPACE)
+   VIEW 2: ADMINISTRATOR LAYOUT (SIDEBAR + WORKSPACE)
    ========================================================= */
 .admin-split-layout {
   display: grid;
@@ -476,7 +415,7 @@ body {
 }
 
 /* =========================================================
-   SUB-SCREEN 2A: ADMINISTRATOR HOME (MANAGE STAFF / DOCTOR)
+   SUB-SCREEN 1: ADMINISTRATOR HOME (MANAGE STAFF / DOCTOR)
    ========================================================= */
 .admin-home-stage {
   min-height: 455px;
@@ -535,32 +474,8 @@ body {
   cursor: pointer;
 }
 
-.admin-flow-hint {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: 12px;
-  color: #475569;
-}
-
-.admin-flow-hint button {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 11.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.admin-flow-hint button:hover {
-  background: #e2e8f0;
-}
-
 /* =========================================================
-   SUB-SCREEN 2B: ADD STAFF DETAILS (STAFF REGISTRATION - UI)
+   SUB-SCREEN 2: ADD STAFF DETAILS (STAFF REGISTRATION - UI)
    ========================================================= */
 .staff-reg-container {
   padding: 26px 44px 30px;
@@ -649,7 +564,7 @@ body {
 }
 
 /* =========================================================
-   SUB-SCREEN 2C: SEARCH STAFF DETAILS TABLE
+   SUB-SCREEN 3: SEARCH STAFF DETAILS TABLE
    ========================================================= */
 .staff-table-stage {
   padding: 26px 28px 24px;
@@ -799,9 +714,10 @@ body {
   cursor: pointer;
 }
 
-.wf-btn-edit.ghost-row-btn,
-.wf-btn-delete.ghost-row-btn {
-  opacity: 0.75;
+.wf-btn-edit:disabled,
+.wf-btn-delete:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .wireframe-bottom-strip {
@@ -811,108 +727,8 @@ body {
 }
 
 /* =========================================================
-   TEAMMATE HAND-OFF MODAL & TOAST
+   TOAST NOTIFICATION
    ========================================================= */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(9, 16, 42, 0.65);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1200;
-  padding: 16px;
-}
-
-.modal-backdrop.open {
-  display: flex;
-}
-
-.modal-card {
-  background: #ffffff;
-  width: 100%;
-  max-width: 520px;
-  border-radius: 10px;
-  border: 2px solid var(--navy-brand);
-  padding: 22px 24px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.role-tag {
-  background: var(--navy-brand);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 9px;
-  border-radius: 4px;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-  color: #64748b;
-}
-
-.modal-card h3 {
-  font-size: 18px;
-  color: #0f172a;
-  margin-bottom: 8px;
-}
-
-.modal-card p {
-  font-size: 13.5px;
-  color: #334155;
-  line-height: 1.5;
-  margin-bottom: 14px;
-}
-
-.code-snippet-box {
-  background: #0f172a;
-  color: #e2e8f0;
-  font-family: monospace;
-  font-size: 12px;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  line-height: 1.5;
-  overflow-x: auto;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.btn-back-login {
-  background: #e2e8f0;
-  color: #1e293b;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-open-admin {
-  background: var(--navy-brand);
-  color: #ffffff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 .quad-toast {
   position: fixed;
   bottom: 20px;
