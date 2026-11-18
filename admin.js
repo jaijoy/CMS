@@ -1,19 +1,21 @@
-/* =========================================================
-   AUTHENTICATION & CREDENTIALS MANAGEMENT
-   ========================================================= */
-const DB_VERSION = 'quad_clinic_staff_v4'; // Auto-updates your localStorage schema
-const SESSION_KEY = 'quad_clinic_active_session';
+/* ==========================================================================
+   MODULE: QUAD CLINIC SYSTEM - ADMINISTRATOR & AUTHENTICATION ENGINE
+   ========================================================================== */
 
-// Strict Administrator Account
+// 1. CONFIGURATION CONSTANTS
+const DATABASE_KEY = 'quad_clinic_staff_v5'; // Persists personnel records in localStorage
+const SESSION_KEY = 'quad_clinic_session_user';
+
+// Strict Administrator Credentials
 const ADMIN_ACCOUNT = {
   role: 'Admin',
   email: 'admin@quadclinic.com',
   username: 'admin',
   password: 'admin123',
-  displayName: 'Mr.ADMIN'
+  name: 'Mr. ADMIN'
 };
 
-// Target page files for your teammates
+// Target Dashboard files for Teammate Modules
 const TEAMMATE_PAGES = {
   'Receptionist':   'receptionist.html',
   'Doctor':         'doctor.html',
@@ -21,7 +23,7 @@ const TEAMMATE_PAGES = {
   'Pharmacist':     'pharmacist.html'
 };
 
-// Default staff seeded with emails, EMP IDs, and passwords
+// Initial Seed Data (All default credentials work out of the box)
 const DEFAULT_STAFF = [
   { id: 'REC-101', empId: 'EMP-1001', email: 'reception@quadclinic.com', role: 'Receptionist', name: 'Anjali Menon', contact: '9847011223', age: '26', gender: 'Female', address: 'Pattom, TVM', salary: '24,000', password: 'rec123' },
   { id: 'DOC-102', empId: 'EMP-1002', email: 'doctor@quadclinic.com',    role: 'Doctor',       name: 'Dr. Arvind Nair', contact: '9447122334', age: '41', gender: 'Male', address: 'Kowdiar, TVM', salary: '95,000', password: 'doc123' },
@@ -31,100 +33,67 @@ const DEFAULT_STAFF = [
 ];
 
 let staffList = [];
-let currentRoleFilter = 'ALL';
+let currentFilterRole = 'ALL';
 
+/* ==========================================================================
+   2. DATABASE PERSISTENCE (LocalStorage CRUD)
+   ========================================================================== */
 function loadDatabase() {
   try {
-    const saved = localStorage.getItem(DB_VERSION);
-    if (saved) {
-      staffList = JSON.parse(saved);
-    } else {
-      // Initialize with fresh default data containing all emails
-      staffList = JSON.parse(JSON.stringify(DEFAULT_STAFF));
-      saveDatabase();
-    }
-  } catch (e) {
+    const data = localStorage.getItem(DATABASE_KEY);
+    staffList = data ? JSON.parse(data) : JSON.parse(JSON.stringify(DEFAULT_STAFF));
+  } catch (err) {
     staffList = JSON.parse(JSON.stringify(DEFAULT_STAFF));
   }
 }
 
 function saveDatabase() {
   try {
-    localStorage.setItem(DB_VERSION, JSON.stringify(staffList));
-  } catch (e) {}
+    localStorage.setItem(DATABASE_KEY, JSON.stringify(staffList));
+  } catch (err) {}
 }
 
-function getActiveSession() {
-  try {
-    return JSON.parse(sessionStorage.getItem(SESSION_KEY));
-  } catch (e) {
-    return null;
-  }
-}
-
-function clearLoginError() {
-  const errBox = document.getElementById('loginErrorAlert');
-  if (errBox) {
-    errBox.style.display = 'none';
-    errBox.textContent = '';
-  }
-}
-
-function showLoginError(msg) {
-  const errBox = document.getElementById('loginErrorAlert');
-  if (errBox) {
-    errBox.textContent = msg;
-    errBox.style.display = 'block';
-  }
-}
-
-/* =========================================================
-   LOGIN SUBMIT: CHECKS ROLE + (EMAIL OR EMP ID OR NAME)
-   ========================================================= */
+/* ==========================================================================
+   3. AUTHENTICATION & LOGIN HANDLER
+   ========================================================================== */
 function handleLoginSubmit(event) {
   event.preventDefault();
-  clearLoginError();
+  hideLoginError();
 
   const role = document.getElementById('loginRole').value;
-  const userInput = document.getElementById('loginEmail').value.trim();
+  const identifier = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
 
+  // Validate dropdown selection
   if (!role) {
-    showLoginError('Please select a role.');
+    showLoginError('Please select a role from the dropdown.');
     return;
   }
 
-  // CASE 1: Administrator logs in
+  // Branch A: Administrator Login -> Opens Admin Dashboard
   if (role === 'Admin') {
-    const isUserValid = (userInput.toLowerCase() === ADMIN_ACCOUNT.email || userInput.toLowerCase() === ADMIN_ACCOUNT.username);
-    const isPassValid = (password === ADMIN_ACCOUNT.password);
+    const isUserMatch = (identifier.toLowerCase() === ADMIN_ACCOUNT.email || identifier.toLowerCase() === ADMIN_ACCOUNT.username);
+    const isPassMatch = (password === ADMIN_ACCOUNT.password);
 
-    if (!isUserValid || !isPassValid) {
+    if (!isUserMatch || !isPassMatch) {
       showLoginError('Invalid Administrator credentials. Use admin@quadclinic.com / admin123.');
       return;
     }
 
-    const adminSession = {
-      role: 'Admin',
-      name: ADMIN_ACCOUNT.displayName,
-      email: ADMIN_ACCOUNT.email,
-      authenticated: true
-    };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(adminSession));
-    localStorage.setItem('quad_logged_in_user', JSON.stringify(adminSession));
+    const session = { role: 'Admin', name: ADMIN_ACCOUNT.name, authenticated: true };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
+    // Transition view from Login to Administrator Dashboard
     document.getElementById('view-login').classList.remove('active');
     document.getElementById('view-admin').classList.add('active');
     openAdminSubscreen('home');
-    showToast('Welcome Mr.ADMIN!');
+    showToast('Signed in successfully as Administrator.');
     return;
   }
 
-  // CASE 2: Staff Member logs in (Receptionist, Doctor, Lab Technician, Pharmacist)
-  const query = userInput.toLowerCase();
-  
-  // Searches by Email, EMP ID, or Name
-  const matchedStaff = staffList.find(staff => 
+  // Branch B: Clinical Staff Login -> Validates against database and forwards to teammate file
+  const query = identifier.toLowerCase();
+  const matchedPersonnel = staffList.find(staff => 
     staff.role === role && 
     (
       (staff.email && staff.email.toLowerCase() === query) ||
@@ -133,90 +102,93 @@ function handleLoginSubmit(event) {
     )
   );
 
-  if (!matchedStaff) {
-    showLoginError(`No registered ${role} found with Email / ID "${userInput}". Please ask Admin to register you.`);
+  if (!matchedPersonnel) {
+    showLoginError(`No registered ${role} found for "${identifier}". Please check with Admin.`);
     return;
   }
 
-  // Verify the exact password assigned by Admin
-  if (matchedStaff.password !== password) {
-    showLoginError(`Incorrect password for ${matchedStaff.name}. Check with Admin.`);
+  if (matchedPersonnel.password !== password) {
+    showLoginError(`Incorrect password for ${matchedPersonnel.name}.`);
     return;
   }
 
-  // Credentials are correct -> Store staff session
-  const staffSession = {
-    role: matchedStaff.role,
-    empId: matchedStaff.empId,
-    name: matchedStaff.name,
-    email: matchedStaff.email,
-    authenticated: true,
-    loginTime: new Date().toISOString()
-  };
+  // Save session and redirect to teammate's file
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+    role: matchedPersonnel.role,
+    empId: matchedPersonnel.empId,
+    name: matchedPersonnel.name,
+    email: matchedPersonnel.email
+  }));
 
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(staffSession));
-  localStorage.setItem('quad_logged_in_user', JSON.stringify(staffSession));
-
-  // Redirect to teammate's file
   const targetFile = TEAMMATE_PAGES[role];
   if (targetFile) {
     window.location.href = targetFile;
   } else {
-    showLoginError(`Dashboard file not mapped for ${role}.`);
+    showLoginError(`No dashboard configured for ${role}.`);
   }
 }
 
 function logoutAdmin() {
   sessionStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem('quad_logged_in_user');
   document.getElementById('quadLoginForm').reset();
-  clearLoginError();
+  hideLoginError();
 
   document.getElementById('view-admin').classList.remove('active');
   document.getElementById('view-login').classList.add('active');
-  showToast('Logged out.');
+  showToast('Logged out of Admin Portal.');
+}
+
+function showLoginError(msg) {
+  const box = document.getElementById('loginErrorAlert');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+function hideLoginError() {
+  const box = document.getElementById('loginErrorAlert');
+  box.style.display = 'none';
+  box.textContent = '';
 }
 
 function handleForgotPassword() {
-  showToast('Contact Clinic Administrator (Mr.ADMIN) to look up or reset your password.');
+  showToast('Contact Clinic Admin (Mr. ADMIN) to look up or reset credentials.');
 }
 
-/* =========================================================
-   ADMIN DASHBOARD ACTIONS
-   ========================================================= */
-function openAdminSubscreen(sub) {
-  document.querySelectorAll('.admin-subscreen').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.side-nav-btn').forEach(el => el.classList.remove('active-nav'));
+/* ==========================================================================
+   4. ADMINISTRATOR PORTAL NAVIGATION & SCREENS
+   ========================================================================== */
+function openAdminSubscreen(screenName) {
+  // Hide all screens & deactivate nav buttons
+  document.querySelectorAll('.subscreen').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-menu-btn').forEach(btn => btn.classList.remove('active'));
 
-  if (sub === 'home') {
-    document.getElementById('admin-sub-home').classList.add('active');
-    document.getElementById('sideBtnHome').classList.add('active-nav');
-  } else if (sub === 'add') {
-    document.getElementById('admin-sub-add').classList.add('active');
-    document.getElementById('sideBtnAdd').classList.add('active-nav');
-  } else if (sub === 'table') {
-    document.getElementById('admin-sub-table').classList.add('active');
-    document.getElementById('sideBtnTable').classList.add('active-nav');
+  if (screenName === 'home') {
+    document.getElementById('subscreen-home').classList.add('active');
+    document.getElementById('btnNavHome').classList.add('active');
+  } else if (screenName === 'add') {
+    document.getElementById('subscreen-add').classList.add('active');
+    document.getElementById('btnNavAdd').classList.add('active');
+  } else if (screenName === 'table') {
+    document.getElementById('subscreen-table').classList.add('active');
+    document.getElementById('btnNavTable').classList.add('active');
     renderStaffTable();
   }
 }
 
 function handleManageCardClick(type) {
-  if (type === 'DOCTOR') {
-    setRoleFilter('Doctor');
-  } else {
-    setRoleFilter('ALL');
-  }
+  setRoleFilter(type === 'DOCTOR' ? 'Doctor' : 'ALL');
   openAdminSubscreen('table');
 }
 
+/* ==========================================================================
+   5. PERSONNEL CRUD: CREATE & UPDATE
+   ========================================================================== */
 function generateNextEmpId() {
-  const maxNum = staffList.reduce((acc, item) => {
-    const match = String(item.empId).match(/\d+/);
-    const num = match ? parseInt(match[0], 10) : 1000;
-    return Math.max(acc, num);
+  const highestId = staffList.reduce((max, item) => {
+    const num = parseInt((item.empId || '').replace(/\D/g, '') || 1000, 10);
+    return Math.max(max, num);
   }, 1000);
-  return `EMP-${maxNum + 1}`;
+  return `EMP-${highestId + 1}`;
 }
 
 function openAddStaffForm(defaultRole) {
@@ -224,25 +196,21 @@ function openAddStaffForm(defaultRole) {
   form.reset();
   document.getElementById('editRecordId').value = '';
 
-  const role = defaultRole || (currentRoleFilter !== 'ALL' ? currentRoleFilter : 'Receptionist');
+  const role = defaultRole || (currentFilterRole !== 'ALL' ? currentFilterRole : 'Receptionist');
   document.getElementById('staffRole').value = role;
   document.getElementById('staffEmpId').value = generateNextEmpId();
   document.getElementById('staffEmail').value = `${role.toLowerCase().replace(/\s+/g, '')}@quadclinic.com`;
   document.getElementById('staffPassword').value = `${role.substring(0, 3).toLowerCase()}123`;
 
   handleFormRoleChange(role);
-  document.getElementById('staffSubmitBtn').textContent = 'Submit';
+  document.getElementById('staffSubmitBtn').textContent = 'Save Record';
   openAdminSubscreen('add');
 }
 
 function handleFormRoleChange(role) {
   const editId = document.getElementById('editRecordId').value;
   const heading = document.getElementById('staffFormHeading');
-  if (editId) {
-    heading.textContent = `EDIT ${role.toUpperCase()} DETAILS`;
-  } else {
-    heading.textContent = role === 'Doctor' ? 'ADD DOCTOR DETAILS' : 'ADD STAFF DETAILS';
-  }
+  heading.textContent = editId ? `EDIT ${role.toUpperCase()} RECORD` : `ADD ${role.toUpperCase()} RECORD`;
 }
 
 function handleSaveStaff(event) {
@@ -261,16 +229,17 @@ function handleSaveStaff(event) {
   const password = document.getElementById('staffPassword').value.trim();
 
   if (editId) {
-    const idx = staffList.findIndex(item => item.id === editId);
-    if (idx !== -1) {
-      staffList[idx] = { ...staffList[idx], role, name, email, contact, age, gender, address, salary, empId, password };
+    // Update existing record
+    const index = staffList.findIndex(item => item.id === editId);
+    if (index !== -1) {
+      staffList[index] = { ...staffList[index], role, name, email, contact, age, gender, address, salary, empId, password };
       saveDatabase();
-      showToast(`Updated ${role}: ${name}`);
+      showToast(`Updated record for ${name}`);
     }
   } else {
-    const prefix = role.substring(0, 3).toUpperCase();
-    const newRecord = {
-      id: `${prefix}-${Date.now()}`,
+    // Create new record
+    const newStaff = {
+      id: `${role.substring(0, 3).toUpperCase()}-${Date.now()}`,
       empId,
       email,
       role,
@@ -282,20 +251,23 @@ function handleSaveStaff(event) {
       salary,
       password
     };
-    staffList.unshift(newRecord);
+    staffList.unshift(newStaff);
     saveDatabase();
-    showToast(`Added ${role}: ${name}. Assigned Password: "${password}"`);
+    showToast(`Registered ${role}: ${name} with password "${password}"`);
   }
 
   setRoleFilter('ALL');
   openAdminSubscreen('table');
 }
 
+/* ==========================================================================
+   6. PERSONNEL CRUD: READ, FILTER & DELETE
+   ========================================================================== */
 function setRoleFilter(role) {
-  currentRoleFilter = role;
-  document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
-  const activeChip = document.getElementById(`chip-${role}`);
-  if (activeChip) activeChip.classList.add('active');
+  currentFilterRole = role;
+  document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+  const activeTab = document.getElementById(`chip-${role}`);
+  if (activeTab) activeTab.classList.add('active');
   renderStaffTable();
 }
 
@@ -306,99 +278,78 @@ function renderStaffTable() {
   const query = (document.getElementById('staffSearchInput')?.value || '').trim().toLowerCase();
 
   const filtered = staffList.filter(item => {
-    const matchesRole = currentRoleFilter === 'ALL' || item.role === currentRoleFilter;
-    const matchesQuery =
-      !query ||
+    const matchRole = (currentFilterRole === 'ALL' || item.role === currentFilterRole);
+    const matchQuery = !query || 
       item.empId.toLowerCase().includes(query) ||
       (item.email && item.email.toLowerCase().includes(query)) ||
       item.name.toLowerCase().includes(query) ||
-      item.role.toLowerCase().includes(query) ||
-      item.contact.toLowerCase().includes(query) ||
-      item.address.toLowerCase().includes(query);
-    return matchesRole && matchesQuery;
+      item.role.toLowerCase().includes(query);
+    return matchRole && matchQuery;
   });
 
-  const TOTAL_ROWS = Math.max(9, filtered.length);
-  let rowsHtml = '';
-
-  for (let i = 0; i < TOTAL_ROWS; i++) {
-    const staff = filtered[i];
-    if (staff) {
-      rowsHtml += `
-        <tr>
-          <td><strong>${escapeHtml(staff.empId)}</strong></td>
-          <td style="text-align:left; padding-left:10px;">
-            ${escapeHtml(staff.name)}
-            <span class="role-mini-badge">${escapeHtml(staff.role)}</span>
-          </td>
-          <td>${escapeHtml(staff.email || 'N/A')}</td>
-          <td>${escapeHtml(staff.contact)}</td>
-          <td>${escapeHtml(staff.gender)}</td>
-          <td>${escapeHtml(staff.age)}</td>
-          <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:3px; font-weight:700;">${escapeHtml(staff.password || '123456')}</code></td>
-          <td>
-            <div class="wf-row-actions">
-              <button type="button" class="wf-btn-edit" onclick="editStaffRecord('${staff.id}')">EDIT</button>
-              <button type="button" class="wf-btn-delete" onclick="deleteStaffRecord('${staff.id}')">DELETE</button>
-            </div>
-          </td>
-        </tr>
-      `;
-    } else {
-      rowsHtml += `
-        <tr>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>
-            <div class="wf-row-actions">
-              <button type="button" class="wf-btn-edit" disabled>EDIT</button>
-              <button type="button" class="wf-btn-delete" disabled>DELETE</button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#94a3b8;">No matching personnel records found.</td></tr>`;
+    return;
   }
 
-  tbody.innerHTML = rowsHtml;
+  tbody.innerHTML = filtered.map(item => `
+    <tr>
+      <td><strong>${escapeHtml(item.empId)}</strong></td>
+      <td>
+        <strong>${escapeHtml(item.name)}</strong>
+        <span class="tag-role">${escapeHtml(item.role)}</span>
+      </td>
+      <td>${escapeHtml(item.email || 'N/A')}</td>
+      <td>${escapeHtml(item.contact)}</td>
+      <td>₹${escapeHtml(item.salary)}</td>
+      <td><code>${escapeHtml(item.password)}</code></td>
+      <td>
+        <div class="table-action-btns">
+          <button class="btn-table-edit" onclick="editStaffRecord('${item.id}')">Edit</button>
+          <button class="btn-table-del" onclick="deleteStaffRecord('${item.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
 }
 
 function editStaffRecord(id) {
-  const rec = staffList.find(item => item.id === id);
-  if (!rec) return;
+  const item = staffList.find(s => s.id === id);
+  if (!item) return;
 
-  document.getElementById('editRecordId').value = rec.id;
-  document.getElementById('staffRole').value = rec.role;
-  document.getElementById('staffName').value = rec.name;
-  document.getElementById('staffEmail').value = rec.email || '';
-  document.getElementById('staffContact').value = rec.contact;
-  document.getElementById('staffAge').value = rec.age;
-  document.getElementById('staffGender').value = rec.gender;
-  document.getElementById('staffAddress').value = rec.address;
-  document.getElementById('staffSalary').value = rec.salary;
-  document.getElementById('staffEmpId').value = rec.empId;
-  document.getElementById('staffPassword').value = rec.password || '123456';
+  document.getElementById('editRecordId').value = item.id;
+  document.getElementById('staffRole').value = item.role;
+  document.getElementById('staffName').value = item.name;
+  document.getElementById('staffEmail').value = item.email || '';
+  document.getElementById('staffContact').value = item.contact;
+  document.getElementById('staffAge').value = item.age;
+  document.getElementById('staffGender').value = item.gender;
+  document.getElementById('staffAddress').value = item.address;
+  document.getElementById('staffSalary').value = item.salary;
+  document.getElementById('staffEmpId').value = item.empId;
+  document.getElementById('staffPassword').value = item.password;
 
-  handleFormRoleChange(rec.role);
-  document.getElementById('staffSubmitBtn').textContent = 'Update';
+  handleFormRoleChange(item.role);
+  document.getElementById('staffSubmitBtn').textContent = 'Update Record';
   openAdminSubscreen('add');
 }
 
 function deleteStaffRecord(id) {
-  const idx = staffList.findIndex(item => item.id === id);
-  if (idx === -1) return;
-  const removed = staffList[idx];
-  staffList.splice(idx, 1);
-  saveDatabase();
-  renderStaffTable();
-  showToast(`Deleted ${removed.role}: ${removed.name}`);
+  const index = staffList.findIndex(s => s.id === id);
+  if (index === -1) return;
+  const removed = staffList[index];
+  
+  if (confirm(`Are you sure you want to delete ${removed.name} (${removed.empId})?`)) {
+    staffList.splice(index, 1);
+    saveDatabase();
+    renderStaffTable();
+    showToast(`Deleted ${removed.name} from records.`);
+  }
 }
 
+/* ==========================================================================
+   7. UTILITY FUNCTIONS
+   ========================================================================== */
 let toastTimer = null;
 function showToast(message) {
   const toast = document.getElementById('quadToast');
@@ -406,9 +357,7 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add('visible');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    toast.classList.remove('visible');
-  }, 3200);
+  toastTimer = setTimeout(() => toast.classList.remove('visible'), 3000);
 }
 
 function escapeHtml(str) {
@@ -419,9 +368,10 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+// Check session on page load
 window.addEventListener('DOMContentLoaded', () => {
   loadDatabase();
-  const session = getActiveSession();
+  const session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
   if (session && session.role === 'Admin') {
     document.getElementById('view-login').classList.remove('active');
     document.getElementById('view-admin').classList.add('active');
