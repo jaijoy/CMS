@@ -1,10 +1,10 @@
 /* =========================================================
-   AUTHENTICATION & ROLE ROUTING LOGIC
+   AUTHENTICATION & CREDENTIALS MANAGEMENT
    ========================================================= */
 const STORAGE_KEY = 'quad_clinic_admin_staff_v1';
 const SESSION_KEY = 'quad_clinic_active_session';
 
-// Administrator Credentials
+// Strict Administrator Account
 const ADMIN_ACCOUNT = {
   role: 'Admin',
   email: 'admin@quadclinic.com',
@@ -13,7 +13,7 @@ const ADMIN_ACCOUNT = {
   displayName: 'Mr.ADMIN'
 };
 
-// Target filenames for your teammates' modules
+// Target page files for your teammates
 const TEAMMATE_PAGES = {
   'Receptionist':   'receptionist.html',
   'Doctor':         'doctor.html',
@@ -21,12 +21,13 @@ const TEAMMATE_PAGES = {
   'Pharmacist':     'pharmacist.html'
 };
 
+// Default staff seeded with passwords given by Admin
 const DEFAULT_STAFF = [
-  { id: 'REC-101', empId: 'EMP-1001', role: 'Receptionist', name: 'Anjali Menon', contact: '9847011223', age: '26', gender: 'Female', address: 'Pattom, TVM', salary: '24,000' },
-  { id: 'DOC-102', empId: 'EMP-1002', role: 'Doctor', name: 'Dr. Arvind Nair', contact: '9447122334', age: '41', gender: 'Male', address: 'Kowdiar, TVM', salary: '95,000' },
-  { id: 'DOC-103', empId: 'EMP-1003', role: 'Doctor', name: 'Dr. Meera Krishnan', contact: '9895233445', age: '36', gender: 'Female', address: 'Vazhuthacaud, TVM', salary: '88,000' },
-  { id: 'LAB-104', empId: 'EMP-1004', role: 'Lab Technician', name: 'Rahul Vijayan', contact: '9746344556', age: '29', gender: 'Male', address: 'Kazhakootam, TVM', salary: '28,500' },
-  { id: 'PHA-105', empId: 'EMP-1005', role: 'Pharmacist', name: 'Sneha Thomas', contact: '9633455667', age: '27', gender: 'Female', address: 'Kesavadasapuram', salary: '30,000' }
+  { id: 'REC-101', empId: 'EMP-1001', email: 'reception@quadclinic.com', role: 'Receptionist', name: 'Anjali Menon', contact: '9847011223', age: '26', gender: 'Female', address: 'Pattom, TVM', salary: '24,000', password: 'rec123' },
+  { id: 'DOC-102', empId: 'EMP-1002', email: 'doctor@quadclinic.com',    role: 'Doctor',       name: 'Dr. Arvind Nair', contact: '9447122334', age: '41', gender: 'Male', address: 'Kowdiar, TVM', salary: '95,000', password: 'doc123' },
+  { id: 'DOC-103', empId: 'EMP-1003', email: 'meera@quadclinic.com',     role: 'Doctor',       name: 'Dr. Meera Krishnan', contact: '9895233445', age: '36', gender: 'Female', address: 'Vazhuthacaud, TVM', salary: '88,000', password: 'doc123' },
+  { id: 'LAB-104', empId: 'EMP-1004', email: 'lab@quadclinic.com',       role: 'Lab Technician', name: 'Rahul Vijayan', contact: '9746344556', age: '29', gender: 'Male', address: 'Kazhakootam, TVM', salary: '28,500', password: 'lab123' },
+  { id: 'PHA-105', empId: 'EMP-1005', email: 'pharmacy@quadclinic.com',  role: 'Pharmacist',   name: 'Sneha Thomas', contact: '9633455667', age: '27', gender: 'Female', address: 'Kesavadasapuram', salary: '30,000', password: 'pharm123' }
 ];
 
 let staffList = [];
@@ -72,7 +73,7 @@ function showLoginError(msg) {
 }
 
 /* =========================================================
-   LOGIN DISPATCHER
+   LOGIN SUBMIT: CHECKS PASSWORD SET BY ADMIN
    ========================================================= */
 function handleLoginSubmit(event) {
   event.preventDefault();
@@ -87,7 +88,7 @@ function handleLoginSubmit(event) {
     return;
   }
 
-  // 1. If Administrator logs in -> Unlocks Admin Dashboard
+  // CASE 1: Administrator logs in
   if (role === 'Admin') {
     const isUserValid = (userInput.toLowerCase() === ADMIN_ACCOUNT.email || userInput.toLowerCase() === ADMIN_ACCOUNT.username);
     const isPassValid = (password === ADMIN_ACCOUNT.password);
@@ -113,11 +114,28 @@ function handleLoginSubmit(event) {
     return;
   }
 
-  // 2. If Receptionist, Doctor, Lab Technician, or Pharmacist logs in:
-  // Hand off directly to your teammates' files without restrictions.
+  // CASE 2: Staff Member logs in (Checks password given by Admin)
+  const matchedStaff = staffList.find(staff => 
+    staff.role === role && 
+    (staff.empId.toLowerCase() === userInput.toLowerCase() || staff.name.toLowerCase() === userInput.toLowerCase())
+  );
+
+  if (!matchedStaff) {
+    showLoginError(`No registered ${role} found with EMP ID / Name "${userInput}". Please ask Admin to register you.`);
+    return;
+  }
+
+  // Verify the exact password Admin gave them
+  if (matchedStaff.password !== password) {
+    showLoginError(`Incorrect password for ${matchedStaff.name} (${matchedStaff.empId}). Check with Admin.`);
+    return;
+  }
+
+  // Credentials valid -> Store active staff session
   const staffSession = {
-    role: role,
-    user: userInput,
+    role: matchedStaff.role,
+    empId: matchedStaff.empId,
+    name: matchedStaff.name,
     authenticated: true,
     loginTime: new Date().toISOString()
   };
@@ -125,11 +143,12 @@ function handleLoginSubmit(event) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(staffSession));
   localStorage.setItem('quad_logged_in_user', JSON.stringify(staffSession));
 
+  // Forward to teammate's file
   const targetFile = TEAMMATE_PAGES[role];
   if (targetFile) {
     window.location.href = targetFile;
   } else {
-    showLoginError(`No page assigned for role: ${role}`);
+    showLoginError(`Dashboard file not mapped for ${role}.`);
   }
 }
 
@@ -145,11 +164,11 @@ function logoutAdmin() {
 }
 
 function handleForgotPassword() {
-  showToast('Contact administrator to reset password.');
+  showToast('Contact Clinic Administrator (Mr.ADMIN) to look up or reset your password.');
 }
 
 /* =========================================================
-   ADMIN DASHBOARD FUNCTIONALITY
+   ADMIN DASHBOARD ACTIONS
    ========================================================= */
 function openAdminSubscreen(sub) {
   document.querySelectorAll('.admin-subscreen').forEach(el => el.classList.remove('active'));
@@ -194,6 +213,8 @@ function openAddStaffForm(defaultRole) {
   const role = defaultRole || (currentRoleFilter !== 'ALL' ? currentRoleFilter : 'Receptionist');
   document.getElementById('staffRole').value = role;
   document.getElementById('staffEmpId').value = generateNextEmpId();
+  // Provide a smart default password for Admin
+  document.getElementById('staffPassword').value = `${role.substring(0, 3).toLowerCase()}123`;
 
   handleFormRoleChange(role);
   document.getElementById('staffSubmitBtn').textContent = 'Submit';
@@ -222,13 +243,14 @@ function handleSaveStaff(event) {
   const address = document.getElementById('staffAddress').value.trim();
   const salary = document.getElementById('staffSalary').value.trim();
   const empId = document.getElementById('staffEmpId').value.trim();
+  const password = document.getElementById('staffPassword').value.trim();
 
   if (editId) {
     const idx = staffList.findIndex(item => item.id === editId);
     if (idx !== -1) {
-      staffList[idx] = { ...staffList[idx], role, name, contact, age, gender, address, salary, empId };
+      staffList[idx] = { ...staffList[idx], role, name, contact, age, gender, address, salary, empId, password };
       saveDatabase();
-      showToast(`Updated ${role}: ${name}`);
+      showToast(`Updated ${role}: ${name} (Password: ${password})`);
     }
   } else {
     const prefix = role.substring(0, 3).toUpperCase();
@@ -241,11 +263,12 @@ function handleSaveStaff(event) {
       age,
       gender,
       address,
-      salary
+      salary,
+      password
     };
     staffList.unshift(newRecord);
     saveDatabase();
-    showToast(`Added ${role}: ${name} (${empId})`);
+    showToast(`Added ${role}: ${name}. Assigned Password: "${password}"`);
   }
 
   setRoleFilter('ALL');
@@ -295,6 +318,7 @@ function renderStaffTable() {
           <td>${escapeHtml(staff.gender)}</td>
           <td>${escapeHtml(staff.address)}</td>
           <td>${escapeHtml(staff.age)}</td>
+          <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:3px; font-weight:700;">${escapeHtml(staff.password || '123456')}</code></td>
           <td>
             <div class="wf-row-actions">
               <button type="button" class="wf-btn-edit" onclick="editStaffRecord('${staff.id}')">EDIT</button>
@@ -306,6 +330,7 @@ function renderStaffTable() {
     } else {
       rowsHtml += `
         <tr>
+          <td>&nbsp;</td>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
@@ -339,6 +364,7 @@ function editStaffRecord(id) {
   document.getElementById('staffAddress').value = rec.address;
   document.getElementById('staffSalary').value = rec.salary;
   document.getElementById('staffEmpId').value = rec.empId;
+  document.getElementById('staffPassword').value = rec.password || '123456';
 
   handleFormRoleChange(rec.role);
   document.getElementById('staffSubmitBtn').textContent = 'Update';

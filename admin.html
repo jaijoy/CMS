@@ -78,9 +78,9 @@
                 </select>
               </div>
 
-              <!-- Username / Email / ID -->
+              <!-- Username / Email / EMP ID -->
               <div class="login-field-row">
-                <div class="field-icon" title="Email address or ID">
+                <div class="field-icon" title="Email address or EMP ID">
                   <svg viewBox="0 0 24 24">
                     <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
                   </svg>
@@ -89,7 +89,7 @@
                   type="text"
                   id="loginEmail"
                   class="login-input"
-                  placeholder="Email address"
+                  placeholder="Email address or EMP ID"
                   required
                 />
               </div>
@@ -126,7 +126,7 @@
   </div>
 
   <!-- =========================================================
-       VIEW 2: ADMINISTRATOR PORTAL (YOUR CORE MODULE)
+       VIEW 2: ADMINISTRATOR PORTAL (YOUR MODULE)
        ========================================================= -->
   <div id="view-admin" class="app-view">
     <div class="wireframe-window">
@@ -283,6 +283,11 @@
                 </div>
 
                 <div class="wf-form-row">
+                  <label class="wf-label" for="staffEmail">Email :</label>
+                  <input type="email" id="staffEmail" class="wf-input" required />
+                </div>
+
+                <div class="wf-form-row">
                   <label class="wf-label" for="staffContact">Contact :</label>
                   <input type="text" id="staffContact" class="wf-input" required />
                 </div>
@@ -315,6 +320,11 @@
                 <div class="wf-form-row">
                   <label class="wf-label" for="staffEmpId">EMP ID :</label>
                   <input type="text" id="staffEmpId" class="wf-input" required />
+                </div>
+
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffPassword">Password :</label>
+                  <input type="text" id="staffPassword" class="wf-input" placeholder="e.g. rec123" required />
                 </div>
 
                 <div class="wf-submit-row">
@@ -358,13 +368,14 @@
                 <table class="wf-grid-table">
                   <thead>
                     <tr>
-                      <th style="width: 14%;">EMP ID</th>
-                      <th style="width: 20%;">Name</th>
-                      <th style="width: 14%;">Contact</th>
-                      <th style="width: 10%;">Gender</th>
-                      <th style="width: 17%;">Address</th>
-                      <th style="width: 7%;">Age</th>
-                      <th style="width: 18%;"></th>
+                      <th style="width: 12%;">EMP ID</th>
+                      <th style="width: 17%;">Name</th>
+                      <th style="width: 18%;">Email</th>
+                      <th style="width: 12%;">Contact</th>
+                      <th style="width: 8%;">Gender</th>
+                      <th style="width: 6%;">Age</th>
+                      <th style="width: 10%;">Password</th>
+                      <th style="width: 17%;"></th>
                     </tr>
                   </thead>
                   <tbody id="staffGridBody"></tbody>
