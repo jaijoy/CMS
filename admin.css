@@ -1,4 +1,3 @@
-/* Standard Responsive Styling with Unified Alignment */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -11,7 +10,7 @@ body {
   color: #222222;
 }
 
-/* Top Navigation Bar */
+/* Navbar */
 .navbar {
   background-color: #0b3c5d;
   color: #ffffff;
@@ -48,7 +47,7 @@ body {
 
 /* Page Containers */
 .container {
-  max-width: 1050px;
+  max-width: 1080px;
   margin: 25px auto;
   padding: 0 15px;
 }
@@ -155,7 +154,7 @@ body {
   border-radius: 3px;
 }
 
-/* Patient Booking UI */
+/* Patient Booking Box */
 .panel-box {
   background: #ffffff;
   padding: 30px;
@@ -210,6 +209,13 @@ body {
   border-radius: 2px;
   font-size: 13px;
   background: #ffffff;
+}
+
+.shift-section-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #0b3c5d;
+  margin: 8px 0 4px;
 }
 
 .slots-row {
@@ -277,7 +283,7 @@ body {
   margin-bottom: 12px;
 }
 
-/* Administrator Dashboard */
+/* Administrator Tabs & Layout */
 .tabs {
   display: flex;
   border-bottom: 1px solid #cccccc;

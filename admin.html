@@ -108,9 +108,9 @@
         </div>
 
         <div class="form-block">
-          <h2>Available Time Slots</h2>
-          <div id="slotsContainer" class="slots-row">
-            <!-- 30-min buttons dynamically generated -->
+          <h2>Available Time Slots (30 Mins)</h2>
+          <div id="slotsContainer">
+            <!-- Morning & Afternoon 30-min buttons dynamically generated -->
           </div>
           <p id="selectedTimeNotice" class="selected-label">Selected Time: 09:00 AM</p>
           <input type="hidden" id="chosenSlotValue" value="09:00 AM" />
@@ -121,7 +121,7 @@
         </div>
       </form>
 
-      <!-- History of Consultations -->
+      <!-- History of Consultations for logged in Patient -->
       <div class="history-block">
         <h3>My Booked Appointments</h3>
         <table class="grid-table">
@@ -163,13 +163,13 @@
       <div class="overview-boxes">
         <div class="overview-box" onclick="filterByRole('Receptionist')">
           <h4>Manage Staff</h4>
-          <p>Receptionists, Lab Technicians, and Pharmacists.</p>
+          <p>Receptionists, Lab Technicians, and Pharmacists (General shift, no consultation fee/slots).</p>
           <span class="text-link">Open Staff Directory &rarr;</span>
         </div>
 
         <div class="overview-box" onclick="filterByRole('Doctor')">
           <h4>Manage Doctors</h4>
-          <p>Doctors by department, consultation fees, and shifts.</p>
+          <p>Doctors categorized by department, consultation fee, and morning/afternoon shift slots.</p>
           <span class="text-link">Open Doctor Directory &rarr;</span>
         </div>
       </div>
@@ -196,7 +196,7 @@
 
             <div class="form-group">
               <label for="staffName">Name</label>
-              <input type="text" id="staffName" placeholder="Dr. Arun" required />
+              <input type="text" id="staffName" placeholder="Full Name" required />
             </div>
 
             <div class="form-group">
@@ -225,7 +225,7 @@
 
             <div class="form-group">
               <label for="staffContact">Contact Number</label>
-              <input type="text" id="staffContact" placeholder="9847011223" required />
+              <input type="text" id="staffContact" placeholder="10-digit mobile number" required />
             </div>
 
             <div class="form-group">
@@ -234,9 +234,9 @@
             </div>
           </div>
 
-          <!-- Doctor Specific Fields -->
+          <!-- Doctor-ONLY Specific Fields -->
           <div id="doctorExtraFields" class="doctor-sub-box" style="display: none;">
-            <h4>Doctor Specialty &amp; Schedule Settings</h4>
+            <h4>Doctor Specialty, Consultation Fee &amp; Shifts</h4>
             <div class="form-grid">
               <div class="form-group">
                 <label for="doctorDept">Department</label>
@@ -250,18 +250,16 @@
               </div>
 
               <div class="form-group">
-                <label for="doctorFee">Consultation Fee</label>
+                <label for="doctorFee">Consultation Fee (INR)</label>
                 <input type="text" id="doctorFee" placeholder="₹500" />
               </div>
 
               <div class="form-group span-2">
-                <label for="doctorSchedulePreset">Schedule Working Days</label>
-                <select id="doctorSchedulePreset">
-                  <option value="1">Schedule 1: Mon-Fri (09:00 AM - 11:00 AM &amp; 02:00 PM - 03:00 PM)</option>
-                  <option value="2">Schedule 2: Mon, Wed, Fri, Sat (10:00 AM - 11:30 AM &amp; 02:00 PM - 03:00 PM)</option>
-                  <option value="3">Schedule 3: Mon, Tue, Thu, Sat (09:00 AM - 11:30 AM &amp; 02:00 PM - 03:00 PM)</option>
-                  <option value="4">Schedule 4: Tue, Wed, Thu, Fri (09:30 AM - 11:30 AM &amp; 02:00 PM - 03:30 PM)</option>
-                  <option value="5">Schedule 5: Mon, Tue, Wed, Fri, Sat (09:00 AM - 11:30 AM &amp; 02:00 PM - 03:30 PM)</option>
+                <label for="doctorShiftType">Doctor Consultation Shift (30-Minute Slots)</label>
+                <select id="doctorShiftType">
+                  <option value="Both">Both Shifts: Morning (9 AM - 12 PM) &amp; Afternoon (2 PM - 4 PM)</option>
+                  <option value="Morning">Morning Shift Only (09:00 AM - 12:00 PM)</option>
+                  <option value="Afternoon">Afternoon Shift Only (02:00 PM - 04:00 PM)</option>
                 </select>
               </div>
             </div>
@@ -315,7 +313,7 @@
               <th>DOB</th>
               <th>Joined</th>
               <th>Email</th>
-              <th>Fee / Schedule</th>
+              <th>Doctor Fee / Shift</th>
               <th>Status</th>
               <th>Password</th>
               <th>Actions</th>
@@ -328,7 +326,7 @@
       </div>
     </div>
 
-    <!-- 3D. Patient Directory Table -->
+    <!-- 3D. Patient Directory Table (Exact match to uploaded screenshot) -->
     <div id="tabPatients" class="tab-content" style="display: none;">
       <div class="table-container">
         <div class="table-bar">
