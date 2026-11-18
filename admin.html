@@ -56,7 +56,7 @@
 
       <div id="loginMsg" class="error-text" style="display: none;"></div>
       <div id="patientNotice" class="info-text" style="display: none;">
-        Patient sign-in: Use registered <strong>Email</strong> as username and <strong>Phone Number</strong> as password. Demo: <code>jaii@gmail.com</code> / <code>45678</code>.
+        Patient sign-in: Use registered <strong>Email</strong> as username and <strong>Phone Number</strong> as password. Demo: <code>jaii@gmail.com</code> / <code>45678</code>[cite: 1, 2].
       </div>
     </div>
   </main>
@@ -110,7 +110,7 @@
         <div class="form-block">
           <h2>Available Time Slots (30 Mins)</h2>
           <div id="slotsContainer">
-            <!-- Morning & Afternoon 30-min buttons dynamically generated -->
+            <!-- Doctor-only morning/afternoon slot buttons -->
           </div>
           <p id="selectedTimeNotice" class="selected-label">Selected Time: 09:00 AM</p>
           <input type="hidden" id="chosenSlotValue" value="09:00 AM" />
@@ -163,13 +163,13 @@
       <div class="overview-boxes">
         <div class="overview-box" onclick="filterByRole('Receptionist')">
           <h4>Manage Staff</h4>
-          <p>Receptionists, Lab Technicians, and Pharmacists (General shift, no consultation fee/slots).</p>
+          <p>Receptionists, Lab Technicians, and Pharmacists directory.</p>
           <span class="text-link">Open Staff Directory &rarr;</span>
         </div>
 
         <div class="overview-box" onclick="filterByRole('Doctor')">
           <h4>Manage Doctors</h4>
-          <p>Doctors categorized by department, consultation fee, and morning/afternoon shift slots.</p>
+          <p>Clinical specialists by department, consultation fee, and shifts.</p>
           <span class="text-link">Open Doctor Directory &rarr;</span>
         </div>
       </div>
@@ -234,7 +234,7 @@
             </div>
           </div>
 
-          <!-- Doctor-ONLY Specific Fields -->
+          <!-- Doctor-ONLY Specific Fields (Hidden for Staff) -->
           <div id="doctorExtraFields" class="doctor-sub-box" style="display: none;">
             <h4>Doctor Specialty, Consultation Fee &amp; Shifts</h4>
             <div class="form-grid">
@@ -289,7 +289,7 @@
       </div>
     </div>
 
-    <!-- 3C. Staff Directory Table -->
+    <!-- 3C. Staff Directory Table (No unwanted Doctor Fee/Shift column) -->
     <div id="tabTable" class="tab-content" style="display: none;">
       <div class="table-container">
         <div class="table-bar">
@@ -305,18 +305,8 @@
 
         <table class="grid-table">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Department</th>
-              <th>Gender</th>
-              <th>DOB</th>
-              <th>Joined</th>
-              <th>Email</th>
-              <th>Doctor Fee / Shift</th>
-              <th>Status</th>
-              <th>Password</th>
-              <th>Actions</th>
+            <tr id="staffTableHeaderRow">
+              <!-- Dynamically structured depending on whether Doctor or General Staff is viewed -->
             </tr>
           </thead>
           <tbody id="staffTableBody">

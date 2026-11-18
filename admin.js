@@ -2,9 +2,9 @@
    QUAD CLINIC - ADMIN & APPOINTMENT JAVASCRIPT
    ========================================================= */
 
-const DB_STAFF_KEY = 'quad_clinic_staff_shifts_v3';
-const DB_PATIENT_KEY = 'quad_clinic_patients_shifts_v3';
-const DB_BOOKINGS_KEY = 'quad_clinic_bookings_shifts_v3';
+const DB_STAFF_KEY = 'quad_clinic_staff_clean_v4';
+const DB_PATIENT_KEY = 'quad_clinic_patients_clean_v4';
+const DB_BOOKINGS_KEY = 'quad_clinic_bookings_clean_v4';
 const SESSION_KEY = 'quad_clinic_user_session';
 
 // Doctor Consultation 30-Minute Time Slots by Shift
@@ -16,8 +16,8 @@ const AFTERNOON_SLOTS = [
   "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM"
 ];
 
-// Initial Staff: Only Doctors have department, fee, and shifts.
-// Receptionist, Lab Tech, and Pharmacist do not have fees or slots.
+// Initial Staff: Only Doctors have department, fee, and shift.
+// Receptionist, Lab Tech, and Pharmacist do not have fees, slots, or shifts.
 const DEFAULT_STAFF = [
   { 
     id: '1', 
@@ -110,7 +110,7 @@ const DEFAULT_STAFF = [
     email: 'reception@quadclinic.com', 
     contact: '9847011223', 
     salary: '24,000', 
-    fee: 'N/A', 
+    fee: null, 
     shift: null, 
     status: 'Active', 
     password: 'rec123' 
@@ -126,7 +126,7 @@ const DEFAULT_STAFF = [
     email: 'lab@quadclinic.com', 
     contact: '9746344556', 
     salary: '28,500', 
-    fee: 'N/A', 
+    fee: null, 
     shift: null, 
     status: 'Active', 
     password: 'lab123' 
@@ -142,21 +142,21 @@ const DEFAULT_STAFF = [
     email: 'pharmacy@quadclinic.com', 
     contact: '9633455667', 
     salary: '30,000', 
-    fee: 'N/A', 
+    fee: null, 
     shift: null, 
     status: 'Active', 
     password: 'pharm123' 
   }
 ];
 
-// Initial Patients[cite: 2]
+// Initial Patients matching demo records
 const DEFAULT_PATIENTS = [
   { id: '1', mmr: 'MMR1003', name: 'jaii', gender: 'Female', dob: '2000-08-15', email: 'jaii@gmail.com', phone: '45678' },
   { id: '2', mmr: 'MMR1171', name: 'lol', gender: 'Female', dob: '1998-02-10', email: 'lol@gmail.com', phone: '123823293' },
   { id: '3', mmr: 'MMR4186', name: 'new', gender: 'Female', dob: '1995-11-25', email: 'new@gmail.com', phone: '9876543' }
 ];
 
-// Initial Bookings (Pre-seeded with records matching screenshot)[cite: 2]
+// Initial Bookings (Matches reference screenshot exactly)
 const DEFAULT_BOOKINGS = [
   {
     id: 'BOK-101',
@@ -333,7 +333,7 @@ function showPatientView(patient) {
   document.getElementById('patientView').style.display = 'block';
   document.getElementById('navUserBar').style.display = 'none';
 
-  // Display Patient Details[cite: 1]
+  // Display Patient Details
   document.getElementById('displayMMR').textContent = patient.mmr || 'MMR1003';
   document.getElementById('displayName').textContent = patient.name;
   document.getElementById('displayPhone').textContent = patient.phone;
@@ -376,15 +376,7 @@ function refreshTimeSlotButtons() {
     return;
   }
 
-  // Doctor's available 30-min slots based on their shift
-  let allowedSlots = [];
   const shiftType = doc.shift || 'Both';
-  if (shiftType === 'Morning' || shiftType === 'Both') {
-    allowedSlots = allowedSlots.concat(MORNING_SLOTS);
-  }
-  if (shiftType === 'Afternoon' || shiftType === 'Both') {
-    allowedSlots = allowedSlots.concat(AFTERNOON_SLOTS);
-  }
 
   // Check booked slots for this doctor on this date
   const booked = bookingList
@@ -394,7 +386,7 @@ function refreshTimeSlotButtons() {
   let firstAvailable = null;
   let html = '';
 
-  // Render Morning Slots (if doctor has morning shift)
+  // Morning Shift (09:00 AM - 12:00 PM)
   if (shiftType === 'Morning' || shiftType === 'Both') {
     html += '<div class="shift-section-title">Morning Shift (09:00 AM - 12:00 PM)</div><div class="slots-row">';
     MORNING_SLOTS.forEach(slot => {
@@ -405,7 +397,7 @@ function refreshTimeSlotButtons() {
     html += '</div>';
   }
 
-  // Render Afternoon Slots (if doctor has afternoon shift)
+  // Afternoon Shift (02:00 PM - 04:00 PM)
   if (shiftType === 'Afternoon' || shiftType === 'Both') {
     html += '<div class="shift-section-title">Afternoon Shift (02:00 PM - 04:00 PM)</div><div class="slots-row">';
     AFTERNOON_SLOTS.forEach(slot => {
@@ -450,7 +442,7 @@ function handleConfirmBooking(event) {
     return;
   }
 
-  // Prevent double booking for the same doctor at the same slot and date
+  // Prevent double booking
   const exists = bookingList.find(b => b.doctor === doc.name && b.date === date && b.slot === slot && b.status === 'Confirmed');
   if (exists) {
     alert("This slot has already been booked. Please pick another available slot.");
@@ -545,7 +537,6 @@ function filterByRole(role) {
   switchAdminTab('table');
 }
 
-// Doctor Fields Only Toggle
 function toggleDoctorFields(role) {
   const box = document.getElementById('doctorExtraFields');
   // Strictly display only when role is Doctor
@@ -586,8 +577,8 @@ function handleStaffSubmit(event) {
 
   // Restrict department, fee & shift slots strictly to Doctor role only
   const isDoc = (role === 'Doctor');
-  const dept = isDoc ? document.getElementById('doctorDept').value : 'Support Staff';
-  const fee = isDoc ? (document.getElementById('doctorFee').value.trim() || '₹500') : 'N/A';
+  const dept = isDoc ? document.getElementById('doctorDept').value : 'General';
+  const fee = isDoc ? (document.getElementById('doctorFee').value.trim() || '₹500') : null;
   const shift = isDoc ? document.getElementById('doctorShiftType').value : null;
 
   if (editId) {
@@ -641,8 +632,42 @@ function toggleStaffStatus(id) {
 }
 
 function renderTable() {
+  const theadRow = document.getElementById('staffTableHeaderRow');
   const tbody = document.getElementById('staffTableBody');
   const query = (document.getElementById('searchInput').value || '').toLowerCase();
+
+  const isDoctorView = (currentFilter === 'Doctor');
+
+  // Dynamically configure clean table header without awkward empty columns for Staff
+  if (isDoctorView) {
+    theadRow.innerHTML = `
+      <th>Name</th>
+      <th>Role</th>
+      <th>Department</th>
+      <th>Gender</th>
+      <th>DOB</th>
+      <th>Joined</th>
+      <th>Email</th>
+      <th>Consultation Fee</th>
+      <th>Shift Schedule</th>
+      <th>Status</th>
+      <th>Password</th>
+      <th>Actions</th>
+    `;
+  } else {
+    theadRow.innerHTML = `
+      <th>Name</th>
+      <th>Role</th>
+      <th>Department</th>
+      <th>Gender</th>
+      <th>DOB</th>
+      <th>Joined</th>
+      <th>Email</th>
+      <th>Status</th>
+      <th>Password</th>
+      <th>Actions</th>
+    `;
+  }
 
   const filtered = staffList.filter(s => {
     const roleMatch = (currentFilter === 'ALL' || s.role === currentFilter);
@@ -654,20 +679,42 @@ function renderTable() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #888;">No staff records found.</td></tr>`;
+    const colCount = isDoctorView ? 12 : 10;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; color: #888;">No staff records found.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map(s => {
-    // Only Doctor has fee and shift info. Others show "-"
-    let scheduleText = '-';
-    if (s.role === 'Doctor') {
-      const shiftDesc = s.shift === 'Morning' ? 'Morning (9 AM - 12 PM)' : (s.shift === 'Afternoon' ? 'Afternoon (2 PM - 4 PM)' : 'Both (9-12 & 2-4)');
-      scheduleText = `${s.fee} [${shiftDesc}]`;
-    }
-
     const statusClass = s.status === 'Active' ? 'active' : (s.status === 'On Leave' ? 'leave' : 'inactive');
 
+    if (isDoctorView) {
+      const shiftDesc = s.shift === 'Morning' ? 'Morning (9 AM - 12 PM)' : (s.shift === 'Afternoon' ? 'Afternoon (2 PM - 4 PM)' : 'Both (9-12 & 2-4)');
+      return `
+        <tr>
+          <td>${s.name}</td>
+          <td>${s.role}</td>
+          <td>${s.dept}</td>
+          <td>${s.gender}</td>
+          <td>${s.dob || 'N/A'}</td>
+          <td>${s.joiningDate || 'N/A'}</td>
+          <td>${s.email}</td>
+          <td>${s.fee || '₹500'}</td>
+          <td>${shiftDesc}</td>
+          <td>
+            <span class="status-tag ${statusClass}" onclick="toggleStaffStatus('${s.id}')" title="Click to toggle status">
+              ${s.status} &#x21bb;
+            </span>
+          </td>
+          <td><code>${s.password}</code></td>
+          <td>
+            <button class="btn-action-edit" onclick="editStaff('${s.id}')">Edit</button>
+            <button class="btn-action-del" onclick="deleteStaff('${s.id}')">Delete</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    // Clean Staff Row: Completely free of Fee / Shift columns
     return `
       <tr>
         <td>${s.name}</td>
@@ -677,7 +724,6 @@ function renderTable() {
         <td>${s.dob || 'N/A'}</td>
         <td>${s.joiningDate || 'N/A'}</td>
         <td>${s.email}</td>
-        <td>${scheduleText}</td>
         <td>
           <span class="status-tag ${statusClass}" onclick="toggleStaffStatus('${s.id}')" title="Click to toggle status">
             ${s.status} &#x21bb;
@@ -732,7 +778,7 @@ function deleteStaff(id) {
   }
 }
 
-// 4. Admin Patient Bookings Table (Exact match to uploaded screenshot)[cite: 2]
+// 4. Admin Patient Bookings Table (Exact match to uploaded screenshot)
 function renderAdminPatientTable() {
   const tbody = document.getElementById('patientTableBody');
   tbody.innerHTML = bookingList.map(b => {

@@ -215,14 +215,14 @@ body {
   font-size: 13px;
   font-weight: bold;
   color: #0b3c5d;
-  margin: 8px 0 4px;
+  margin: 10px 0 6px;
 }
 
 .slots-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .slot-btn {
