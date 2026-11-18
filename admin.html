@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MULTI - SPECIALITY | QUAD CLINIC — Login & Administrator Portal</title>
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- TOP DEMO NAVIGATION BAR (Helpful for Instructor Review) -->
+  <div class="instructor-bar">
+    <div class="bar-left">
+      <span class="badge-live">ADMIN MODULE</span>
+      <span><strong>Quad Clinic CMS</strong> — Unified Login &amp; Administrator Screens:</span>
+      <button class="screen-pill active" id="pill-login" onclick="jumpToScreen('login')">1. Login UI</button>
+      <button class="screen-pill" id="pill-admin-home" onclick="jumpToScreen('admin-home')">2. Administrator Home</button>
+      <button class="screen-pill" id="pill-admin-add" onclick="jumpToScreen('admin-add')">3. Add Staff Details</button>
+      <button class="screen-pill" id="pill-admin-table" onclick="jumpToScreen('admin-table')">4. Search / Edit / Delete</button>
+    </div>
+    <div class="bar-right">
+      <button class="screen-pill" onclick="resetDemoDatabase()" title="Restore default staff records">Reset Demo Data</button>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SCREEN 1: UNIFIED LOGIN UI DESIGN FOR ALL MODULES
+       ========================================================= -->
+  <div id="view-login" class="app-view active">
+    <div class="wireframe-window">
+
+      <!-- Clinic Header Banner -->
+      <div class="clinic-banner">
+        <div class="clinic-brand-left">
+          <div class="clinic-logo-circle" aria-hidden="true">
+            <svg viewBox="0 0 64 64">
+              <circle cx="15" cy="17" r="4" fill="#ffffff"/>
+              <path d="M10 23 h10 l-1.5 11 h-7 z" fill="#ffffff"/>
+              <circle cx="27" cy="16" r="4" fill="#ffffff"/>
+              <path d="M22 22 h10 v12 h-10 z" fill="#ffffff"/>
+              <circle cx="43" cy="24" r="9" fill="#ffffff"/>
+              <path d="M28 54 c0-10 7-16 15-16 s15 6 15 16 z" fill="#ffffff"/>
+              <path d="M39 39 v8 a4 4 0 0 0 8 0 v-8" fill="none" stroke="#001253" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <h1 class="clinic-title">MULTI - SPECIALITY | QUAD CLINIC</h1>
+        </div>
+      </div>
+
+      <!-- Main Login Body -->
+      <div class="login-stage">
+        <div class="login-split-box">
+
+          <!-- Left Medical Family & Doctor Vector Graphic -->
+          <div class="login-illustration-col">
+            <svg viewBox="0 0 360 250" width="100%" height="230" aria-label="Clinic Family and Doctor">
+              <g fill="#001253">
+                <!-- Mother -->
+                <circle cx="62" cy="36" r="11" />
+                <path d="M58 50 h8 l13 38 h-9 l-2 30 h-5 v-28 h-2 v28 h-5 l-2-30 h-9 z" />
+                <path d="M47 52 l-11 24 l5 3 l9-19 z" />
+                <path d="M77 52 l13 22 l-4 3 l-11-18 z" />
+                <!-- Father -->
+                <circle cx="105" cy="35" r="11" />
+                <path d="M93 49 h24 c3 0 5 2 5 5 v32 h-6 v32 h-6 v-30 h-4 v30 h-6 v-32 h-6 v-32 c0-3 2-5 5-5 z" />
+                <path d="M93 50 l-12 24 l4 3 l10-18 z" />
+                <path d="M117 50 l13 24 l-4 3 l-11-18 z" />
+                <!-- Child -->
+                <circle cx="142" cy="60" r="8.5" />
+                <path d="M134 71 h16 v22 h-3 v25 h-4 v-23 h-2 v23 h-4 v-25 h-3 z" />
+                <path d="M134 73 l-9 15 l3 3 l7-12 z" />
+                <path d="M150 73 l8 14 l-3 3 l-6-11 z" />
+              </g>
+              <!-- Doctor with Stethoscope -->
+              <g fill="#001253">
+                <circle cx="232" cy="96" r="24" />
+                <path d="M192 135 h80 c18 0 30 12 30 30 v68 h-25 v-46 h-8 v46 h-74 v-68 h-32 c-9 0-15-6-15-15 c0-8 6-15 15-15 z" />
+              </g>
+              <path d="M214 135 v28 c0 12 9 20 20 20 s20-8 20-20 v-28" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round"/>
+              <line x1="234" y1="183" x2="234" y2="205" stroke="#ffffff" stroke-width="5.5" />
+              <circle cx="234" cy="211" r="8.5" fill="#ffffff" />
+              <circle cx="214" cy="153" r="4.5" fill="#ffffff" />
+            </svg>
+          </div>
+
+          <!-- Right Form Column with Role Dropdown -->
+          <div class="login-form-col">
+            <form id="quadLoginForm" onsubmit="handleLoginSubmit(event)" autocomplete="off">
+
+              <!-- Role Dropdown Row -->
+              <div class="login-field-row">
+                <div class="field-icon" title="Select Role">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                  </svg>
+                </div>
+                <select id="loginRole" class="login-select" onchange="handleRoleDropdownChange(this.value)" required>
+                  <option value="" disabled>Select Role...</option>
+                  <option value="Admin" selected>Administrator (Admin)</option>
+                  <option value="Receptionist">Receptionist</option>
+                  <option value="Doctor">Doctor</option>
+                  <option value="Lab Technician">Lab Technician</option>
+                  <option value="Pharmacist">Pharmacist</option>
+                </select>
+              </div>
+
+              <!-- Email / EMP ID Row -->
+              <div class="login-field-row">
+                <div class="field-icon" title="Email address">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="loginEmail"
+                  class="login-input"
+                  placeholder="Email address"
+                  value="admin@quadclinic.com"
+                  required
+                />
+              </div>
+
+              <!-- Password Row -->
+              <div class="login-field-row">
+                <div class="field-icon" title="Password">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h2c0-1.66 1.34-3 3-3s3 1.34 3 3v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                  </svg>
+                </div>
+                <input
+                  type="password"
+                  id="loginPassword"
+                  class="login-input"
+                  placeholder="Password"
+                  value="admin123"
+                  required
+                />
+              </div>
+
+              <div class="login-action-row">
+                <a href="javascript:void(0)" class="forgot-link" onclick="handleForgotPassword()">Forgotten Password?</a>
+                <button type="submit" class="btn-login-green">Log In</button>
+              </div>
+
+              <div id="loginErrorAlert" class="login-error-alert"></div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =========================================================
+       ADMINISTRATOR PORTAL (YOUR ASSIGNED MODULE - 3 SUB-SCREENS)
+       ========================================================= -->
+  <div id="view-admin" class="app-view">
+    <div class="wireframe-window">
+
+      <!-- Top Dark Navy Social Bar -->
+      <div class="navy-social-bar">
+        <div class="social-left">
+          <span>Follow Us on Social Media</span>
+          <a href="javascript:void(0)" class="social-square" title="Facebook">f</a>
+          <a href="javascript:void(0)" class="social-square" title="Twitter">t</a>
+          <a href="javascript:void(0)" class="social-square" title="Instagram">ig</a>
+          <a href="javascript:void(0)" class="social-square" title="LinkedIn">in</a>
+        </div>
+        <div class="social-right">
+          <a href="javascript:void(0)" onclick="showToast('Quad Clinic Privacy Policy')">Privacy Policy</a> |
+          <a href="javascript:void(0)" onclick="showToast('Quad Clinic Medical Disclaimer')">Disclaimer</a> |
+          <a href="javascript:void(0)" onclick="showToast('Contact Admin Desk: +91 98470 11223')">Contact</a>
+        </div>
+      </div>
+
+      <!-- Clinic Title Banner with Medical Shield -->
+      <div class="clinic-banner">
+        <div class="clinic-brand-left">
+          <div class="clinic-logo-circle" aria-hidden="true">
+            <svg viewBox="0 0 64 64">
+              <circle cx="15" cy="17" r="4" fill="#ffffff"/>
+              <path d="M10 23 h10 l-1.5 11 h-7 z" fill="#ffffff"/>
+              <circle cx="27" cy="16" r="4" fill="#ffffff"/>
+              <path d="M22 22 h10 v12 h-10 z" fill="#ffffff"/>
+              <circle cx="43" cy="24" r="9" fill="#ffffff"/>
+              <path d="M28 54 c0-10 7-16 15-16 s15 6 15 16 z" fill="#ffffff"/>
+            </svg>
+          </div>
+          <h1 class="clinic-title">MULTI - SPECIALITY | QUAD CLINIC</h1>
+        </div>
+
+        <div class="shield-emblem" title="Quad Clinic Verified">
+          <svg viewBox="0 0 54 60" width="44" height="48">
+            <path d="M27 3 L49 11 V28 C49 43 39 53 27 57 C15 53 5 43 5 28 V11 Z" fill="#f7f9fc" stroke="#333333" stroke-width="3"/>
+            <path d="M27 16 V40 M15 28 H39" stroke="#333333" stroke-width="6" stroke-linecap="square"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Split Body: Left Administrator Sidebar + Right Content Area -->
+      <div class="admin-split-layout">
+
+        <!-- Left Administrator Sidebar -->
+        <aside class="admin-sidebar">
+          <div class="admin-sidebar-top">
+            <div class="admin-role-heading" id="sidebarRoleTitle">ADMINISTRATOR</div>
+
+            <!-- Monitor + Person Avatar Circle -->
+            <div class="admin-avatar-circle" id="sidebarAvatarCircle" onclick="openAdminSubscreen('home')" title="Click to return to Administrator Home">
+              <svg viewBox="0 0 84 84">
+                <rect x="14" y="18" width="42" height="29" rx="3" fill="none" stroke="#111" stroke-width="3.2"/>
+                <line x1="28" y1="47" x2="42" y2="47" stroke="#111" stroke-width="3.2"/>
+                <path d="M24 53 h22" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+                <rect x="32" y="47" width="6" height="6" fill="#111"/>
+                <circle cx="54" cy="39" r="7.5" fill="#111" stroke="#fff" stroke-width="1.5"/>
+                <path d="M41 58 c0-7 6-12 13-12 s13 5 13 12 z" fill="#111" stroke="#fff" stroke-width="1.5"/>
+              </svg>
+            </div>
+
+            <div class="admin-user-label" id="sidebarUserName">Mr.ADMIN</div>
+          </div>
+
+          <!-- Quick Sub-navigation inside Sidebar -->
+          <div class="sidebar-quick-links">
+            <button class="side-nav-btn active-nav" id="sideBtnHome" onclick="openAdminSubscreen('home')">
+              Dashboard Home
+            </button>
+            <button class="side-nav-btn" id="sideBtnAdd" onclick="openAddStaffForm('Receptionist')">
+              + Add Staff / Doctor
+            </button>
+            <button class="side-nav-btn" id="sideBtnTable" onclick="openAdminSubscreen('table')">
+              Search / Edit / Delete
+            </button>
+          </div>
+
+          <!-- Bottom Logout Button -->
+          <button type="button" class="logout-btn-wireframe" id="sidebarLogoutBtn" onclick="logoutToLogin()">
+            <svg viewBox="0 0 36 32" width="28" height="25">
+              <path d="M18 4 h12 v24 h-12" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+              <path d="M24 16 H5 M12 9 L4 16 L12 23" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="logout-text" id="logoutLabelText">Logout</span>
+          </button>
+        </aside>
+
+        <!-- Right Dynamic Workspace -->
+        <main class="admin-workspace">
+
+          <!-- =====================================================
+               SUB-SCREEN 2A: ADMINISTRATOR HOME (MANAGE STAFF / DOCTOR)
+               ===================================================== -->
+          <div id="admin-sub-home" class="admin-subscreen active">
+            <div class="admin-home-stage">
+
+              <div class="manage-cards-stack">
+                <!-- Card 1: MANAGE STAFF -->
+                <div class="manage-action-card" onclick="handleManageCardClick('STAFF')" title="Manage Receptionist, Lab Technician & Pharmacist">
+                  <div class="manage-card-icon">
+                    <svg viewBox="0 0 80 65" width="78" height="62">
+                      <circle cx="29" cy="21" r="12" fill="#000"/>
+                      <path d="M7 56 c0-13 10-21 22-21 s22 8 22 21 z" fill="#000"/>
+                      <path d="M62 24 v20 M52 34 h20" stroke="#000" stroke-width="6.5" stroke-linecap="square"/>
+                    </svg>
+                  </div>
+                  <div class="manage-staff-label">MANAGE STAFF</div>
+                </div>
+
+                <!-- Card 2: MANAGE DOCTOR -->
+                <div class="manage-action-card" onclick="handleManageCardClick('DOCTOR')" title="Manage Doctors">
+                  <div class="manage-card-icon">
+                    <svg viewBox="0 0 85 68" width="80" height="64">
+                      <circle cx="22" cy="44" r="13" fill="#f2d680" stroke="#222" stroke-width="2.5"/>
+                      <line x1="9" y1="44" x2="35" y2="44" stroke="#222" stroke-width="2.5"/>
+                      <rect x="42" y="12" width="24" height="46" rx="12" fill="#ffffff" stroke="#222" stroke-width="2.5"/>
+                      <path d="M42 35 h24 v11 a12 12 0 0 1 -24 0 z" fill="#9bc2e6" stroke="#222" stroke-width="2.5"/>
+                      <line x1="42" y1="35" x2="66" y2="35" stroke="#222" stroke-width="2.5"/>
+                    </svg>
+                  </div>
+                  <button type="button" class="manage-doctor-blue-btn">MANAGE DOCTOR</button>
+                </div>
+
+                <div class="admin-flow-hint">
+                  <span>Quick Actions:</span>
+                  <button type="button" onclick="openAddStaffForm('Receptionist')">+ Add Staff</button>
+                  <button type="button" onclick="openAddStaffForm('Doctor')">+ Add Doctor</button>
+                  <button type="button" onclick="openAdminSubscreen('table')">View All (<span id="totalStaffCountBadge">6</span>)</button>
+                </div>
+              </div>
+
+              <!-- Right Hand-Sanitizer Illustration -->
+              <div class="sanitizer-illustration">
+                <svg viewBox="0 0 180 180" width="165" height="165" aria-label="Sanitizer Hygiene">
+                  <rect x="108" y="25" width="18" height="11" rx="2" fill="#1e4db7"/>
+                  <path d="M117 25 V14 H86 L78 22" fill="none" stroke="#8ab4f8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M92 52 C92 41 101 36 108 36 H126 C133 36 142 41 142 52 V142 C142 147 138 150 133 150 H101 C96 150 92 147 92 142 Z" fill="#bce3f7"/>
+                  <rect x="98" y="74" width="38" height="50" rx="4" fill="#ffffff"/>
+                  <path d="M117 85 V113 M103 99 H131" stroke="#d9232e" stroke-width="7" stroke-linecap="square"/>
+                  <path d="M76 34 C76 34 68 46 68 51 A8 8 0 0 0 84 51 C84 46 76 34 76 34 Z" fill="#1e56c5"/>
+                  <path d="M22 105 C32 95 46 95 57 101 L86 101 C91 101 95 105 95 109 C95 113 91 116 86 116 H68 L94 116 C99 116 102 119 102 123 C102 127 98 130 93 130 H62 C50 130 39 126 26 118 Z" fill="#f7bfa5"/>
+                </svg>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- =====================================================
+               SUB-SCREEN 2B: STAFF REGISTRATION - UI (ADD STAFF DETAILS)
+               ===================================================== -->
+          <div id="admin-sub-add" class="admin-subscreen">
+            <div class="staff-reg-container">
+              <h2 class="add-staff-heading" id="staffFormHeading">ADD STAFF DETAILS</h2>
+
+              <form id="staffRegForm" class="wireframe-staff-form" onsubmit="handleSaveStaff(event)" autocomplete="off">
+                <input type="hidden" id="editRecordId" value="" />
+
+                <!-- Role Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffRole">Role :</label>
+                  <select id="staffRole" class="wf-select" onchange="handleFormRoleChange(this.value)" required>
+                    <option value="Receptionist">Receptionist</option>
+                    <option value="Doctor">Doctor</option>
+                    <option value="Lab Technician">Lab Technician</option>
+                    <option value="Pharmacist">Pharmacist</option>
+                  </select>
+                </div>
+
+                <!-- Name Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffName">Name :</label>
+                  <input type="text" id="staffName" class="wf-input" required />
+                </div>
+
+                <!-- Contact Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffContact">Contact :</label>
+                  <input type="text" id="staffContact" class="wf-input" required />
+                </div>
+
+                <!-- Age Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffAge">Age :</label>
+                  <input type="number" id="staffAge" class="wf-input" min="18" max="85" required />
+                </div>
+
+                <!-- Gender Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffGender">Gender :</label>
+                  <input type="text" id="staffGender" class="wf-input" list="genderOptions" required />
+                  <datalist id="genderOptions">
+                    <option value="Male"></option>
+                    <option value="Female"></option>
+                    <option value="Other"></option>
+                  </datalist>
+                </div>
+
+                <!-- Address Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffAddress">Address :</label>
+                  <input type="text" id="staffAddress" class="wf-input" required />
+                </div>
+
+                <!-- Salary Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffSalary">Salary :</label>
+                  <input type="text" id="staffSalary" class="wf-input" required />
+                </div>
+
+                <!-- EMP ID Row -->
+                <div class="wf-form-row">
+                  <label class="wf-label" for="staffEmpId">EMP ID :</label>
+                  <input type="text" id="staffEmpId" class="wf-input" required />
+                </div>
+
+                <!-- Submit Row -->
+                <div class="wf-submit-row">
+                  <button type="submit" class="wf-submit-btn" id="staffSubmitBtn">Submit</button>
+                  <button type="button" class="wf-cancel-btn" onclick="openAdminSubscreen('table')">View Staff Table</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- =====================================================
+               SUB-SCREEN 2C: SEARCH, EDIT & DELETE STAFF TABLE UI
+               ===================================================== -->
+          <div id="admin-sub-table" class="admin-subscreen">
+            <div class="staff-table-stage">
+
+              <!-- Search Staff Details Bar -->
+              <div class="wf-search-wrap">
+                <div class="wf-search-box">
+                  <input
+                    type="text"
+                    id="staffSearchInput"
+                    placeholder="Search Staff Details.."
+                    oninput="renderStaffTable()"
+                  />
+                  <svg class="search-magnifier" viewBox="0 0 24 24" width="20" height="20">
+                    <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="#1aa3b8" stroke-width="2.5"/>
+                    <line x1="15.5" y1="15.5" x2="21" y2="21" stroke="#1aa3b8" stroke-width="2.8" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Role Filter Toolbar + Add Button -->
+              <div class="wf-table-toolbar">
+                <div class="role-filter-pills">
+                  <button type="button" class="filter-chip active" id="chip-ALL" onclick="setRoleFilter('ALL')">All Roles</button>
+                  <button type="button" class="filter-chip" id="chip-Receptionist" onclick="setRoleFilter('Receptionist')">Receptionist</button>
+                  <button type="button" class="filter-chip" id="chip-Doctor" onclick="setRoleFilter('Doctor')">Doctor</button>
+                  <button type="button" class="filter-chip" id="chip-Lab Technician" onclick="setRoleFilter('Lab Technician')">Lab Technician</button>
+                  <button type="button" class="filter-chip" id="chip-Pharmacist" onclick="setRoleFilter('Pharmacist')">Pharmacist</button>
+                </div>
+                <button type="button" class="btn-add-from-table" onclick="openAddStaffForm()">+ Add New Record</button>
+              </div>
+
+              <!-- Wireframe Table -->
+              <div class="wf-table-frame">
+                <table class="wf-grid-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 12%;">PatientId / EMP ID</th>
+                      <th style="width: 21%;">Name</th>
+                      <th style="width: 14%;">Contact</th>
+                      <th style="width: 10%;">Gender</th>
+                      <th style="width: 18%;">Address</th>
+                      <th style="width: 7%;">Age</th>
+                      <th style="width: 18%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="staffGridBody">
+                    <!-- Populated dynamically by script.js (always maintains 9 wireframe rows) -->
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+        </main>
+      </div>
+
+      <!-- Bottom Footer Strip -->
+      <div class="wireframe-bottom-strip"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       TEAMMATE MODULE HAND-OFF MODAL (WHEN LOGGING IN AS OTHER ROLES)
+       ========================================================= -->
+  <div id="teammateModal" class="modal-backdrop" onclick="closeTeammateModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="role-tag" id="handoffRoleBadge">ROLE HAND-OFF</span>
+        <button class="modal-close" onclick="closeTeammateModal()">×</button>
+      </div>
+      <h3 id="handoffTitle">Authenticated Successfully!</h3>
+      <p id="handoffDesc">
+        You logged in via the shared <strong>Quad Clinic Login UI</strong>. Because the other dashboards are assigned to your teammates, here is how your Login redirects to their HTML file:
+      </p>
+      <div class="code-snippet-box" id="handoffCodeBox"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-back-login" onclick="closeTeammateModal()">Back to Login</button>
+        <button type="button" class="btn-open-admin" onclick="closeTeammateModal(); jumpToScreen('admin-home');">Open My Administrator UI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="quadToast" class="quad-toast"></div>
+
+  <!-- External JavaScript -->
+  <script src="admin.js"></script>
+</body>
+</html>
