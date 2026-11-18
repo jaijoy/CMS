@@ -3,347 +3,187 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MULTI - SPECIALITY | QUAD CLINIC — Management Portal</title>
+  <title>Clinic Management System - Quad Clinic</title>
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
 
-  <!-- =========================================================
-       MODULE 1: UNIFIED ROLE-BASED LOGIN SCREEN
-       ========================================================= -->
-  <div id="view-login" class="app-view active">
-    <div class="clinic-card-window">
-
-      <!-- Header Banner -->
-      <header class="clinic-header">
-        <div class="brand-container">
-          <img 
-            src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=120&q=80" 
-            alt="Quad Clinic Logo" 
-            class="clinic-logo-img"
-          />
-          <h1 class="brand-title">MULTI - SPECIALITY | QUAD CLINIC</h1>
-        </div>
-      </header>
-
-      <!-- Main Login Split Card -->
-      <div class="login-wrapper">
-        <div class="login-card">
-
-          <!-- Left Visual: Medical Team Image -->
-          <div class="login-image-column">
-            <img 
-              src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80" 
-              alt="Medical Care Team" 
-              class="login-cover-img"
-            />
-            <div class="login-image-overlay">
-              <h3>Quad Healthcare Management</h3>
-              <p>Secure Portal for Administrative &amp; Clinical Operations</p>
-            </div>
-          </div>
-
-          <!-- Right Form: Role & Credentials -->
-          <div class="login-form-column">
-            <h2 class="form-heading">Staff &amp; Admin Sign In</h2>
-            <p class="form-subheading">Select your clinic role to continue</p>
-
-            <form id="quadLoginForm" onsubmit="handleLoginSubmit(event)" autocomplete="off">
-              
-              <!-- Role Selector -->
-              <div class="form-group">
-                <label for="loginRole">Assigned Role</label>
-                <select id="loginRole" class="form-control" required>
-                  <option value="" disabled selected>Select Role</option>
-                  <option value="Admin">Administrator</option>
-                  <option value="Receptionist">Receptionist</option>
-                  <option value="Doctor">Doctor</option>
-                  <option value="Lab Technician">Lab Technician</option>
-                  <option value="Pharmacist">Pharmacist</option>
-                </select>
-              </div>
-
-              <!-- Username / Email / EMP ID -->
-              <div class="form-group">
-                <label for="loginEmail">Email / Employee ID</label>
-                <input 
-                  type="text" 
-                  id="loginEmail" 
-                  class="form-control" 
-                  placeholder="e.g. admin@quadclinic.com or EMP-1001" 
-                  required 
-                />
-              </div>
-
-              <!-- Password -->
-              <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <input 
-                  type="password" 
-                  id="loginPassword" 
-                  class="form-control" 
-                  placeholder="Enter your password" 
-                  required 
-                />
-              </div>
-
-              <div class="form-footer-actions">
-                <a href="javascript:void(0)" class="forgot-link" onclick="handleForgotPassword()">Forgotten Password?</a>
-                <button type="submit" class="btn-primary-login">Sign In</button>
-              </div>
-
-              <div id="loginErrorAlert" class="error-alert-box"></div>
-            </form>
-          </div>
-
-        </div>
-      </div>
-
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="brand">
+      <div class="brand-icon">+</div>
+      <h2>Quad Multi-Speciality Clinic</h2>
     </div>
-  </div>
+    <div class="nav-right" id="topNavUser" style="display: none;">
+      <span id="navUserBadge">Admin</span>
+      <button onclick="logoutAdmin()" class="btn-logout">Logout</button>
+    </div>
+  </header>
 
   <!-- =========================================================
-       MODULE 2: ADMINISTRATOR DASHBOARD
+       1. LOGIN VIEW
        ========================================================= -->
-  <div id="view-admin" class="app-view">
-    <div class="clinic-card-window">
+  <main id="loginView" class="container">
+    <div class="login-box">
+      <h3>Sign In to Portal</h3>
+      <p class="subtitle">Select your role and enter credentials</p>
 
-      <!-- Top Social & Institutional Strip -->
-      <div class="top-nav-strip">
-        <div class="strip-left">
-          <span>Quad Clinic System Portal</span>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginRole">Role</label>
+          <select id="loginRole" required>
+            <option value="" disabled selected>-- Select Role --</option>
+            <option value="Admin">Administrator</option>
+            <option value="Receptionist">Receptionist</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Lab Technician">Lab Technician</option>
+            <option value="Pharmacist">Pharmacist</option>
+          </select>
         </div>
-        <div class="strip-right">
-          <span>Official Hospital Management Console</span>
+
+        <div class="form-group">
+          <label for="loginUser">Email or Employee ID</label>
+          <input type="text" id="loginUser" placeholder="e.g. admin@quadclinic.com" required />
         </div>
-      </div>
 
-      <!-- Main Clinic Brand Header -->
-      <header class="clinic-header">
-        <div class="brand-container">
-          <img 
-            src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=120&q=80" 
-            alt="Quad Clinic Logo" 
-            class="clinic-logo-img"
-          />
-          <h1 class="brand-title">MULTI - SPECIALITY | QUAD CLINIC</h1>
+        <div class="form-group">
+          <label for="loginPass">Password</label>
+          <input type="password" id="loginPass" placeholder="Enter password" required />
         </div>
-        <div class="header-badge">
-          <span class="badge-tag">ADMIN LEVEL 1</span>
-        </div>
-      </header>
 
-      <!-- Split Layout: Sidebar + Dynamic Workspace -->
-      <div class="dashboard-body-layout">
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Login</button>
+      </form>
 
-        <!-- Left Admin Navigation Sidebar -->
-        <aside class="dashboard-sidebar">
-          <div class="sidebar-user-profile">
-            <div class="admin-profile-avatar">
-              <img 
-                src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=240&q=80" 
-                alt="Administrator Avatar" 
-              />
-            </div>
-            <div class="admin-role-title">ADMINISTRATOR</div>
-            <div class="admin-name-tag" id="sidebarUserName">Mr. ADMIN</div>
-          </div>
-
-          <nav class="sidebar-menu">
-            <button class="nav-menu-btn active" id="btnNavHome" onclick="openAdminSubscreen('home')">
-              Dashboard Overview
-            </button>
-            <button class="nav-menu-btn" id="btnNavAdd" onclick="openAddStaffForm('Receptionist')">
-              + Register New Staff
-            </button>
-            <button class="nav-menu-btn" id="btnNavTable" onclick="openAdminSubscreen('table')">
-              Staff Directory &amp; Records
-            </button>
-          </nav>
-
-          <button type="button" class="btn-sidebar-logout" onclick="logoutAdmin()">
-            Sign Out
-          </button>
-        </aside>
-
-        <!-- Right Dynamic Content Area -->
-        <main class="dashboard-workspace">
-
-          <!-- 2A. DASHBOARD OVERVIEW -->
-          <div id="subscreen-home" class="subscreen active">
-            <div class="overview-welcome-card">
-              <div class="welcome-text">
-                <h2>Welcome back, Administrator</h2>
-                <p>Select an administrative action below to manage medical departments and hospital personnel.</p>
-              </div>
-            </div>
-
-            <div class="action-card-grid">
-              <!-- Manage Staff Card -->
-              <div class="interactive-card" onclick="handleManageCardClick('STAFF')">
-                <img 
-                  src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=500&q=80" 
-                  alt="Hospital Staff" 
-                  class="card-preview-image"
-                />
-                <div class="card-caption">
-                  <h3>MANAGE STAFF</h3>
-                  <p>Receptionists, Lab Technicians &amp; Pharmacists directory</p>
-                  <span class="btn-card-action">View Staff &rarr;</span>
-                </div>
-              </div>
-
-              <!-- Manage Doctors Card -->
-              <div class="interactive-card" onclick="handleManageCardClick('DOCTOR')">
-                <img 
-                  src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=500&q=80" 
-                  alt="Doctors Directory" 
-                  class="card-preview-image"
-                />
-                <div class="card-caption">
-                  <h3>MANAGE DOCTOR</h3>
-                  <p>Physicians, Specialists &amp; Consultation schedules</p>
-                  <span class="btn-card-action">View Doctors &rarr;</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2B. STAFF REGISTRATION FORM -->
-          <div id="subscreen-add" class="subscreen">
-            <div class="form-container-box">
-              <h2 id="staffFormHeading" class="section-title">ADD STAFF DETAILS</h2>
-              <p class="section-subtitle">Assign Employee ID, personal records, and login password.</p>
-
-              <form id="staffRegForm" onsubmit="handleSaveStaff(event)" autocomplete="off">
-                <input type="hidden" id="editRecordId" value="" />
-
-                <div class="form-grid-layout">
-                  <div class="input-block">
-                    <label for="staffRole">Department Role</label>
-                    <select id="staffRole" class="form-control" onchange="handleFormRoleChange(this.value)" required>
-                      <option value="Receptionist">Receptionist</option>
-                      <option value="Doctor">Doctor</option>
-                      <option value="Lab Technician">Lab Technician</option>
-                      <option value="Pharmacist">Pharmacist</option>
-                    </select>
-                  </div>
-
-                  <div class="input-block">
-                    <label for="staffName">Full Name</label>
-                    <input type="text" id="staffName" class="form-control" placeholder="Dr. John Doe / Nurse Jane" required />
-                  </div>
-
-                  <div class="input-block">
-                    <label for="staffEmail">Official Login Email</label>
-                    <input type="email" id="staffEmail" class="form-control" placeholder="staff@quadclinic.com" required />
-                  </div>
-
-                  <div class="input-block">
-                    <label for="staffContact">Phone Contact</label>
-                    <input type="text" id="staffContact" class="form-control" placeholder="10-digit mobile number" required />
-                  </div>
-
-                  <div class="input-block">
-                    <label for="staffAge">Age</label>
-                    <input type="number" id="staffAge" class="form-control" min="18" max="85" placeholder="e.g. 32" required />
-                  </div>
-
-                  <div class="input-block">
-                    <label for="staffGender">Gender</label>
-                    <select id="staffGender" class="form-control" required>
-                      <option value="Female">Female</option>
-                      <option value="Male">Male</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div class="input-block full-width">
-                    <label for="staffAddress">Residential Address</label>
-                    <input type="text" id="staffAddress" class="form-control" placeholder="City, Street, State" required />
-                  </div>
-
-                  <div class="input-block">
-                    <label for="staffSalary">Monthly Salary (INR)</label>
-                    <input type="text" id="staffSalary" class="form-control" placeholder="e.g. 45,000" required />
-                  </div>
-
-                  <div class="input-block">
-                    <label for="staffEmpId">Employee ID (System Assigned)</label>
-                    <input type="text" id="staffEmpId" class="form-control" required />
-                  </div>
-
-                  <div class="input-block full-width">
-                    <label for="staffPassword">Portal Login Password (Set by Admin)</label>
-                    <input type="text" id="staffPassword" class="form-control" placeholder="e.g. Staff@123" required />
-                  </div>
-                </div>
-
-                <div class="form-submit-row">
-                  <button type="submit" class="btn-primary-action" id="staffSubmitBtn">Save Record</button>
-                  <button type="button" class="btn-secondary-action" onclick="openAdminSubscreen('table')">Cancel</button>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <!-- 2C. SEARCH, EDIT & DELETE DIRECTORY TABLE -->
-          <div id="subscreen-table" class="subscreen">
-            <div class="table-container-box">
-              
-              <div class="table-header-bar">
-                <div class="table-search-box">
-                  <input 
-                    type="text" 
-                    id="staffSearchInput" 
-                    placeholder="Search by Name, Email, or EMP ID..." 
-                    oninput="renderStaffTable()" 
-                  />
-                </div>
-                <button type="button" class="btn-primary-action" onclick="openAddStaffForm()">
-                  + Register Staff
-                </button>
-              </div>
-
-              <!-- Filter Tabs -->
-              <div class="filter-tab-row">
-                <button type="button" class="filter-tab active" id="chip-ALL" onclick="setRoleFilter('ALL')">All Personnel</button>
-                <button type="button" class="filter-tab" id="chip-Receptionist" onclick="setRoleFilter('Receptionist')">Receptionists</button>
-                <button type="button" class="filter-tab" id="chip-Doctor" onclick="setRoleFilter('Doctor')">Doctors</button>
-                <button type="button" class="filter-tab" id="chip-Lab Technician" onclick="setRoleFilter('Lab Technician')">Lab Techs</button>
-                <button type="button" class="filter-tab" id="chip-Pharmacist" onclick="setRoleFilter('Pharmacist')">Pharmacists</button>
-              </div>
-
-              <!-- Records Table -->
-              <div class="table-responsive-wrapper">
-                <table class="clinic-data-table">
-                  <thead>
-                    <tr>
-                      <th>EMP ID</th>
-                      <th>Name / Role</th>
-                      <th>Login Email</th>
-                      <th>Contact</th>
-                      <th>Salary</th>
-                      <th>Password</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="staffGridBody">
-                    <!-- Populated dynamically by admin.js -->
-                  </tbody>
-                </table>
-              </div>
-
-            </div>
-          </div>
-
-        </main>
-      </div>
-
+      <div id="loginMsg" class="alert-error" style="display: none;"></div>
     </div>
-  </div>
+  </main>
 
-  <div id="quadToast" class="quad-toast"></div>
+  <!-- =========================================================
+       2. ADMINISTRATOR DASHBOARD VIEW
+       ========================================================= -->
+  <main id="adminView" class="container" style="display: none;">
+    
+    <!-- Admin Navigation Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabHomeBtn" onclick="switchAdminTab('home')">Dashboard Home</button>
+      <button class="tab-btn" id="tabAddBtn" onclick="openAddForm()">+ Register New Staff</button>
+      <button class="tab-btn" id="tabTableBtn" onclick="switchAdminTab('table')">Staff Directory</button>
+    </div>
+
+    <!-- 2A. Home Overview Cards -->
+    <div id="tabHome" class="tab-content">
+      <div class="cards-grid">
+        <div class="dashboard-card" onclick="filterByRole('Receptionist')">
+          <h4>Manage Staff</h4>
+          <p>View and manage all Receptionists, Lab Technicians, and Pharmacists.</p>
+          <span class="card-link">View Directory &rarr;</span>
+        </div>
+        <div class="dashboard-card" onclick="filterByRole('Doctor')">
+          <h4>Manage Doctors</h4>
+          <p>Register new physicians, view OPD schedules, and manage departments.</p>
+          <span class="card-link">View Doctors &rarr;</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2B. Add/Edit Staff Form -->
+    <div id="tabAdd" class="tab-content" style="display: none;">
+      <div class="form-box">
+        <h3 id="formTitle">Add Staff Member</h3>
+        <form id="staffForm" onsubmit="handleStaffSubmit(event)">
+          <input type="hidden" id="editStaffId" value="" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffRole">Role</label>
+              <select id="staffRole" required>
+                <option value="Receptionist">Receptionist</option>
+                <option value="Doctor">Doctor</option>
+                <option value="Lab Technician">Lab Technician</option>
+                <option value="Pharmacist">Pharmacist</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="staffEmpId">Employee ID</label>
+              <input type="text" id="staffEmpId" placeholder="EMP-1006" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffName">Full Name</label>
+              <input type="text" id="staffName" placeholder="Dr. John Doe / Nurse Jane" required />
+            </div>
+            <div class="form-group">
+              <label for="staffEmail">Login Email</label>
+              <input type="email" id="staffEmail" placeholder="staff@quadclinic.com" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffContact">Contact Number</label>
+              <input type="text" id="staffContact" placeholder="9847011223" required />
+            </div>
+            <div class="form-group">
+              <label for="staffSalary">Monthly Salary</label>
+              <input type="text" id="staffSalary" placeholder="₹45,000" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="staffPass">Assign Login Password</label>
+            <input type="text" id="staffPass" placeholder="e.g. staff123" required />
+          </div>
+
+          <div class="btn-group">
+            <button type="submit" class="btn-primary" id="saveBtn">Save Member</button>
+            <button type="button" class="btn-secondary" onclick="switchAdminTab('table')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2C. Staff Directory Table -->
+    <div id="tabTable" class="tab-content" style="display: none;">
+      <div class="table-container">
+        
+        <!-- Controls Bar -->
+        <div class="table-controls">
+          <input type="text" id="searchInput" placeholder="Search by name, email, or EMP ID..." oninput="renderTable()" />
+          <div class="filter-pills">
+            <button class="pill active" id="pill-ALL" onclick="setFilter('ALL')">All</button>
+            <button class="pill" id="pill-Receptionist" onclick="setFilter('Receptionist')">Receptionist</button>
+            <button class="pill" id="pill-Doctor" onclick="setFilter('Doctor')">Doctors</button>
+            <button class="pill" id="pill-Lab Technician" onclick="setFilter('Lab Technician')">Lab Techs</button>
+            <button class="pill" id="pill-Pharmacist" onclick="setFilter('Pharmacist')">Pharmacists</button>
+          </div>
+        </div>
+
+        <!-- HTML Table -->
+        <table>
+          <thead>
+            <tr>
+              <th>EMP ID</th>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Email</th>
+              <th>Contact</th>
+              <th>Salary</th>
+              <th>Password</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="staffTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+  </main>
+
   <script src="admin.js"></script>
 </body>
 </html>
