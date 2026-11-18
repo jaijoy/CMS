@@ -1,6 +1,3 @@
-/* =========================================================
-   RESET & BASE VARIABLES
-   ========================================================= */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -26,9 +23,6 @@ body {
   padding: 24px 0;
 }
 
-/* =========================================================
-   SHARED WIREFRAME WINDOW & HEADER
-   ========================================================= */
 .app-view {
   display: none;
   max-width: 1030px;
@@ -47,7 +41,6 @@ body {
   overflow: hidden;
 }
 
-/* Top Navy Social Media Strip */
 .navy-social-bar {
   background: var(--navy-deep);
   color: #ffffff;
@@ -84,11 +77,6 @@ body {
   margin: 0 3px;
 }
 
-.social-right a:hover {
-  text-decoration: underline;
-}
-
-/* Clinic Header Banner */
 .clinic-banner {
   background: linear-gradient(180deg, #ffffff 0%, #f1f3f7 100%);
   border-bottom: 2.5px solid var(--navy-border);
@@ -128,9 +116,7 @@ body {
   letter-spacing: 0.6px;
 }
 
-/* =========================================================
-   VIEW 1: LOGIN UI DESIGN FOR ALL MODULE
-   ========================================================= */
+/* Login Card */
 .login-stage {
   background: var(--panel-gray);
   padding: 54px 36px;
@@ -210,12 +196,6 @@ body {
   cursor: pointer;
 }
 
-.login-input:focus,
-.login-select:focus {
-  border-color: var(--navy-brand);
-  box-shadow: 0 0 0 2px rgba(0, 18, 83, 0.14);
-}
-
 .login-action-row {
   display: flex;
   align-items: center;
@@ -231,10 +211,6 @@ body {
   text-decoration: none;
 }
 
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
 .btn-login-green {
   background: var(--login-green);
   color: #ffffff;
@@ -245,7 +221,6 @@ body {
   border: 1px solid #004d00;
   border-radius: 7px;
   cursor: pointer;
-  transition: background 0.15s;
 }
 
 .btn-login-green:hover {
@@ -264,9 +239,7 @@ body {
   font-weight: 600;
 }
 
-/* =========================================================
-   VIEW 2: ADMINISTRATOR LAYOUT (SIDEBAR + WORKSPACE)
-   ========================================================= */
+/* Admin Dashboard Layout */
 .admin-split-layout {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -301,11 +274,6 @@ body {
   text-align: center;
 }
 
-.admin-role-heading.title-case {
-  font-size: 20px;
-  text-decoration: none;
-}
-
 .admin-avatar-circle {
   width: 96px;
   height: 96px;
@@ -317,11 +285,6 @@ body {
   margin-bottom: 10px;
   cursor: pointer;
   background: #ffffff;
-  transition: transform 0.15s;
-}
-
-.admin-avatar-circle:hover {
-  transform: scale(1.03);
 }
 
 .admin-avatar-circle svg {
@@ -335,22 +298,6 @@ body {
   font-weight: 700;
   color: #111111;
   text-align: center;
-}
-
-.admin-user-label.blue-text {
-  color: #1d3c78;
-  font-family: Arial, sans-serif;
-}
-
-.staff-emp-pill {
-  margin-top: 6px;
-  background: #eef2ff;
-  color: #1e3a8a;
-  border: 1px solid #c7d2fe;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
 }
 
 .sidebar-quick-links {
@@ -372,11 +319,6 @@ body {
   border-radius: 5px;
   cursor: pointer;
   text-align: left;
-  transition: 0.15s;
-}
-
-.side-nav-btn:hover {
-  background: #e2e8f0;
 }
 
 .side-nav-btn.active-nav {
@@ -396,10 +338,6 @@ body {
   border-radius: 6px;
 }
 
-.logout-btn-wireframe:hover {
-  background: #f5f5f5;
-}
-
 .logout-text {
   font-family: "Times New Roman", Georgia, serif;
   font-size: 16px;
@@ -407,12 +345,6 @@ body {
   color: #e61919;
 }
 
-.logout-text.blue-logout {
-  color: #0b2e8a;
-  font-family: Arial, sans-serif;
-}
-
-/* Right Workspace Subscreens */
 .admin-workspace {
   position: relative;
   background: #ffffff;
@@ -427,9 +359,6 @@ body {
   display: block;
 }
 
-/* =========================================================
-   SUB-SCREEN 1: ADMINISTRATOR HOME (MANAGE STAFF / DOCTOR)
-   ========================================================= */
 .admin-home-stage {
   min-height: 455px;
   padding: 48px 42px;
@@ -457,13 +386,6 @@ body {
   justify-content: space-between;
   padding: 12px 18px;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.manage-action-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  border-color: var(--navy-brand);
 }
 
 .manage-staff-label {
@@ -471,7 +393,6 @@ body {
   font-size: 14.5px;
   font-weight: 700;
   color: #222222;
-  letter-spacing: 0.3px;
 }
 
 .manage-doctor-blue-btn {
@@ -482,14 +403,10 @@ body {
   padding: 9px 12px;
   font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
 }
 
-/* =========================================================
-   SUB-SCREEN 2: ADD STAFF DETAILS (STAFF REGISTRATION - UI)
-   ========================================================= */
+/* Registration Form */
 .staff-reg-container {
   padding: 26px 44px 30px;
 }
@@ -535,11 +452,6 @@ body {
   outline: none;
 }
 
-.wf-input:focus,
-.wf-select:focus {
-  border-color: var(--submit-blue);
-}
-
 .wf-submit-row {
   margin-top: 22px;
   padding-left: 265px;
@@ -558,12 +470,6 @@ body {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: 0.15s;
-}
-
-.wf-submit-btn:hover {
-  background: var(--submit-blue);
-  color: #ffffff;
 }
 
 .wf-cancel-btn {
@@ -576,9 +482,7 @@ body {
   cursor: pointer;
 }
 
-/* =========================================================
-   SUB-SCREEN 3: SEARCH STAFF DETAILS TABLE
-   ========================================================= */
+/* Table */
 .staff-table-stage {
   padding: 26px 28px 24px;
 }
@@ -621,7 +525,6 @@ body {
 .role-filter-pills {
   display: flex;
   gap: 5px;
-  flex-wrap: wrap;
 }
 
 .filter-chip {
@@ -671,7 +574,7 @@ body {
   font-size: 12.5px;
   font-weight: 400;
   text-align: center;
-  padding: 6px 6px;
+  padding: 6px;
   border-bottom: 1.4px solid #d2d6dc;
 }
 
@@ -739,63 +642,6 @@ body {
   border-top: 1.5px solid #cfd4dc;
 }
 
-/* =========================================================
-   VIEW 3: STAFF PORTAL STAGE (NON-ADMIN ROLES ONLY)
-   ========================================================= */
-.staff-portal-stage {
-  padding: 32px 36px;
-}
-
-.staff-portal-banner {
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 14px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.staff-portal-banner h2 {
-  font-family: "Times New Roman", Georgia, serif;
-  font-size: 21px;
-  color: var(--navy-brand);
-}
-
-.rbac-lock-badge {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-  font-size: 11.5px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 4px;
-}
-
-.staff-profile-card {
-  background: #f8fafc;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin-bottom: 22px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 12px;
-  font-size: 13px;
-}
-
-.staff-profile-card div strong {
-  display: block;
-  color: #475569;
-  font-size: 11px;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-
-/* =========================================================
-   TOAST NOTIFICATION
-   ========================================================= */
 .quad-toast {
   position: fixed;
   bottom: 20px;
@@ -818,26 +664,4 @@ body {
 .quad-toast.visible {
   opacity: 1;
   transform: translateY(0);
-}
-
-@media (max-width: 780px) {
-  .login-split-box {
-    grid-template-columns: 1fr;
-  }
-  .login-illustration-col {
-    border-right: none;
-    border-bottom: 1.5px solid #555;
-  }
-  .admin-split-layout {
-    grid-template-columns: 1fr;
-  }
-  .admin-home-stage {
-    flex-direction: column;
-  }
-  .manage-cards-stack {
-    margin-left: 0;
-  }
-  .wf-submit-row {
-    padding-left: 0;
-  }
 }
