@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clinic Management System - Quad Clinic</title>
+  <title>MULTI - SPECIALITY | QUAD CLINIC — Management Portal</title>
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
@@ -12,49 +12,53 @@
   <header class="top-nav">
     <div class="brand">
       <div class="brand-icon">+</div>
-      <h2>Quad Multi-Speciality Clinic</h2>
+      <h2>Quad Multi-Speciality Clinic — Admin System</h2>
     </div>
     <div class="nav-right" id="topNavUser" style="display: none;">
-      <span id="navUserBadge">Admin</span>
+      <span id="navUserBadge">Admin: Mr. Administrator</span>
       <button onclick="logoutAdmin()" class="btn-logout">Logout</button>
     </div>
   </header>
 
   <!-- =========================================================
-       1. LOGIN VIEW
+       1. UNIFIED LOGIN VIEW (ALL MODULES & PATIENTS)
        ========================================================= -->
   <main id="loginView" class="container">
     <div class="login-box">
-      <h3>Sign In to Portal</h3>
-      <p class="subtitle">Select your role and enter credentials</p>
+      <h3>Sign In to Clinic Portal</h3>
+      <p class="subtitle">Select your role and enter credentials to continue</p>
 
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="loginRole">Role</label>
-          <select id="loginRole" required>
+          <label for="loginRole">Select Role / Category</label>
+          <select id="loginRole" onchange="handleRoleDropdownNotice(this.value)" required>
             <option value="" disabled selected>-- Select Role --</option>
-            <option value="Admin">Administrator</option>
+            <option value="Admin">Administrator (Mr. ADMIN)</option>
             <option value="Receptionist">Receptionist</option>
             <option value="Doctor">Doctor</option>
             <option value="Lab Technician">Lab Technician</option>
             <option value="Pharmacist">Pharmacist</option>
+            <option value="Patient">Patient Portal (Email + Phone No.)</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="loginUser">Email or Employee ID</label>
+          <label for="loginUser" id="loginUserLabel">Email or Employee ID</label>
           <input type="text" id="loginUser" placeholder="e.g. admin@quadclinic.com" required />
         </div>
 
         <div class="form-group">
-          <label for="loginPass">Password</label>
+          <label for="loginPass" id="loginPassLabel">Password</label>
           <input type="password" id="loginPass" placeholder="Enter password" required />
         </div>
 
-        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Login</button>
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Sign In</button>
       </form>
 
       <div id="loginMsg" class="alert-error" style="display: none;"></div>
+      <div id="patientTip" class="info-tip" style="display: none;">
+        <strong>Patient Sign-in Rule:</strong> Use your registered <strong>Email</strong> as your username, and your <strong>Phone Number</strong> as your password.
+      </div>
     </div>
   </main>
 
@@ -66,22 +70,26 @@
     <!-- Admin Navigation Tabs -->
     <div class="tab-bar">
       <button class="tab-btn active" id="tabHomeBtn" onclick="switchAdminTab('home')">Dashboard Home</button>
-      <button class="tab-btn" id="tabAddBtn" onclick="openAddForm()">+ Register New Staff</button>
-      <button class="tab-btn" id="tabTableBtn" onclick="switchAdminTab('table')">Staff Directory</button>
+      <button class="tab-btn" id="tabAddBtn" onclick="openAddForm()">+ Register Staff / Doctor</button>
+      <button class="tab-btn" id="tabTableBtn" onclick="switchAdminTab('table')">Staff &amp; Doctor Directory</button>
+      <button class="tab-btn" id="tabPatientBtn" onclick="switchAdminTab('patients')">Patient Credentials &amp; Fees</button>
     </div>
 
     <!-- 2A. Home Overview Cards -->
     <div id="tabHome" class="tab-content">
       <div class="cards-grid">
         <div class="dashboard-card" onclick="filterByRole('Receptionist')">
-          <h4>Manage Staff</h4>
-          <p>View and manage all Receptionists, Lab Technicians, and Pharmacists.</p>
-          <span class="card-link">View Directory &rarr;</span>
+          <div class="card-tag">Front-Desk &amp; Labs</div>
+          <h4>Manage Staff (Receptionist, Lab, Pharmacy)</h4>
+          <p>View personnel records, assign roles, and configure work statuses.</p>
+          <span class="card-link">Open Staff Directory &rarr;</span>
         </div>
+
         <div class="dashboard-card" onclick="filterByRole('Doctor')">
-          <h4>Manage Doctors</h4>
-          <p>Register new physicians, view OPD schedules, and manage departments.</p>
-          <span class="card-link">View Doctors &rarr;</span>
+          <div class="card-tag">Clinical OPD</div>
+          <h4>Manage Doctors, Fees &amp; Hours</h4>
+          <p>Set doctor consultation fees, adjust working shift hours, and manage OPD schedules.</p>
+          <span class="card-link">Open Doctors Directory &rarr;</span>
         </div>
       </div>
     </div>
@@ -89,14 +97,16 @@
     <!-- 2B. Add/Edit Staff Form -->
     <div id="tabAdd" class="tab-content" style="display: none;">
       <div class="form-box">
-        <h3 id="formTitle">Add Staff Member</h3>
+        <h3 id="formTitle">Register Personnel Details</h3>
+        <p class="subtitle">Complete staff registration or update existing records.</p>
+
         <form id="staffForm" onsubmit="handleStaffSubmit(event)">
           <input type="hidden" id="editStaffId" value="" />
 
           <div class="form-row">
             <div class="form-group">
-              <label for="staffRole">Role</label>
-              <select id="staffRole" required>
+              <label for="staffRole">Department Role</label>
+              <select id="staffRole" onchange="toggleDoctorFields(this.value)" required>
                 <option value="Receptionist">Receptionist</option>
                 <option value="Doctor">Doctor</option>
                 <option value="Lab Technician">Lab Technician</option>
@@ -104,7 +114,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="staffEmpId">Employee ID</label>
+              <label for="staffEmpId">Employee ID (EMP ID)</label>
               <input type="text" id="staffEmpId" placeholder="EMP-1006" required />
             </div>
           </div>
@@ -112,10 +122,10 @@
           <div class="form-row">
             <div class="form-group">
               <label for="staffName">Full Name</label>
-              <input type="text" id="staffName" placeholder="Dr. John Doe / Nurse Jane" required />
+              <input type="text" id="staffName" placeholder="e.g. Dr. Arvind Nair" required />
             </div>
             <div class="form-group">
-              <label for="staffEmail">Login Email</label>
+              <label for="staffEmail">Official Login Email</label>
               <input type="email" id="staffEmail" placeholder="staff@quadclinic.com" required />
             </div>
           </div>
@@ -123,7 +133,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="staffContact">Contact Number</label>
-              <input type="text" id="staffContact" placeholder="9847011223" required />
+              <input type="text" id="staffContact" placeholder="10-digit mobile number" required />
             </div>
             <div class="form-group">
               <label for="staffSalary">Monthly Salary</label>
@@ -131,9 +141,34 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="staffPass">Assign Login Password</label>
-            <input type="text" id="staffPass" placeholder="e.g. staff123" required />
+          <!-- Doctor-Specific Configurations (Fee & Working Hours) -->
+          <div id="doctorExtraFields" class="doctor-fields-box" style="display: none;">
+            <h4>Doctor Clinical Schedule &amp; Rates</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="doctorFee">Consultation Fee (INR)</label>
+                <input type="text" id="doctorFee" placeholder="e.g. ₹500" />
+              </div>
+              <div class="form-group">
+                <label for="doctorHours">OPD Working Hours</label>
+                <input type="text" id="doctorHours" placeholder="e.g. 09:00 AM - 01:00 PM" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffPass">Assign Login Password</label>
+              <input type="text" id="staffPass" placeholder="e.g. staff123" required />
+            </div>
+            <div class="form-group">
+              <label for="staffStatus">Initial Working Status</label>
+              <select id="staffStatus">
+                <option value="Active">Active Duty</option>
+                <option value="On Leave">On Leave</option>
+                <option value="Inactive">Inactive / Alt</option>
+              </select>
+            </div>
           </div>
 
           <div class="btn-group">
@@ -148,37 +183,64 @@
     <div id="tabTable" class="tab-content" style="display: none;">
       <div class="table-container">
         
-        <!-- Controls Bar -->
         <div class="table-controls">
-          <input type="text" id="searchInput" placeholder="Search by name, email, or EMP ID..." oninput="renderTable()" />
+          <input type="text" id="searchInput" placeholder="Search staff by Name, Email, or EMP ID..." oninput="renderTable()" />
           <div class="filter-pills">
-            <button class="pill active" id="pill-ALL" onclick="setFilter('ALL')">All</button>
-            <button class="pill" id="pill-Receptionist" onclick="setFilter('Receptionist')">Receptionist</button>
+            <button class="pill active" id="pill-ALL" onclick="setFilter('ALL')">All Staff</button>
+            <button class="pill" id="pill-Receptionist" onclick="setFilter('Receptionist')">Receptionists</button>
             <button class="pill" id="pill-Doctor" onclick="setFilter('Doctor')">Doctors</button>
             <button class="pill" id="pill-Lab Technician" onclick="setFilter('Lab Technician')">Lab Techs</button>
             <button class="pill" id="pill-Pharmacist" onclick="setFilter('Pharmacist')">Pharmacists</button>
           </div>
         </div>
 
-        <!-- HTML Table -->
         <table>
           <thead>
             <tr>
               <th>EMP ID</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Email</th>
-              <th>Contact</th>
-              <th>Salary</th>
+              <th>Name &amp; Role</th>
+              <th>Login Email &amp; Contact</th>
+              <th>Fee / Hours</th>
+              <th>Status (Alt)</th>
               <th>Password</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="staffTableBody">
-            <!-- Rendered by JS -->
+            <!-- Populated dynamically -->
           </tbody>
         </table>
 
+      </div>
+    </div>
+
+    <!-- 2D. Patient Portal Credentials & Fee Directory -->
+    <div id="tabPatients" class="tab-content" style="display: none;">
+      <div class="table-container">
+        <div class="section-banner">
+          <div>
+            <h3>Patient Accounts &amp; Consultation Records</h3>
+            <p>Patients log in with their <strong>Email</strong> and their <strong>Phone Number as password</strong>.</p>
+          </div>
+          <button class="btn-primary" onclick="openAddPatientModal()">+ Register Walk-In Patient</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Patient ID</th>
+              <th>Patient Name</th>
+              <th>Login Email</th>
+              <th>Phone (Password)</th>
+              <th>Assigned Doctor</th>
+              <th>Consultation Fee</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="patientTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
       </div>
     </div>
 
