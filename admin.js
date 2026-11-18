@@ -1,7 +1,7 @@
 /* =========================================================
    AUTHENTICATION & CREDENTIALS MANAGEMENT
    ========================================================= */
-const STORAGE_KEY = 'quad_clinic_admin_staff_v1';
+const DB_VERSION = 'quad_clinic_staff_v4'; // Auto-updates your localStorage schema
 const SESSION_KEY = 'quad_clinic_active_session';
 
 // Strict Administrator Account
@@ -21,7 +21,7 @@ const TEAMMATE_PAGES = {
   'Pharmacist':     'pharmacist.html'
 };
 
-// Default staff seeded with passwords given by Admin
+// Default staff seeded with emails, EMP IDs, and passwords
 const DEFAULT_STAFF = [
   { id: 'REC-101', empId: 'EMP-1001', email: 'reception@quadclinic.com', role: 'Receptionist', name: 'Anjali Menon', contact: '9847011223', age: '26', gender: 'Female', address: 'Pattom, TVM', salary: '24,000', password: 'rec123' },
   { id: 'DOC-102', empId: 'EMP-1002', email: 'doctor@quadclinic.com',    role: 'Doctor',       name: 'Dr. Arvind Nair', contact: '9447122334', age: '41', gender: 'Male', address: 'Kowdiar, TVM', salary: '95,000', password: 'doc123' },
@@ -35,8 +35,14 @@ let currentRoleFilter = 'ALL';
 
 function loadDatabase() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    staffList = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_STAFF));
+    const saved = localStorage.getItem(DB_VERSION);
+    if (saved) {
+      staffList = JSON.parse(saved);
+    } else {
+      // Initialize with fresh default data containing all emails
+      staffList = JSON.parse(JSON.stringify(DEFAULT_STAFF));
+      saveDatabase();
+    }
   } catch (e) {
     staffList = JSON.parse(JSON.stringify(DEFAULT_STAFF));
   }
@@ -44,7 +50,7 @@ function loadDatabase() {
 
 function saveDatabase() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(staffList));
+    localStorage.setItem(DB_VERSION, JSON.stringify(staffList));
   } catch (e) {}
 }
 
@@ -73,7 +79,7 @@ function showLoginError(msg) {
 }
 
 /* =========================================================
-   LOGIN SUBMIT: CHECKS PASSWORD SET BY ADMIN
+   LOGIN SUBMIT: CHECKS ROLE + (EMAIL OR EMP ID OR NAME)
    ========================================================= */
 function handleLoginSubmit(event) {
   event.preventDefault();
@@ -114,28 +120,36 @@ function handleLoginSubmit(event) {
     return;
   }
 
-  // CASE 2: Staff Member logs in (Checks password given by Admin)
+  // CASE 2: Staff Member logs in (Receptionist, Doctor, Lab Technician, Pharmacist)
+  const query = userInput.toLowerCase();
+  
+  // Searches by Email, EMP ID, or Name
   const matchedStaff = staffList.find(staff => 
     staff.role === role && 
-    (staff.empId.toLowerCase() === userInput.toLowerCase() || staff.name.toLowerCase() === userInput.toLowerCase())
+    (
+      (staff.email && staff.email.toLowerCase() === query) ||
+      (staff.empId && staff.empId.toLowerCase() === query) ||
+      (staff.name && staff.name.toLowerCase() === query)
+    )
   );
 
   if (!matchedStaff) {
-    showLoginError(`No registered ${role} found with EMP ID / Name "${userInput}". Please ask Admin to register you.`);
+    showLoginError(`No registered ${role} found with Email / ID "${userInput}". Please ask Admin to register you.`);
     return;
   }
 
-  // Verify the exact password Admin gave them
+  // Verify the exact password assigned by Admin
   if (matchedStaff.password !== password) {
-    showLoginError(`Incorrect password for ${matchedStaff.name} (${matchedStaff.empId}). Check with Admin.`);
+    showLoginError(`Incorrect password for ${matchedStaff.name}. Check with Admin.`);
     return;
   }
 
-  // Credentials valid -> Store active staff session
+  // Credentials are correct -> Store staff session
   const staffSession = {
     role: matchedStaff.role,
     empId: matchedStaff.empId,
     name: matchedStaff.name,
+    email: matchedStaff.email,
     authenticated: true,
     loginTime: new Date().toISOString()
   };
@@ -143,7 +157,7 @@ function handleLoginSubmit(event) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(staffSession));
   localStorage.setItem('quad_logged_in_user', JSON.stringify(staffSession));
 
-  // Forward to teammate's file
+  // Redirect to teammate's file
   const targetFile = TEAMMATE_PAGES[role];
   if (targetFile) {
     window.location.href = targetFile;
@@ -213,7 +227,7 @@ function openAddStaffForm(defaultRole) {
   const role = defaultRole || (currentRoleFilter !== 'ALL' ? currentRoleFilter : 'Receptionist');
   document.getElementById('staffRole').value = role;
   document.getElementById('staffEmpId').value = generateNextEmpId();
-  // Provide a smart default password for Admin
+  document.getElementById('staffEmail').value = `${role.toLowerCase().replace(/\s+/g, '')}@quadclinic.com`;
   document.getElementById('staffPassword').value = `${role.substring(0, 3).toLowerCase()}123`;
 
   handleFormRoleChange(role);
@@ -237,6 +251,7 @@ function handleSaveStaff(event) {
   const editId = document.getElementById('editRecordId').value.trim();
   const role = document.getElementById('staffRole').value;
   const name = document.getElementById('staffName').value.trim();
+  const email = document.getElementById('staffEmail').value.trim();
   const contact = document.getElementById('staffContact').value.trim();
   const age = document.getElementById('staffAge').value.trim();
   const gender = document.getElementById('staffGender').value.trim();
@@ -248,15 +263,16 @@ function handleSaveStaff(event) {
   if (editId) {
     const idx = staffList.findIndex(item => item.id === editId);
     if (idx !== -1) {
-      staffList[idx] = { ...staffList[idx], role, name, contact, age, gender, address, salary, empId, password };
+      staffList[idx] = { ...staffList[idx], role, name, email, contact, age, gender, address, salary, empId, password };
       saveDatabase();
-      showToast(`Updated ${role}: ${name} (Password: ${password})`);
+      showToast(`Updated ${role}: ${name}`);
     }
   } else {
     const prefix = role.substring(0, 3).toUpperCase();
     const newRecord = {
       id: `${prefix}-${Date.now()}`,
       empId,
+      email,
       role,
       name,
       contact,
@@ -294,6 +310,7 @@ function renderStaffTable() {
     const matchesQuery =
       !query ||
       item.empId.toLowerCase().includes(query) ||
+      (item.email && item.email.toLowerCase().includes(query)) ||
       item.name.toLowerCase().includes(query) ||
       item.role.toLowerCase().includes(query) ||
       item.contact.toLowerCase().includes(query) ||
@@ -314,9 +331,9 @@ function renderStaffTable() {
             ${escapeHtml(staff.name)}
             <span class="role-mini-badge">${escapeHtml(staff.role)}</span>
           </td>
+          <td>${escapeHtml(staff.email || 'N/A')}</td>
           <td>${escapeHtml(staff.contact)}</td>
           <td>${escapeHtml(staff.gender)}</td>
-          <td>${escapeHtml(staff.address)}</td>
           <td>${escapeHtml(staff.age)}</td>
           <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:3px; font-weight:700;">${escapeHtml(staff.password || '123456')}</code></td>
           <td>
@@ -358,6 +375,7 @@ function editStaffRecord(id) {
   document.getElementById('editRecordId').value = rec.id;
   document.getElementById('staffRole').value = rec.role;
   document.getElementById('staffName').value = rec.name;
+  document.getElementById('staffEmail').value = rec.email || '';
   document.getElementById('staffContact').value = rec.contact;
   document.getElementById('staffAge').value = rec.age;
   document.getElementById('staffGender').value = rec.gender;
