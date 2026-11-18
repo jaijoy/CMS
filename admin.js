@@ -1,7 +1,33 @@
 /* =========================================================
-   INITIAL STAFF DATABASE (PERSISTED IN LOCALSTORAGE)
+   STRICT ROLE-BASED CONFIGURATION & CREDENTIALS
    ========================================================= */
 const STORAGE_KEY = 'quad_clinic_admin_staff_v1';
+const SESSION_KEY = 'quad_clinic_active_session';
+
+// Strict Administrator Account
+const ADMIN_ACCOUNT = {
+  role: 'Admin',
+  email: 'admin@quadclinic.com',
+  username: 'admin',
+  password: 'admin123',
+  displayName: 'Mr.ADMIN'
+};
+
+// Teammate Dashboard Pages (Update file names here if your teammates named theirs differently)
+const ROLE_REDIRECT_PAGES = {
+  'Receptionist':   'receptionist.html',
+  'Doctor':         'doctor.html',
+  'Lab Technician': 'lab.html',
+  'Pharmacist':     'pharmacist.html'
+};
+
+// Default Role Accounts (Also checks staff added by Admin in localStorage)
+const DEFAULT_ROLE_ACCOUNTS = {
+  'Receptionist':   { email: 'reception@quadclinic.com', pass: 'rec123' },
+  'Doctor':         { email: 'doctor@quadclinic.com',    pass: 'doc123' },
+  'Lab Technician': { email: 'lab@quadclinic.com',       pass: 'lab123' },
+  'Pharmacist':     { email: 'pharmacy@quadclinic.com',  pass: 'pharm123' }
+};
 
 const DEFAULT_STAFF = [
   {
@@ -41,7 +67,7 @@ const DEFAULT_STAFF = [
     id: 'LAB-104',
     empId: 'EMP-1004',
     role: 'Lab Technician',
-    name: 'rahul Vijayan',
+    name: 'Rahul Vijayan',
     contact: '9746344556',
     age: '29',
     gender: 'Male',
@@ -75,6 +101,9 @@ const DEFAULT_STAFF = [
 let staffList = [];
 let currentRoleFilter = 'ALL';
 
+/* =========================================================
+   DATABASE INITIALIZATION
+   ========================================================= */
 function loadDatabase() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -87,144 +116,186 @@ function loadDatabase() {
   } catch (e) {
     staffList = JSON.parse(JSON.stringify(DEFAULT_STAFF));
   }
-  updateStaffCountBadge();
 }
 
 function saveDatabase() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(staffList));
   } catch (e) {}
-  updateStaffCountBadge();
-}
-
-function resetDemoDatabase() {
-  staffList = JSON.parse(JSON.stringify(DEFAULT_STAFF));
-  saveDatabase();
-  renderStaffTable();
-  showToast('Demo staff records restored to default.');
-}
-
-function updateStaffCountBadge() {
-  const badge = document.getElementById('totalStaffCountBadge');
-  if (badge) badge.textContent = staffList.length;
 }
 
 /* =========================================================
-   ROLE DROPDOWN & UNIFIED LOGIN HANDLER
+   STRICT SESSION & AUTHORIZATION GUARD
    ========================================================= */
-const ROLE_DEMO_CREDS = {
-  'Admin':          { email: 'admin@quadclinic.com',      pass: 'admin123', file: 'admin.html' },
-  'Receptionist':   { email: 'reception@quadclinic.com',  pass: 'rec123',   file: 'receptionist.html' },
-  'Doctor':         { email: 'doctor@quadclinic.com',     pass: 'doc123',   file: 'doctor.html' },
-  'Lab Technician': { email: 'lab@quadclinic.com',        pass: 'lab123',   file: 'lab.html' },
-  'Pharmacist':     { email: 'pharmacy@quadclinic.com',   pass: 'pharm123', file: 'pharmacist.html' }
-};
+function getActiveSession() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
 
-function handleRoleDropdownChange(selectedRole) {
-  const creds = ROLE_DEMO_CREDS[selectedRole];
-  const emailInput = document.getElementById('loginEmail');
-  const passInput = document.getElementById('loginPassword');
+function isAdminAuthenticated() {
+  const session = getActiveSession();
+  return Boolean(session && session.role === 'Admin' && session.authenticated === true);
+}
+
+// Blocks any non-admin from invoking Admin UI or CRUD operations
+function requireAdminAuth() {
+  if (!isAdminAuthenticated()) {
+    lockDownToLogin('Unauthorized access blocked. Please log in as Administrator.');
+    return false;
+  }
+  return true;
+}
+
+function lockDownToLogin(errorMessage) {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('view-admin').classList.remove('active');
+  document.getElementById('view-login').classList.add('active');
+
+  if (errorMessage) {
+    showLoginError(errorMessage);
+  }
+}
+
+/* =========================================================
+   STRICT ROLE-BASED LOGIN HANDLER
+   ========================================================= */
+function clearLoginError() {
   const errBox = document.getElementById('loginErrorAlert');
-  if (errBox) errBox.style.display = 'none';
+  if (errBox) {
+    errBox.style.display = 'none';
+    errBox.textContent = '';
+  }
+}
 
-  if (creds && emailInput && passInput) {
-    emailInput.value = creds.email;
-    passInput.value = creds.pass;
+function showLoginError(msg) {
+  const errBox = document.getElementById('loginErrorAlert');
+  if (errBox) {
+    errBox.textContent = msg;
+    errBox.style.display = 'block';
   }
 }
 
 function handleLoginSubmit(event) {
   event.preventDefault();
+  clearLoginError();
+
   const role = document.getElementById('loginRole').value;
-  const emailOrId = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value.trim();
-  const errBox = document.getElementById('loginErrorAlert');
-  errBox.style.display = 'none';
+  const emailInput = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const passwordInput = document.getElementById('loginPassword').value.trim();
 
   if (!role) {
-    errBox.textContent = 'Please select a role from the dropdown list.';
-    errBox.style.display = 'block';
+    showLoginError('Please select your role from the dropdown list.');
     return;
   }
 
-  // 1. Administrator Login -> Opens Your Administrator Portal
+  // CASE 1: ADMINISTRATOR LOGIN (Strictly checks Admin credentials)
   if (role === 'Admin') {
-    if (password.length < 3) {
-      errBox.textContent = 'Invalid Administrator password.';
-      errBox.style.display = 'block';
+    const isValidAdminUser =
+      emailInput === ADMIN_ACCOUNT.email || emailInput === ADMIN_ACCOUNT.username;
+    const isValidAdminPass = passwordInput === ADMIN_ACCOUNT.password;
+
+    if (!isValidAdminUser || !isValidAdminPass) {
+      showLoginError('Invalid Administrator credentials. Access denied.');
       return;
     }
-    localStorage.setItem('quad_logged_in_user', JSON.stringify({
+
+    // Grant Admin Session
+    const adminSession = {
       role: 'Admin',
-      name: 'Mr.ADMIN',
-      email: emailOrId
-    }));
-    jumpToScreen('admin-home');
-    showToast('Welcome Mr.ADMIN! Logged in to Administrator Portal.');
+      name: ADMIN_ACCOUNT.displayName,
+      email: ADMIN_ACCOUNT.email,
+      authenticated: true,
+      loginTime: new Date().toISOString()
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(adminSession));
+    localStorage.setItem('quad_logged_in_user', JSON.stringify(adminSession));
+
+    // Unlock Admin Portal
+    document.getElementById('view-login').classList.remove('active');
+    document.getElementById('view-admin').classList.add('active');
+    openAdminSubscreen('home');
+    showToast('Authenticated as Administrator (Mr.ADMIN).');
     return;
   }
 
-  // 2. Other Roles (Receptionist, Doctor, Lab Technician, Pharmacist)
-  const matchedStaff = staffList.find(
-    s => s.role === role &&
-    (s.empId.toLowerCase() === emailOrId.toLowerCase() ||
-     s.name.toLowerCase().includes(emailOrId.toLowerCase()))
+  // CASE 2: NON-ADMIN ROLES (Receptionist, Doctor, Lab Technician, Pharmacist)
+  // Prevent Admin email from logging in under another role
+  if (emailInput === ADMIN_ACCOUNT.email) {
+    showLoginError('Role mismatch: Administrator credentials cannot log in as ' + role + '.');
+    return;
+  }
+
+  // Verify against Default Role Account OR Staff registered by Admin in localStorage
+  const roleDefault = DEFAULT_ROLE_ACCOUNTS[role];
+  const matchedDefault =
+    roleDefault &&
+    emailInput === roleDefault.email.toLowerCase() &&
+    passwordInput === roleDefault.pass;
+
+  const matchedStaffMember = staffList.find(
+    staff =>
+      staff.role === role &&
+      (staff.empId.toLowerCase() === emailInput ||
+       staff.name.toLowerCase() === emailInput) &&
+      (passwordInput === staff.empId || passwordInput === roleDefault?.pass || passwordInput === '123456')
   );
 
-  const displayUser = matchedStaff ? `${matchedStaff.name} (${matchedStaff.empId})` : emailOrId;
-  const targetFile = ROLE_DEMO_CREDS[role] ? ROLE_DEMO_CREDS[role].file : 'dashboard.html';
+  if (!matchedDefault && !matchedStaffMember) {
+    showLoginError(
+      `Invalid ${role} credentials. Use your registered EMP ID / Email and password.`
+    );
+    return;
+  }
 
-  localStorage.setItem('quad_logged_in_user', JSON.stringify({
+  // Save session for the other role and IMMEDIATELY redirect away from admin.html
+  const staffSession = {
     role: role,
-    name: displayUser,
-    email: emailOrId
-  }));
+    empId: matchedStaffMember ? matchedStaffMember.empId : 'DEFAULT',
+    name: matchedStaffMember ? matchedStaffMember.name : role,
+    email: emailInput,
+    authenticated: true,
+    loginTime: new Date().toISOString()
+  };
 
-  openTeammateModal(role, displayUser, targetFile);
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(staffSession));
+  localStorage.setItem('quad_logged_in_user', JSON.stringify(staffSession));
+
+  const targetPage = ROLE_REDIRECT_PAGES[role];
+  if (targetPage) {
+    // Strictly redirect to the teammate's dashboard page — never show view-admin
+    window.location.href = targetPage;
+  } else {
+    showLoginError(`No dashboard page configured for role: ${role}`);
+  }
+}
+
+function logoutAdmin() {
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('quad_logged_in_user');
+  document.getElementById('quadLoginForm').reset();
+  clearLoginError();
+
+  document.getElementById('view-admin').classList.remove('active');
+  document.getElementById('view-login').classList.add('active');
+  showToast('Logged out securely.');
 }
 
 function handleForgotPassword() {
-  const role = document.getElementById('loginRole').value || 'Admin';
-  showToast(`Password reset request sent to Administrator for role: ${role}`);
-}
-
-function logoutToLogin() {
-  jumpToScreen('login');
-  showToast('Logged out of Administrator session.');
+  showToast('Please contact the Clinic System Administrator to reset your password.');
 }
 
 /* =========================================================
-   SCREEN & SUB-SCREEN NAVIGATION
+   ADMIN SUB-SCREEN NAVIGATION (GUARDED BY requireAdminAuth)
    ========================================================= */
-function jumpToScreen(target) {
-  const loginView = document.getElementById('view-login');
-  const adminView = document.getElementById('view-admin');
-
-  document.querySelectorAll('.instructor-bar .screen-pill').forEach(b => b.classList.remove('active'));
-
-  if (target === 'login') {
-    loginView.classList.add('active');
-    adminView.classList.remove('active');
-    document.getElementById('pill-login').classList.add('active');
-    return;
-  }
-
-  loginView.classList.remove('active');
-  adminView.classList.add('active');
-
-  if (target === 'admin-home') {
-    openAdminSubscreen('home');
-  } else if (target === 'admin-add') {
-    openAddStaffForm('Receptionist');
-  } else if (target === 'admin-table') {
-    openAdminSubscreen('table');
-  }
-}
-
 function openAdminSubscreen(sub) {
+  if (!requireAdminAuth()) return;
+
   document.querySelectorAll('.admin-subscreen').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.side-nav-btn').forEach(el => el.classList.remove('active-nav'));
-  document.querySelectorAll('.instructor-bar .screen-pill').forEach(b => b.classList.remove('active'));
 
   const roleHeading = document.getElementById('sidebarRoleTitle');
   const userName = document.getElementById('sidebarUserName');
@@ -233,7 +304,6 @@ function openAdminSubscreen(sub) {
   if (sub === 'home') {
     document.getElementById('admin-sub-home').classList.add('active');
     document.getElementById('sideBtnHome').classList.add('active-nav');
-    document.getElementById('pill-admin-home').classList.add('active');
 
     roleHeading.textContent = 'ADMINISTRATOR';
     roleHeading.classList.remove('title-case');
@@ -244,7 +314,6 @@ function openAdminSubscreen(sub) {
   } else if (sub === 'add') {
     document.getElementById('admin-sub-add').classList.add('active');
     document.getElementById('sideBtnAdd').classList.add('active-nav');
-    document.getElementById('pill-admin-add').classList.add('active');
 
     roleHeading.textContent = 'Administrator';
     roleHeading.classList.add('title-case');
@@ -255,7 +324,6 @@ function openAdminSubscreen(sub) {
   } else if (sub === 'table') {
     document.getElementById('admin-sub-table').classList.add('active');
     document.getElementById('sideBtnTable').classList.add('active-nav');
-    document.getElementById('pill-admin-table').classList.add('active');
 
     roleHeading.textContent = 'ADMINISTRATOR';
     roleHeading.classList.remove('title-case');
@@ -272,19 +340,19 @@ function openAdminSubscreen(sub) {
    MANAGE STAFF & MANAGE DOCTOR CARDS
    ========================================================= */
 function handleManageCardClick(type) {
+  if (!requireAdminAuth()) return;
+
   if (type === 'DOCTOR') {
     setRoleFilter('Doctor');
     openAdminSubscreen('table');
-    showToast('Filtered staff directory to Doctors. Click "+ Add New Record" to register a Doctor.');
   } else {
     setRoleFilter('ALL');
     openAdminSubscreen('table');
-    showToast('Opened Staff Management Table (Receptionist, Doctor, Lab Technician, Pharmacist).');
   }
 }
 
 /* =========================================================
-   ADD & EDIT STAFF FORM LOGIC
+   ADD & EDIT STAFF FORM LOGIC (ADMIN ONLY)
    ========================================================= */
 function generateNextEmpId() {
   const maxNum = staffList.reduce((acc, item) => {
@@ -296,6 +364,8 @@ function generateNextEmpId() {
 }
 
 function openAddStaffForm(defaultRole) {
+  if (!requireAdminAuth()) return;
+
   const form = document.getElementById('staffRegForm');
   form.reset();
   document.getElementById('editRecordId').value = '';
@@ -321,6 +391,7 @@ function handleFormRoleChange(role) {
 
 function handleSaveStaff(event) {
   event.preventDefault();
+  if (!requireAdminAuth()) return;
 
   const editId = document.getElementById('editRecordId').value.trim();
   const role = document.getElementById('staffRole').value;
@@ -362,9 +433,11 @@ function handleSaveStaff(event) {
 }
 
 /* =========================================================
-   SEARCH, FILTER, EDIT & DELETE TABLE LOGIC
+   SEARCH, FILTER, EDIT & DELETE TABLE LOGIC (ADMIN ONLY)
    ========================================================= */
 function setRoleFilter(role) {
+  if (!requireAdminAuth()) return;
+
   currentRoleFilter = role;
   document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
   const activeChip = document.getElementById(`chip-${role}`);
@@ -373,6 +446,8 @@ function setRoleFilter(role) {
 }
 
 function renderStaffTable() {
+  if (!requireAdminAuth()) return;
+
   const tbody = document.getElementById('staffGridBody');
   if (!tbody) return;
 
@@ -390,7 +465,7 @@ function renderStaffTable() {
     return matchesRole && matchesQuery;
   });
 
-  // Always show at least 9 rows to match the reference wireframe screenshot
+  // Maintain 9 wireframe rows to match the reference screenshot
   const TOTAL_WIREFRAME_ROWS = Math.max(9, filtered.length);
   let rowsHtml = '';
 
@@ -427,8 +502,8 @@ function renderStaffTable() {
           <td>&nbsp;</td>
           <td>
             <div class="wf-row-actions">
-              <button type="button" class="wf-btn-edit ghost-row-btn" onclick="openAddStaffForm()">EDIT</button>
-              <button type="button" class="wf-btn-delete ghost-row-btn" onclick="showToast('Empty slot — click EDIT or + Add New Record to insert staff.')">DELETE</button>
+              <button type="button" class="wf-btn-edit" disabled>EDIT</button>
+              <button type="button" class="wf-btn-delete" disabled>DELETE</button>
             </div>
           </td>
         </tr>
@@ -440,6 +515,8 @@ function renderStaffTable() {
 }
 
 function editStaffRecord(id) {
+  if (!requireAdminAuth()) return;
+
   const rec = staffList.find(item => item.id === id);
   if (!rec) return;
 
@@ -456,10 +533,11 @@ function editStaffRecord(id) {
   handleFormRoleChange(rec.role);
   document.getElementById('staffSubmitBtn').textContent = 'Update';
   openAdminSubscreen('add');
-  showToast(`Editing ${rec.name} (${rec.empId})`);
 }
 
 function deleteStaffRecord(id) {
+  if (!requireAdminAuth()) return;
+
   const idx = staffList.findIndex(item => item.id === id);
   if (idx === -1) return;
   const removed = staffList[idx];
@@ -470,23 +548,8 @@ function deleteStaffRecord(id) {
 }
 
 /* =========================================================
-   TEAMMATE HAND-OFF MODAL & UTILITIES
+   UTILITIES & INITIALIZATION
    ========================================================= */
-function openTeammateModal(role, user, targetFile) {
-  document.getElementById('handoffRoleBadge').textContent = `${role.toUpperCase()} MODULE`;
-  document.getElementById('handoffTitle').textContent = `Logged in as ${user}`;
-  document.getElementById('handoffCodeBox').innerHTML =
-    `// In script.js (when merging with your teammates' branch):<br>` +
-    `if (role === "${role}") {<br>` +
-    `&nbsp;&nbsp;window.location.href = "${targetFile}";<br>` +
-    `}`;
-  document.getElementById('teammateModal').classList.add('open');
-}
-
-function closeTeammateModal() {
-  document.getElementById('teammateModal').classList.remove('open');
-}
-
 let toastTimer = null;
 function showToast(message) {
   const toast = document.getElementById('quadToast');
@@ -507,8 +570,15 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// Initialize on page load
+// On Page Load: Check if an active Admin session exists; otherwise lock down to Login
 window.addEventListener('DOMContentLoaded', () => {
   loadDatabase();
-  renderStaffTable();
+
+  if (isAdminAuthenticated()) {
+    document.getElementById('view-login').classList.remove('active');
+    document.getElementById('view-admin').classList.add('active');
+    openAdminSubscreen('home');
+  } else {
+    lockDownToLogin();
+  }
 });
