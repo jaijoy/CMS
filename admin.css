@@ -1,0 +1,960 @@
+/* =========================================================
+   RESET & BASE VARIABLES
+   ========================================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --navy-deep: #000c54;
+  --navy-brand: #001253;
+  --navy-border: #10205c;
+  --bg-page: #e5e8ef;
+  --panel-gray: #f4f5f7;
+  --login-green: #008000;
+  --login-green-hover: #006600;
+  --submit-blue: #0088ff;
+  --edit-blue: #2374d8;
+  --delete-red: #d91b2e;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-page);
+  color: #111111;
+  min-height: 100vh;
+  padding-bottom: 32px;
+}
+
+/* =========================================================
+   TOP DEMO NAVIGATION BAR
+   ========================================================= */
+.instructor-bar {
+  background: #0d1636;
+  color: #ffffff;
+  padding: 9px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12.5px;
+  border-bottom: 2px solid #283b80;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.bar-left,
+.bar-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.badge-live {
+  background: #18a558;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 10.5px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.4px;
+}
+
+.screen-pill {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.screen-pill:hover {
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+
+.screen-pill.active {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #60a5fa;
+  font-weight: 700;
+}
+
+/* =========================================================
+   SHARED WIREFRAME WINDOW & HEADER
+   ========================================================= */
+.app-view {
+  display: none;
+  max-width: 1030px;
+  margin: 20px auto;
+  padding: 0 14px;
+}
+
+.app-view.active {
+  display: block;
+}
+
+.wireframe-window {
+  background: #ffffff;
+  border: 3px solid var(--navy-border);
+  box-shadow: 0 8px 24px rgba(0, 12, 84, 0.12);
+  overflow: hidden;
+}
+
+/* Top Navy Social Media Strip */
+.navy-social-bar {
+  background: var(--navy-deep);
+  color: #ffffff;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+}
+
+.social-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.social-square {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  color: var(--navy-deep);
+  font-weight: 800;
+  font-size: 10px;
+  border-radius: 2px;
+  text-decoration: none;
+}
+
+.social-right a {
+  color: #ffffff;
+  text-decoration: none;
+  margin: 0 3px;
+}
+
+.social-right a:hover {
+  text-decoration: underline;
+}
+
+/* Clinic Header Banner */
+.clinic-banner {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f3f7 100%);
+  border-bottom: 2.5px solid var(--navy-border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clinic-brand-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.clinic-logo-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--navy-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.clinic-logo-circle svg {
+  width: 40px;
+  height: 40px;
+}
+
+.clinic-title {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--navy-brand);
+  letter-spacing: 0.6px;
+}
+
+/* =========================================================
+   SCREEN 1: LOGIN UI DESIGN FOR ALL MODULE
+   ========================================================= */
+.login-stage {
+  background: var(--panel-gray);
+  padding: 54px 36px;
+  min-height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-split-box {
+  width: 100%;
+  max-width: 850px;
+  min-height: 295px;
+  background: var(--panel-gray);
+  border: 1.6px solid #4a4a4a;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+.login-illustration-col {
+  border-right: 1.5px solid #555555;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-form-col {
+  padding: 28px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-field-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.field-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.field-icon svg {
+  width: 26px;
+  height: 26px;
+  fill: var(--navy-brand);
+}
+
+.login-input,
+.login-select {
+  width: 100%;
+  height: 40px;
+  padding: 6px 12px;
+  font-size: 14.5px;
+  font-family: "Times New Roman", Georgia, serif;
+  color: #222222;
+  background: #ffffff;
+  border: 1.4px solid #3b3b3b;
+  border-radius: 6px;
+  outline: none;
+}
+
+.login-select {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  color: var(--navy-brand);
+  cursor: pointer;
+}
+
+.login-input:focus,
+.login-select:focus {
+  border-color: var(--navy-brand);
+  box-shadow: 0 0 0 2px rgba(0, 18, 83, 0.14);
+}
+
+.login-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+  margin-top: 6px;
+}
+
+.forgot-link {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 13.5px;
+  color: #0055cc;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.btn-login-green {
+  background: var(--login-green);
+  color: #ffffff;
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 9px 30px;
+  border: 1px solid #004d00;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-login-green:hover {
+  background: var(--login-green-hover);
+}
+
+.login-error-alert {
+  display: none;
+  margin-top: 12px;
+  padding: 8px 10px;
+  background: #ffe5e7;
+  border: 1px solid #d91b2e;
+  color: #a30f1e;
+  font-size: 12.5px;
+  border-radius: 5px;
+}
+
+/* =========================================================
+   ADMINISTRATOR LAYOUT (SIDEBAR + WORKSPACE)
+   ========================================================= */
+.admin-split-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 465px;
+  background: #ffffff;
+}
+
+.admin-sidebar {
+  border-right: 1.5px solid #cfd4dc;
+  padding: 24px 16px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.admin-sidebar-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.admin-role-heading {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #111111;
+  text-decoration: underline;
+  letter-spacing: 0.4px;
+  margin-bottom: 14px;
+}
+
+.admin-role-heading.title-case {
+  font-size: 20px;
+  text-decoration: none;
+}
+
+.admin-avatar-circle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  background: #ffffff;
+  transition: transform 0.15s;
+}
+
+.admin-avatar-circle:hover {
+  transform: scale(1.03);
+}
+
+.admin-avatar-circle svg {
+  width: 78px;
+  height: 78px;
+}
+
+.admin-user-label {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.admin-user-label.blue-text {
+  color: #1d3c78;
+  font-family: Arial, sans-serif;
+}
+
+.sidebar-quick-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 18px 0;
+}
+
+.side-nav-btn {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.15s;
+}
+
+.side-nav-btn:hover {
+  background: #e2e8f0;
+}
+
+.side-nav-btn.active-nav {
+  background: var(--navy-brand);
+  color: #ffffff;
+  border-color: var(--navy-brand);
+}
+
+.logout-btn-wireframe {
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.logout-btn-wireframe:hover {
+  background: #f5f5f5;
+}
+
+.logout-text {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e61919;
+}
+
+.logout-text.blue-logout {
+  color: #0b2e8a;
+  font-family: Arial, sans-serif;
+}
+
+/* Right Workspace Subscreens */
+.admin-workspace {
+  position: relative;
+  background: #ffffff;
+}
+
+.admin-subscreen {
+  display: none;
+  height: 100%;
+}
+
+.admin-subscreen.active {
+  display: block;
+}
+
+/* =========================================================
+   SUB-SCREEN 2A: ADMINISTRATOR HOME (MANAGE STAFF / DOCTOR)
+   ========================================================= */
+.admin-home-stage {
+  min-height: 455px;
+  padding: 48px 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.manage-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  margin-left: 44px;
+}
+
+.manage-action-card {
+  width: 275px;
+  height: 92px;
+  border: 1.5px solid #333333;
+  border-radius: 13px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.manage-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  border-color: var(--navy-brand);
+}
+
+.manage-staff-label {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #222222;
+  letter-spacing: 0.3px;
+}
+
+.manage-doctor-blue-btn {
+  background: linear-gradient(180deg, #7db0e8 0%, #5088cf 100%);
+  color: #ffffff;
+  border: 1px solid #3c6fb0;
+  border-radius: 3px;
+  padding: 9px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.admin-flow-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #475569;
+}
+
+.admin-flow-hint button {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-flow-hint button:hover {
+  background: #e2e8f0;
+}
+
+/* =========================================================
+   SUB-SCREEN 2B: ADD STAFF DETAILS (STAFF REGISTRATION - UI)
+   ========================================================= */
+.staff-reg-container {
+  padding: 26px 44px 30px;
+}
+
+.add-staff-heading {
+  text-align: center;
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--navy-brand);
+  letter-spacing: 0.4px;
+  margin-bottom: 24px;
+}
+
+.wireframe-staff-form {
+  max-width: 480px;
+}
+
+.wf-form-row {
+  display: grid;
+  grid-template-columns: 110px 215px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.wf-label {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #222222;
+}
+
+.wf-input,
+.wf-select {
+  width: 215px;
+  height: 27px;
+  border: 1.4px solid #b5b5b5;
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 13px;
+  color: #111111;
+  background: #ffffff;
+  outline: none;
+}
+
+.wf-input:focus,
+.wf-select:focus {
+  border-color: var(--submit-blue);
+}
+
+.wf-submit-row {
+  margin-top: 22px;
+  padding-left: 265px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wf-submit-btn {
+  background: #ffffff;
+  color: var(--submit-blue);
+  border: 1.5px solid #2998ff;
+  border-radius: 5px;
+  padding: 7px 22px;
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.wf-submit-btn:hover {
+  background: var(--submit-blue);
+  color: #ffffff;
+}
+
+.wf-cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   SUB-SCREEN 2C: SEARCH STAFF DETAILS TABLE
+   ========================================================= */
+.staff-table-stage {
+  padding: 26px 28px 24px;
+}
+
+.wf-search-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.wf-search-box {
+  width: 66%;
+  min-width: 300px;
+  height: 32px;
+  border: 1.4px solid #b5b5b5;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: #ffffff;
+}
+
+.wf-search-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 13.5px;
+  color: #333333;
+}
+
+.wf-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.role-filter-pills {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  background: var(--navy-brand);
+  color: #ffffff;
+  border-color: var(--navy-brand);
+}
+
+.btn-add-from-table {
+  background: #008000;
+  color: #ffffff;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wf-table-frame {
+  border: 1.4px solid #d2d6dc;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.wf-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.wf-grid-table thead th {
+  background: #ffffff;
+  color: #333333;
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  text-align: center;
+  padding: 6px 6px;
+  border-bottom: 1.4px solid #d2d6dc;
+}
+
+.wf-grid-table tbody td {
+  height: 31px;
+  border: 1px solid #dcdcdc;
+  padding: 3px 7px;
+  font-size: 12px;
+  color: #111111;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.role-mini-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #eef2ff;
+  color: #1e3a8a;
+  margin-left: 4px;
+}
+
+.wf-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.wf-btn-edit {
+  background: linear-gradient(180deg, #3b8ef3 0%, #1b62c4 100%);
+  color: #ffffff;
+  border: 1px solid #154ea1;
+  border-radius: 4px;
+  padding: 2px 11px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wf-btn-delete {
+  background: linear-gradient(180deg, #ef2b41 0%, #c51225 100%);
+  color: #ffffff;
+  border: 1px solid #9e0c1b;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wf-btn-edit.ghost-row-btn,
+.wf-btn-delete.ghost-row-btn {
+  opacity: 0.75;
+}
+
+.wireframe-bottom-strip {
+  height: 26px;
+  background: #f3f4f6;
+  border-top: 1.5px solid #cfd4dc;
+}
+
+/* =========================================================
+   TEAMMATE HAND-OFF MODAL & TOAST
+   ========================================================= */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 16, 42, 0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 10px;
+  border: 2px solid var(--navy-brand);
+  padding: 22px 24px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.role-tag {
+  background: var(--navy-brand);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 4px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.modal-card h3 {
+  font-size: 18px;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.modal-card p {
+  font-size: 13.5px;
+  color: #334155;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.code-snippet-box {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-back-login {
+  background: #e2e8f0;
+  color: #1e293b;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-open-admin {
+  background: var(--navy-brand);
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quad-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #001253;
+  color: #ffffff;
+  padding: 11px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  border-left: 4px solid #22c55e;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: 0.22s ease;
+  z-index: 1500;
+}
+
+.quad-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 780px) {
+  .login-split-box {
+    grid-template-columns: 1fr;
+  }
+  .login-illustration-col {
+    border-right: none;
+    border-bottom: 1.5px solid #555;
+  }
+  .admin-split-layout {
+    grid-template-columns: 1fr;
+  }
+  .admin-home-stage {
+    flex-direction: column;
+  }
+  .manage-cards-stack {
+    margin-left: 0;
+  }
+  .wf-submit-row {
+    padding-left: 0;
+  }
+}
