@@ -1,10 +1,10 @@
 /* =========================================================
-   QUAD CLINIC - STRICT VALIDATION (AGE < 60 ENFORCED)
+   QUAD CLINIC - ROBUST LOGIN & CLINIC ENGINE
    ========================================================= */
 
-const DB_STAFF_KEY = 'quad_clinic_staff_strict_v9';
-const DB_PATIENT_KEY = 'quad_clinic_patients_strict_v9';
-const DB_BOOKINGS_KEY = 'quad_clinic_bookings_strict_v9';
+const DB_STAFF_KEY = 'quad_clinic_staff_fixed_v10';
+const DB_PATIENT_KEY = 'quad_clinic_patients_fixed_v10';
+const DB_BOOKINGS_KEY = 'quad_clinic_bookings_fixed_v10';
 const SESSION_KEY = 'quad_clinic_user_session';
 
 // Standard 30-Minute Shifts
@@ -16,7 +16,7 @@ const AFTERNOON_SLOTS = [
   "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM"
 ];
 
-// Seed Staff (All compliant with: 21 <= Staff < 60, 27 < Doctor < 60)
+// Seed Staff
 const DEFAULT_STAFF = [
   { 
     id: '1', 
@@ -25,7 +25,7 @@ const DEFAULT_STAFF = [
     dept: 'Cardiology',
     gender: 'Male',
     bloodGroup: 'O+',
-    dob: '1984-05-12', // ~42 yrs
+    dob: '1984-05-12',
     joiningDate: '2020-01-15',
     email: 'arun@quadclinic.com', 
     contact: '9447112233', 
@@ -42,7 +42,7 @@ const DEFAULT_STAFF = [
     dept: 'General Medicine',
     gender: 'Male',
     bloodGroup: 'B+',
-    dob: '1982-10-24', // ~44 yrs
+    dob: '1982-10-24',
     joiningDate: '2019-06-01',
     email: 'doctor@quadclinic.com', 
     contact: '9447122334', 
@@ -59,7 +59,7 @@ const DEFAULT_STAFF = [
     dept: 'Pediatrics',
     gender: 'Female',
     bloodGroup: 'A+',
-    dob: '1988-03-18', // ~38 yrs
+    dob: '1988-03-18',
     joiningDate: '2021-08-10',
     email: 'meera@quadclinic.com', 
     contact: '9895233445', 
@@ -76,7 +76,7 @@ const DEFAULT_STAFF = [
     dept: 'Orthopedics',
     gender: 'Female',
     bloodGroup: 'AB+',
-    dob: '1985-11-05', // ~41 yrs
+    dob: '1985-11-05',
     joiningDate: '2020-11-20',
     email: 'deepa@quadclinic.com', 
     contact: '9895001122', 
@@ -93,7 +93,7 @@ const DEFAULT_STAFF = [
     dept: 'Dermatology',
     gender: 'Male',
     bloodGroup: 'O-',
-    dob: '1986-07-29', // ~40 yrs
+    dob: '1986-07-29',
     joiningDate: '2022-03-01',
     email: 'sanjay@quadclinic.com', 
     contact: '9811223344', 
@@ -110,7 +110,7 @@ const DEFAULT_STAFF = [
     dept: 'Administration',
     gender: 'Female',
     bloodGroup: 'A+',
-    dob: '1998-09-14', // ~28 yrs
+    dob: '1998-09-14',
     joiningDate: '2023-02-15',
     email: 'reception@quadclinic.com', 
     contact: '9847011223', 
@@ -127,7 +127,7 @@ const DEFAULT_STAFF = [
     dept: 'Pathology',
     gender: 'Male',
     bloodGroup: 'B-',
-    dob: '1995-12-03', // ~31 yrs
+    dob: '1995-12-03',
     joiningDate: '2022-07-10',
     email: 'lab@quadclinic.com', 
     contact: '9746344556', 
@@ -144,7 +144,7 @@ const DEFAULT_STAFF = [
     dept: 'Dispensary',
     gender: 'Female',
     bloodGroup: 'O+',
-    dob: '1996-04-22', // ~30 yrs
+    dob: '1996-04-22',
     joiningDate: '2023-01-05',
     email: 'pharmacy@quadclinic.com', 
     contact: '9633455667', 
@@ -272,7 +272,8 @@ function generateRandomPassword() {
 }
 
 function generateNewPasswordForStaff() {
-  document.getElementById('staffPass').value = generateRandomPassword();
+  const field = document.getElementById('staffPass');
+  if (field) field.value = generateRandomPassword();
 }
 
 /* =========================================================
@@ -313,103 +314,83 @@ function isNotFutureDate(dateStr) {
 }
 
 /* =========================================================
-   1. LOGIN
+   1. FIXED LOGIN HANDLER (NO DROPDOWN CONFLICTS)
    ========================================================= */
-function handleRoleChange(role) {
-  const tip = document.getElementById('patientNotice');
-  const userLabel = document.getElementById('loginUserLabel');
-  const passLabel = document.getElementById('loginPassLabel');
-
-  if (role === 'Patient') {
-    tip.style.display = 'block';
-    userLabel.textContent = 'Patient Email';
-    passLabel.textContent = 'Password (Phone Number)';
-  } else {
-    tip.style.display = 'none';
-    userLabel.textContent = 'Email Address';
-    passLabel.textContent = 'Password';
-  }
-}
-
 function handleLogin(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
+  
   const msg = document.getElementById('loginMsg');
-  msg.style.display = 'none';
+  if (msg) msg.style.display = 'none';
 
-  const role = document.getElementById('loginRole').value;
-  const username = document.getElementById('loginUser').value.trim().toLowerCase();
-  const password = document.getElementById('loginPass').value.trim();
+  const userEl = document.getElementById('loginUser');
+  const passEl = document.getElementById('loginPass');
 
-  if (!role) {
-    msg.textContent = 'Please select a system role.';
-    msg.style.display = 'block';
+  if (!userEl || !passEl) return;
+
+  const username = userEl.value.trim().toLowerCase();
+  const password = passEl.value.trim();
+
+  if (!username || !password) {
+    if (msg) {
+      msg.textContent = 'Please enter both email/username and password.';
+      msg.style.display = 'block';
+    }
     return;
   }
 
-  // Admin Login
-  if (role === 'Admin') {
-    if ((username === 'admin@quadclinic.com' || username === 'admin') && password === 'admin123') {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Admin', user: username }));
-      showAdminView();
-      return;
-    } else {
-      msg.textContent = 'Invalid credentials. Use admin@quadclinic.com / admin123';
-      msg.style.display = 'block';
-      return;
-    }
-  }
-
-  // Patient Login
-  if (role === 'Patient') {
-    const patient = patientList.find(p => p.email.toLowerCase() === username);
-    if (!patient) {
-      msg.textContent = `No patient found with email "${username}". Please register first.`;
-      msg.style.display = 'block';
-      return;
-    }
-    if (patient.phone !== password) {
-      msg.textContent = 'Invalid password. (Password is your 10-digit phone number).';
-      msg.style.display = 'block';
-      return;
-    }
-
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Patient', ...patient }));
-    showPatientView(patient);
+  // Check 1: Administrator
+  if ((username === 'admin@quadclinic.com' || username === 'admin') && password === 'admin123') {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Admin', user: username }));
+    showAdminView();
     return;
   }
 
-  // Staff Login
-  const staff = staffList.find(s => 
-    s.role === role && 
-    (s.email.toLowerCase() === username || s.name.toLowerCase() === username)
+  // Check 2: Staff Member (Doctor, Receptionist, Lab Tech, Pharmacist)
+  const matchedStaff = staffList.find(s => 
+    (s.email.toLowerCase() === username || s.name.toLowerCase() === username) && s.password === password
   );
 
-  if (!staff) {
-    msg.textContent = `No ${role} record found matching "${username}".`;
-    msg.style.display = 'block';
+  if (matchedStaff) {
+    const pages = {
+      'Receptionist': 'receptionist.html',
+      'Doctor': 'doctor.html',
+      'Lab Technician': 'lab.html',
+      'Pharmacist': 'pharmacist.html'
+    };
+
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(matchedStaff));
+    const target = pages[matchedStaff.role];
+    if (target) {
+      window.location.href = target;
+    } else {
+      alert(`Logged in as ${matchedStaff.name} (${matchedStaff.role})`);
+    }
     return;
   }
 
-  if (staff.password !== password) {
-    msg.textContent = `Incorrect password for ${staff.name}.`;
-    msg.style.display = 'block';
+  // Check 3: Patient (Email + Phone Number as password)
+  const matchedPatient = patientList.find(p => 
+    p.email.toLowerCase() === username && p.phone === password
+  );
+
+  if (matchedPatient) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Patient', ...matchedPatient }));
+    showPatientView(matchedPatient);
     return;
   }
 
-  const pages = {
-    'Receptionist': 'receptionist.html',
-    'Doctor': 'doctor.html',
-    'Lab Technician': 'lab.html',
-    'Pharmacist': 'pharmacist.html'
-  };
-
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(staff));
-  window.location.href = pages[role];
+  // If no match
+  if (msg) {
+    msg.textContent = 'Invalid credentials. Please verify your email and password.';
+    msg.style.display = 'block';
+  }
 }
 
 function handleLogout() {
   sessionStorage.removeItem(SESSION_KEY);
-  document.getElementById('loginForm').reset();
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) loginForm.reset();
+  
   document.getElementById('loginView').style.display = 'block';
   document.getElementById('adminView').style.display = 'none';
   document.getElementById('patientView').style.display = 'none';
@@ -531,7 +512,7 @@ function pickSlot(slot, btn) {
 }
 
 function handleConfirmBooking(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
   const session = JSON.parse(sessionStorage.getItem(SESSION_KEY));
   if (!session || session.role !== 'Patient') return;
 
@@ -674,16 +655,12 @@ function openAddForm(presetRole) {
   const maleRadio = form.querySelector('input[name="staffGender"][value="Male"]');
   if (maleRadio) maleRadio.checked = true;
 
-  // Auto-generate random secure password
   document.getElementById('staffPass').value = generateRandomPassword();
   switchAdminTab('add');
 }
 
-/* =========================================================
-   STAFF SUBMISSION (STRICT AGE < 60 CHECK)
-   ========================================================= */
 function handleStaffSubmit(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
   const alertBox = document.getElementById('staffValidationAlert');
   alertBox.style.display = 'none';
 
@@ -702,13 +679,11 @@ function handleStaffSubmit(event) {
   const password = document.getElementById('staffPass').value.trim();
   const status = document.getElementById('staffStatus').value;
 
-  // 1. Name Check
   if (!isValidName(name)) {
     showStaffValidationError("Name must be at least 3 letters long, letters and spaces only.");
     return;
   }
 
-  // 2. DOB Check
   if (!dob) {
     showStaffValidationError("Please provide a valid Date of Birth.");
     return;
@@ -718,29 +693,21 @@ function handleStaffSubmit(event) {
     return;
   }
 
-  // 3. Exact Age Logical Validation
   const age = calculateAge(dob);
-
-  // Maximum Working Age Check (< 60 years)
   if (age >= 60) {
     showStaffValidationError(`Staff member must be below 60 years of age (Current age from DOB: ${age} years).`);
     return;
   }
 
-  // Minimum Age Checks
-  if (role === 'Doctor') {
-    if (age <= 27) {
-      showStaffValidationError(`Doctor age must be strictly greater than 27 years (Current age from DOB: ${age} years).`);
-      return;
-    }
-  } else {
-    if (age < 21) {
-      showStaffValidationError(`${role} age must be at least 21 years old (Current age from DOB: ${age} years).`);
-      return;
-    }
+  if (role === 'Doctor' && age <= 27) {
+    showStaffValidationError(`Doctor age must be strictly greater than 27 years (Current age from DOB: ${age} years).`);
+    return;
+  }
+  if (role !== 'Doctor' && age < 21) {
+    showStaffValidationError(`${role} age must be at least 21 years old (Current age from DOB: ${age} years).`);
+    return;
   }
 
-  // 4. Joining Date Check
   if (!joiningDate) {
     showStaffValidationError("Please provide a valid Date of Joining.");
     return;
@@ -759,19 +726,16 @@ function handleStaffSubmit(event) {
     return;
   }
 
-  // 5. Phone Validation (6-9 start, exactly 10 digits)
   if (!isValidPhone(contact)) {
     showStaffValidationError("Phone Number must be exactly 10 digits and start with 6, 7, 8, or 9.");
     return;
   }
 
-  // 6. Email Validation
   if (!isValidEmail(email)) {
     showStaffValidationError("Please enter a valid email address.");
     return;
   }
 
-  // 7. Password Check
   if (!password || password.length < 4) {
     showStaffValidationError("Password must be at least 4 characters long.");
     return;
@@ -1067,7 +1031,7 @@ function onAdminPatientDateChange() {
 }
 
 function handlePatientEntrySubmit(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
   const alertBox = document.getElementById('patientValidationAlert');
   alertBox.style.display = 'none';
 
@@ -1084,25 +1048,21 @@ function handlePatientEntrySubmit(event) {
   const date = document.getElementById('newPtDate').value;
   const slot = document.getElementById('newPtSlot').value;
 
-  // 1. Name validation
   if (!isValidName(name)) {
     showPatientEntryError("Patient Name must be at least 3 letters long, alphabets and spaces only.");
     return;
   }
 
-  // 2. Gender validation
   if (!gender) {
     showPatientEntryError("Please select a gender option.");
     return;
   }
 
-  // 3. Blood Group validation
   if (!isValidBloodGroup(bloodGroup)) {
     showPatientEntryError("Invalid blood group selected.");
     return;
   }
 
-  // 4. DOB validation: cannot be in future, and realistic age (<= 100 yrs)
   if (!dob) {
     showPatientEntryError("Please provide a valid Date of Birth.");
     return;
@@ -1117,26 +1077,22 @@ function handlePatientEntrySubmit(event) {
     return;
   }
 
-  // 5. Phone validation: exactly 10 digits starting with 6, 7, 8, or 9
   if (!isValidPhone(phone)) {
     showPatientEntryError("Phone Number must be exactly 10 digits and start with 6, 7, 8, or 9.");
     return;
   }
 
-  // 6. Email validation
   if (!isValidEmail(email)) {
     showPatientEntryError("Please enter a valid patient email address.");
     return;
   }
 
-  // Duplicate Check
   const duplicate = patientList.find(p => p.email.toLowerCase() === email || p.phone === phone);
   if (duplicate) {
     showPatientEntryError(`A patient already exists with this email or phone number (MMR: ${duplicate.mmr}, Name: ${duplicate.name}).`);
     return;
   }
 
-  // 7. Doctor and Slot validations
   const doc = staffList.find(s => s.id === doctorId && s.role === 'Doctor');
   if (!doc) {
     showPatientEntryError("Please select an active doctor.");
@@ -1166,7 +1122,6 @@ function handlePatientEntrySubmit(event) {
     return;
   }
 
-  // Double booking check
   const conflict = bookingList.find(b => b.doctor === doc.name && b.date === date && b.slot === slot && b.status === 'Confirmed');
   if (conflict) {
     showPatientEntryError("This time slot has just been reserved. Please select another slot.");
@@ -1174,7 +1129,6 @@ function handlePatientEntrySubmit(event) {
     return;
   }
 
-  // Generate Automatic Unique MMR
   const mmr = `MMR${Math.floor(1000 + Math.random() * 9000)}`;
 
   const newPatient = {
