@@ -1,0 +1,1365 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+</head>
+<body>
+
+    <h1>Book Appointment</h1>
+    <!-- Display selected patient details -->
+    <div id="patientDetails"></div>
+
+    <h2>Select Department</h2>
+
+    <!-- Department dropdown -->
+    <select id="department">
+        <option value="">Select Department</option>
+    </select>
+
+    <h2>Select Doctor</h2>
+
+    <!-- Doctor dropdown -->
+    <select id="doctor">
+        <option value="">Select Doctor</option>
+    </select>
+
+    <script>
+
+        // Get patient data from Local Storage
+        let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+        // Get the MMR of the selected patient
+        let selectedMMR = localStorage.getItem("selectedPatientMMR");
+
+        // Find the patient using their MMR number
+        let patient = patients.find(function(p) {
+            return p.MMR === selectedMMR;
+        });
+
+        // Get the div where patient details will be displayed
+        let details = document.getElementById("patientDetails");
+
+        // If the patient exists, display their details
+        if (patient) {
+            details.innerHTML = `
+                <h3>Patient Details</h3>
+                <p>MMR: ${patient.MMR}</p>
+                <p>Name: ${patient.name}</p>
+                <p>Phone: ${patient.phone}</p>
+            `;
+        } 
+        else {
+            // If patient is not found, display a message
+            details.innerHTML = "<p>Patient not found!</p>";
+        }
+
+
+        // ---------------- DUMMY DEPARTMENT DATA ----------------
+
+        // Dummy departments (later Admin will add these)
+        let departments = [
+            { id: 1, name: "Cardiology" },
+            { id: 2, name: "Dermatology" },
+            { id: 3, name: "Orthopedics" },
+            { id: 4, name: "Pediatrics" }
+        ];
+
+        // ---------------- DUMMY DOCTOR DATA ----------------
+
+        // Dummy doctors (later Admin will add these)
+        let doctors = [
+            { id: 1, name: "Dr. Arun", departmentId: 1 },
+            { id: 2, name: "Dr. Meera", departmentId: 1 },
+            { id: 3, name: "Dr. Rahul", departmentId: 2 },
+            { id: 4, name: "Dr. Neha", departmentId: 3 },
+            { id: 5, name: "Dr. Anjali", departmentId: 4 }
+        ];
+
+        // Save departments in Local Storage
+        localStorage.setItem("departments", JSON.stringify(departments));
+
+        // Save doctors in Local Storage
+        localStorage.setItem("doctors", JSON.stringify(doctors));
+
+        // Get departments added by Admin from Local Storage-------------------
+        // let departments = JSON.parse(localStorage.getItem("departments")) || [];
+
+        // // Get doctors added by Admin from Local Storage
+        // let doctors = JSON.parse(localStorage.getItem("doctors")) || [];
+
+
+        // ---------------- DISPLAY DEPARTMENTS ----------------
+
+        // Get the department dropdown
+        let departmentSelect = document.getElementById("department");
+
+        // Loop through departments and add them to the dropdown
+        departments.forEach(function(department) {
+            departmentSelect.innerHTML += `
+                <option value="${department.id}">
+                    ${department.name}
+                </option>
+            `;
+        });
+
+
+        // ---------------- DISPLAY DOCTORS ----------------
+
+        // Get the doctor dropdown
+        let doctorSelect = document.getElementById("doctor");
+
+        // When a department is selected
+        departmentSelect.addEventListener("change", function() {
+
+            // Clear previous doctors
+            doctorSelect.innerHTML = `
+                <option value="">Select Doctor</option>
+            `;
+
+            // Get the selected department ID
+            let selectedDepartment = departmentSelect.value;
+
+            // Filter doctors belonging to the selected department
+            let filteredDoctors = doctors.filter(function(doctor) {
+                return doctor.departmentId == selectedDepartment;
+            });
+
+            // Display doctors in the dropdown
+            filteredDoctors.forEach(function(doctor) {
+                doctorSelect.innerHTML += `
+                    <option value="${doctor.id}">
+                        ${doctor.name}
+                    </option>
+                `;
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>
+
+
+
+
+----------------------------------------------------------
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+</head>
+<body>
+
+    <h1>Book Appointment</h1>
+
+    <!-- Patient Details -->
+    <div id="patientDetails"></div>
+
+    <hr>
+
+    <!-- Department Selection -->
+    <h2>Select Department</h2>
+    <select id="department">
+        <option value="">Select Department</option>
+    </select>
+
+    <!-- Doctor Selection -->
+    <h2>Select Doctor</h2>
+    <select id="doctor">
+        <option value="">Select Doctor</option>
+    </select>
+
+    <!-- Date Selection -->
+    <h2>Select Date</h2>
+    <input type="date" id="appointmentDate">
+
+    <!-- Time Slot Selection -->
+    <h2>Available Time Slots</h2>
+    <div id="timeSlots"></div>
+
+    <!-- Selected Slot -->
+    <p id="selectedSlot"></p>
+
+    <!-- Confirm Appointment -->
+    <br>
+    <button id="confirmBtn" onclick="confirmAppointment()" disabled>
+        Confirm Appointment
+    </button>
+
+    <!-- Confirmation Details -->
+    <div id="confirmation"></div>
+
+
+    <script>
+
+        // ---------------- PATIENT DETAILS ----------------
+
+        // Get patient data from Local Storage
+        let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+        // Get selected patient's MMR
+        let selectedMMR = localStorage.getItem("selectedPatientMMR");
+
+        // Find selected patient
+        let patient = patients.find(function(p) {
+            return p.MMR === selectedMMR;
+        });
+
+        // Get patient details div
+        let details = document.getElementById("patientDetails");
+
+        // Display patient details
+        if (patient) {
+            details.innerHTML = `
+                <h3>Patient Details</h3>
+                <p>MMR: ${patient.MMR}</p>
+                <p>Name: ${patient.name}</p>
+                <p>Phone: ${patient.phone}</p>
+            `;
+        }
+        else {
+            details.innerHTML = "<p>Patient not found!</p>";
+        }
+
+
+        // ---------------- DUMMY DEPARTMENTS ----------------
+
+        // Add dummy departments if not already saved
+        if (!localStorage.getItem("departments")) {
+
+            let dummyDepartments = [
+                { id: 1, name: "Cardiology" },
+                { id: 2, name: "Dermatology" },
+                { id: 3, name: "Orthopedics" },
+                { id: 4, name: "Pediatrics" }
+            ];
+
+            localStorage.setItem("departments", JSON.stringify(dummyDepartments));
+        }
+
+
+        // ---------------- DUMMY DOCTORS ----------------
+
+        // Add dummy doctors if not already saved
+        if (!localStorage.getItem("doctors")) {
+
+            let dummyDoctors = [
+                { id: 1, name: "Dr. Arun", departmentId: 1 },
+                { id: 2, name: "Dr. Meera", departmentId: 1 },
+                { id: 3, name: "Dr. Rahul", departmentId: 2 },
+                { id: 4, name: "Dr. Neha", departmentId: 3 },
+                { id: 5, name: "Dr. Anjali", departmentId: 4 }
+            ];
+
+            localStorage.setItem("doctors", JSON.stringify(dummyDoctors));
+        }
+
+
+        // ---------------- DUMMY DOCTOR SCHEDULES ----------------
+
+        // Add dummy schedules if not already saved
+        if (!localStorage.getItem("doctorSchedules")) {
+
+            let dummySchedules = [
+                {
+                    doctorId: 1,
+                    workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    slots: ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "02:00 PM", "02:30 PM", "03:00 PM"]
+                },
+                {
+                    doctorId: 2,
+                    workingDays: ["Monday", "Wednesday", "Friday", "Saturday"],
+                    slots: ["10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:00 PM"]
+                },
+                {
+                    doctorId: 3,
+                    workingDays: ["Monday", "Tuesday", "Thursday", "Saturday"],
+                    slots: ["09:00 AM", "09:30 AM", "10:00 AM", "11:00 AM", "11:30 AM", "02:00 PM", "03:00 PM"]
+                },
+                {
+                    doctorId: 4,
+                    workingDays: ["Tuesday", "Wednesday", "Thursday", "Friday"],
+                    slots: ["09:30 AM", "10:00 AM", "10:30 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:30 PM"]
+                },
+                {
+                    doctorId: 5,
+                    workingDays: ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday"],
+                    slots: ["09:00 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:30 PM"]
+                }
+            ];
+
+            localStorage.setItem("doctorSchedules", JSON.stringify(dummySchedules));
+        }
+
+
+        // ---------------- GET DATA FROM LOCAL STORAGE ----------------
+
+        // Get departments
+        let departments = JSON.parse(localStorage.getItem("departments")) || [];
+
+        // Get doctors
+        let doctors = JSON.parse(localStorage.getItem("doctors")) || [];
+
+        // Get doctor schedules
+        let doctorSchedules = JSON.parse(localStorage.getItem("doctorSchedules")) || [];
+
+        // Get already booked appointments
+        let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+
+
+        // ---------------- DISPLAY DEPARTMENTS ----------------
+
+        let departmentSelect = document.getElementById("department");
+
+        // Display departments in dropdown
+        departments.forEach(function(department) {
+            departmentSelect.innerHTML += `
+                <option value="${department.id}">
+                    ${department.name}
+                </option>
+            `;
+        });
+
+
+        // ---------------- DISPLAY DOCTORS ----------------
+
+        let doctorSelect = document.getElementById("doctor");
+
+        departmentSelect.addEventListener("change", function() {
+
+            // Clear doctors and time slots
+            doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+            document.getElementById("timeSlots").innerHTML = "";
+            document.getElementById("selectedSlot").innerHTML = "";
+            document.getElementById("confirmation").innerHTML = "";
+            document.getElementById("confirmBtn").disabled = true;
+
+            // Get selected department
+            let selectedDepartment = departmentSelect.value;
+
+            // Find doctors in the selected department
+            let filteredDoctors = doctors.filter(function(doctor) {
+                return doctor.departmentId == selectedDepartment;
+            });
+
+            // Display doctors
+            filteredDoctors.forEach(function(doctor) {
+                doctorSelect.innerHTML += `
+                    <option value="${doctor.id}">
+                        ${doctor.name}
+                    </option>
+                `;
+            });
+        });
+
+
+        // ---------------- APPOINTMENT DATE ----------------
+
+        let dateInput = document.getElementById("appointmentDate");
+
+        // Format date to YYYY-MM-DD
+        function formatDate(date) {
+            let year = date.getFullYear();
+            let month = String(date.getMonth() + 1).padStart(2, "0");
+            let day = String(date.getDate()).padStart(2, "0");
+
+            return year + "-" + month + "-" + day;
+        }
+
+        // Set today's date
+        let today = new Date();
+
+        dateInput.min = formatDate(today);
+
+        // Set tomorrow's date
+        let tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        dateInput.max = formatDate(tomorrow);
+
+
+        // ---------------- DISPLAY TIME SLOTS ----------------
+
+        doctorSelect.addEventListener("change", displaySlots);
+        dateInput.addEventListener("change", displaySlots);
+
+
+        function displaySlots() {
+
+            let selectedDoctor = doctorSelect.value;
+            let selectedDate = dateInput.value;
+
+            let slotDiv = document.getElementById("timeSlots");
+
+            // Clear previous data
+            slotDiv.innerHTML = "";
+            document.getElementById("selectedSlot").innerHTML = "";
+            document.getElementById("confirmation").innerHTML = "";
+            document.getElementById("confirmBtn").disabled = true;
+
+            // Check doctor and date
+            if (selectedDoctor === "" || selectedDate === "") {
+                return;
+            }
+
+            // Find doctor schedule
+            let schedule = doctorSchedules.find(function(s) {
+                return s.doctorId == selectedDoctor;
+            });
+
+            if (!schedule) {
+                slotDiv.innerHTML = "<p>No schedule available for this doctor.</p>";
+                return;
+            }
+
+            // Get selected day name
+            let selectedDay = new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+                weekday: "long"
+            });
+
+            // Check doctor's working day
+            if (!schedule.workingDays.includes(selectedDay)) {
+                slotDiv.innerHTML = "<p>Doctor is not available on this day.</p>";
+                return;
+            }
+
+            // Display available slots
+            schedule.slots.forEach(function(slot) {
+
+                // Check if slot is already booked for this doctor and date
+                let isBooked = appointments.some(function(appointment) {
+                    return appointment.doctorId == selectedDoctor
+                        && appointment.date == selectedDate
+                        && appointment.time == slot;
+                });
+
+                // If slot is booked, don't display it
+                if (!isBooked) {
+                    slotDiv.innerHTML += `
+                        <button onclick="selectSlot('${slot}')">
+                            ${slot}
+                        </button>
+                    `;
+                }
+            });
+
+            // If all slots are booked
+            if (slotDiv.innerHTML === "") {
+                slotDiv.innerHTML = "<p>No available slots.</p>";
+            }
+        }
+
+
+        // ---------------- SELECT TIME SLOT ----------------
+
+        let selectedTime = "";
+
+        function selectSlot(slot) {
+
+            selectedTime = slot;
+
+            // Display selected slot
+            document.getElementById("selectedSlot").innerHTML =
+                "Selected Time: " + slot;
+
+            // Enable confirm button
+            document.getElementById("confirmBtn").disabled = false;
+        }
+
+
+        // ---------------- CONFIRM APPOINTMENT ----------------
+
+        function confirmAppointment() {
+
+            // Check patient
+            if (!patient) {
+                alert("Patient not found!");
+                return;
+            }
+
+            // Get selected values
+            let departmentId = departmentSelect.value;
+            let doctorId = doctorSelect.value;
+            let date = dateInput.value;
+
+            // Check selections
+            if (departmentId === "" || doctorId === "" || date === "" || selectedTime === "") {
+                alert("Please select department, doctor, date and time.");
+                return;
+            }
+
+            // Check again if slot was booked
+            let alreadyBooked = appointments.some(function(appointment) {
+                return appointment.doctorId == doctorId
+                    && appointment.date == date
+                    && appointment.time == selectedTime;
+            });
+
+            if (alreadyBooked) {
+                alert("This slot is already booked!");
+                displaySlots();
+                return;
+            }
+
+            // Get department name
+            let department = departments.find(function(d) {
+                return d.id == departmentId;
+            });
+
+            // Get doctor name
+            let doctor = doctors.find(function(d) {
+                return d.id == doctorId;
+            });
+
+            // Generate token number
+            let token = appointments.length + 1;
+
+            // Create appointment object
+            let newAppointment = {
+                token: token,
+                MMR: patient.MMR,
+                patientName: patient.name,
+                departmentId: departmentId,
+                departmentName: department ? department.name : "",
+                doctorId: doctorId,
+                doctorName: doctor ? doctor.name : "",
+                date: date,
+                time: selectedTime,
+                status: "Booked"
+            };
+
+            // Add appointment to array
+            appointments.push(newAppointment);
+
+            // Save appointments in Local Storage
+            localStorage.setItem("appointments", JSON.stringify(appointments));
+
+            // Display confirmation
+            document.getElementById("confirmation").innerHTML = `
+                <h2>Appointment Booked Successfully!</h2>
+                <p>Token Number: ${token}</p>
+                <p>Patient Name: ${patient.name}</p>
+                <p>MMR: ${patient.MMR}</p>
+                <p>Department: ${department ? department.name : ""}</p>
+                <p>Doctor: ${doctor ? doctor.name : ""}</p>
+                <p>Date: ${date}</p>
+                <p>Time: ${selectedTime}</p>
+            `;
+
+            // Clear selected time after booking
+            selectedTime = "";
+
+            // Disable confirm button
+            document.getElementById("confirmBtn").disabled = true;
+
+            // Refresh slots to hide the booked slot
+            displaySlots();
+
+        }
+
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+</head>
+<body>
+
+    <h1>Book Appointment</h1>
+
+    <!-- Patient Details -->
+    <div id="patientDetails"></div>
+
+    <hr>
+
+    <!-- Department Selection -->
+    <h2>Select Department</h2>
+    <select id="department">
+        <option value="">Select Department</option>
+    </select>
+
+    <!-- Doctor Selection -->
+    <h2>Select Doctor</h2>
+    <select id="doctor">
+        <option value="">Select Doctor</option>
+    </select>
+
+    <!-- Date Selection -->
+    <h2>Select Date</h2>
+    <input type="date" id="appointmentDate">
+
+    <!-- Time Slot Selection -->
+    <h2>Available Time Slots</h2>
+    <div id="timeSlots"></div>
+
+    <!-- Selected Slot -->
+    <p id="selectedSlot"></p>
+
+    <!-- Confirm Appointment -->
+    <br>
+    <button id="confirmBtn" onclick="confirmAppointment()" disabled>
+        Confirm Appointment
+    </button>
+
+    <!-- Appointment Confirmation -->
+    <div id="confirmation"></div>
+
+
+    <script>
+
+        // ---------------- PATIENT DETAILS ----------------
+
+        // Get patient data from Local Storage
+        let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+        // Get selected patient's MMR
+        let selectedMMR = localStorage.getItem("selectedPatientMMR");
+
+        // Find the selected patient
+        let patient = patients.find(function(p) {
+            return p.MMR === selectedMMR;
+        });
+
+        // Get patient details div
+        let details = document.getElementById("patientDetails");
+
+        // Display patient details
+        if (patient) {
+            details.innerHTML = `
+                <h3>Patient Details</h3>
+                <p>MMR: ${patient.MMR}</p>
+                <p>Name: ${patient.name}</p>
+                <p>Phone: ${patient.phone}</p>
+            `;
+        }
+        else {
+            details.innerHTML = "<p>Patient not found!</p>";
+        }
+
+
+        // ---------------- DUMMY DEPARTMENTS ----------------
+
+        // Add dummy departments only if data doesn't already exist
+        if (!localStorage.getItem("departments")) {
+
+            let dummyDepartments = [
+                { id: 1, name: "Cardiology" },
+                { id: 2, name: "Dermatology" },
+                { id: 3, name: "Orthopedics" },
+                { id: 4, name: "Pediatrics" }
+            ];
+
+            // Save dummy departments in Local Storage
+            localStorage.setItem("departments", JSON.stringify(dummyDepartments));
+        }
+
+
+        // ---------------- DUMMY DOCTORS ----------------
+
+        // Add dummy doctors only if data doesn't already exist
+        if (!localStorage.getItem("doctors")) {
+
+            let dummyDoctors = [
+                { id: 1, name: "Dr. Arun", departmentId: 1 },
+                { id: 2, name: "Dr. Meera", departmentId: 1 },
+                { id: 3, name: "Dr. Rahul", departmentId: 2 },
+                { id: 4, name: "Dr. Neha", departmentId: 3 },
+                { id: 5, name: "Dr. Anjali", departmentId: 4 }
+            ];
+
+            // Save dummy doctors in Local Storage
+            localStorage.setItem("doctors", JSON.stringify(dummyDoctors));
+        }
+
+
+        // ---------------- DUMMY DOCTOR SCHEDULES ----------------
+
+        // Add dummy schedules only if data doesn't already exist
+        if (!localStorage.getItem("doctorSchedules")) {
+
+            let dummySchedules = [
+                {
+                    doctorId: 1,
+                    workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    slots: ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "02:00 PM", "02:30 PM", "03:00 PM"]
+                },
+                {
+                    doctorId: 2,
+                    workingDays: ["Monday", "Wednesday", "Friday", "Saturday"],
+                    slots: ["10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:00 PM"]
+                },
+                {
+                    doctorId: 3,
+                    workingDays: ["Monday", "Tuesday", "Thursday", "Saturday"],
+                    slots: ["09:00 AM", "09:30 AM", "10:00 AM", "11:00 AM", "11:30 AM", "02:00 PM", "03:00 PM"]
+                },
+                {
+                    doctorId: 4,
+                    workingDays: ["Tuesday", "Wednesday", "Thursday", "Friday"],
+                    slots: ["09:30 AM", "10:00 AM", "10:30 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:30 PM"]
+                },
+                {
+                    doctorId: 5,
+                    workingDays: ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday"],
+                    slots: ["09:00 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:30 PM"]
+                }
+            ];
+
+            // Save dummy schedules in Local Storage
+            localStorage.setItem("doctorSchedules", JSON.stringify(dummySchedules));
+        }
+
+
+        // ---------------- GET DATA FROM LOCAL STORAGE ----------------
+
+        // Get departments
+        let departments = JSON.parse(localStorage.getItem("departments")) || [];
+
+        // Get doctors
+        let doctors = JSON.parse(localStorage.getItem("doctors")) || [];
+
+        // Get doctor schedules
+        let doctorSchedules = JSON.parse(localStorage.getItem("doctorSchedules")) || [];
+
+        // Get already booked appointments
+        let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+
+
+        // ---------------- DISPLAY DEPARTMENTS ----------------
+
+        // Get department dropdown
+        let departmentSelect = document.getElementById("department");
+
+        // Display departments
+        departments.forEach(function(department) {
+            departmentSelect.innerHTML += `
+                <option value="${department.id}">
+                    ${department.name}
+                </option>
+            `;
+        });
+
+
+        // ---------------- DISPLAY DOCTORS ----------------
+
+        // Get doctor dropdown
+        let doctorSelect = document.getElementById("doctor");
+
+        // When department changes
+        departmentSelect.addEventListener("change", function() {
+
+            // Clear previous doctors
+            doctorSelect.innerHTML = `
+                <option value="">Select Doctor</option>
+            `;
+
+            // Clear previous time slots
+            document.getElementById("timeSlots").innerHTML = "";
+
+            // Clear selected time
+            document.getElementById("selectedSlot").innerHTML = "";
+
+            // Clear previous confirmation
+            document.getElementById("confirmation").innerHTML = "";
+
+            // Disable confirm button
+            document.getElementById("confirmBtn").disabled = true;
+
+            // Reset selected time
+            selectedTime = "";
+
+            // Get selected department
+            let selectedDepartment = departmentSelect.value;
+
+            // Filter doctors belonging to this department
+            let filteredDoctors = doctors.filter(function(doctor) {
+                return doctor.departmentId == selectedDepartment;
+            });
+
+            // Display doctors
+            filteredDoctors.forEach(function(doctor) {
+                doctorSelect.innerHTML += `
+                    <option value="${doctor.id}">
+                        ${doctor.name}
+                    </option>
+                `;
+            });
+
+        });
+
+
+        // ---------------- APPOINTMENT DATE ----------------
+
+        let dateInput = document.getElementById("appointmentDate");
+
+        // Format date as YYYY-MM-DD
+        function formatDate(date) {
+            let year = date.getFullYear();
+            let month = String(date.getMonth() + 1).padStart(2, "0");
+            let day = String(date.getDate()).padStart(2, "0");
+
+            return year + "-" + month + "-" + day;
+        }
+
+        // Get today's date
+        let today = new Date();
+
+        // Set minimum date to today
+        dateInput.min = formatDate(today);
+
+        // Get tomorrow's date
+        let tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Set maximum date to tomorrow
+        dateInput.max = formatDate(tomorrow);
+
+
+        // ---------------- DISPLAY TIME SLOTS ----------------
+
+        // When doctor or date changes
+        doctorSelect.addEventListener("change", function() {
+
+            // Clear previous confirmation
+            document.getElementById("confirmation").innerHTML = "";
+
+            // Display slots
+            displaySlots();
+        });
+
+        dateInput.addEventListener("change", function() {
+
+            // Clear previous confirmation
+            document.getElementById("confirmation").innerHTML = "";
+
+            // Display slots
+            displaySlots();
+        });
+
+
+        function displaySlots() {
+
+            // Get selected doctor
+            let selectedDoctor = doctorSelect.value;
+
+            // Get selected date
+            let selectedDate = dateInput.value;
+
+            // Get time slots div
+            let slotDiv = document.getElementById("timeSlots");
+
+            // Clear previous slots
+            slotDiv.innerHTML = "";
+
+            // Clear selected time
+            document.getElementById("selectedSlot").innerHTML = "";
+
+            // Reset selected time variable
+            selectedTime = "";
+
+            // Disable confirm button
+            document.getElementById("confirmBtn").disabled = true;
+
+            // Check whether doctor and date are selected
+            if (selectedDoctor === "" || selectedDate === "") {
+                return;
+            }
+
+            // Find doctor's schedule
+            let schedule = doctorSchedules.find(function(s) {
+                return s.doctorId == selectedDoctor;
+            });
+
+            // If schedule is not found
+            if (!schedule) {
+                slotDiv.innerHTML = "<p>No schedule available for this doctor.</p>";
+                return;
+            }
+
+            // Get day name from selected date
+            let selectedDay = new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+                weekday: "long"
+            });
+
+            // Check whether doctor works on the selected day
+            if (!schedule.workingDays.includes(selectedDay)) {
+                slotDiv.innerHTML = "<p>Doctor is not available on this day.</p>";
+                return;
+            }
+
+            // Display available time slots
+            schedule.slots.forEach(function(slot) {
+
+                // Check if this slot is already booked
+                let isBooked = appointments.some(function(appointment) {
+                    return appointment.doctorId == selectedDoctor
+                        && appointment.date == selectedDate
+                        && appointment.time == slot;
+                });
+
+                // Display only unbooked slots
+                if (!isBooked) {
+                    slotDiv.innerHTML += `
+                        <button onclick="selectSlot('${slot}')">
+                            ${slot}
+                        </button>
+                    `;
+                }
+            });
+
+            // If no slots are available
+            if (slotDiv.innerHTML === "") {
+                slotDiv.innerHTML = "<p>No available slots.</p>";
+            }
+        }
+
+
+        // ---------------- SELECT TIME SLOT ----------------
+
+        // Store selected time slot
+        let selectedTime = "";
+
+        function selectSlot(slot) {
+
+            // Store selected slot
+            selectedTime = slot;
+
+            // Display selected slot
+            document.getElementById("selectedSlot").innerHTML =
+                "Selected Time: " + slot;
+
+            // Enable confirm button
+            document.getElementById("confirmBtn").disabled = false;
+
+            // Clear previous confirmation
+            document.getElementById("confirmation").innerHTML = "";
+        }
+
+
+        // ---------------- CONFIRM APPOINTMENT ----------------
+
+        function confirmAppointment() {
+
+            // Check whether patient exists
+            if (!patient) {
+                alert("Patient not found!");
+                return;
+            }
+
+            // Get selected values
+            let departmentId = departmentSelect.value;
+            let doctorId = doctorSelect.value;
+            let date = dateInput.value;
+
+            // Validate all selections
+            if (departmentId === "" || doctorId === "" || date === "" || selectedTime === "") {
+                alert("Please select department, doctor, date and time.");
+                return;
+            }
+
+            // Check if the selected slot is already booked
+            let alreadyBooked = appointments.some(function(appointment) {
+                return appointment.doctorId == doctorId
+                    && appointment.date == date
+                    && appointment.time == selectedTime;
+            });
+
+            // Prevent duplicate booking
+            if (alreadyBooked) {
+                alert("This slot is already booked!");
+
+                // Refresh available slots
+                displaySlots();
+                return;
+            }
+
+            // Get selected department details
+            let department = departments.find(function(d) {
+                return d.id == departmentId;
+            });
+
+            // Get selected doctor details
+            let doctor = doctors.find(function(d) {
+                return d.id == doctorId;
+            });
+
+
+            // ---------------- GENERATE TOKEN ----------------
+
+            // Find appointments booked for the selected date
+            let dailyAppointments = appointments.filter(function(appointment) {
+                return appointment.date === date;
+            });
+
+            // Generate next token number for that date
+            let token = dailyAppointments.length + 1;
+
+
+            // ---------------- CREATE APPOINTMENT ----------------
+
+            // Create appointment object
+            let newAppointment = {
+                token: token,
+                MMR: patient.MMR,
+                patientName: patient.name,
+                departmentId: departmentId,
+                departmentName: department ? department.name : "",
+                doctorId: doctorId,
+                doctorName: doctor ? doctor.name : "",
+                date: date,
+                time: selectedTime,
+                status: "Booked"
+            };
+
+            // Add appointment to appointments array
+            appointments.push(newAppointment);
+
+            // Save appointments in Local Storage
+            localStorage.setItem("appointments", JSON.stringify(appointments));
+
+
+            // ---------------- DISPLAY CONFIRMATION ----------------
+
+            // Display appointment confirmation
+            document.getElementById("confirmation").innerHTML = `
+                <h2>Appointment Booked Successfully!</h2>
+                <p>Token Number: ${token}</p>
+                <p>Patient Name: ${patient.name}</p>
+                <p>MMR: ${patient.MMR}</p>
+                <p>Department: ${department ? department.name : ""}</p>
+                <p>Doctor: ${doctor ? doctor.name : ""}</p>
+                <p>Date: ${date}</p>
+                <p>Time: ${selectedTime}</p>
+            `;
+
+            // Reset selected time
+            selectedTime = "";
+
+            // Disable confirm button
+            document.getElementById("confirmBtn").disabled = true;
+
+            // Refresh time slots
+            // This removes the booked slot but does not clear confirmation
+            displaySlots();
+
+        }
+
+    </script>
+
+</body>
+</html>
+
+
+
+-------------------view patients---------------------
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Patients</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- Common Sidebar -->
+        <iframe src="sidebar.html" class="sidebar-frame"></iframe>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <h1>Registered Patients</h1>
+            <p>View and search all registered patients.</p>
+
+            <!-- Search -->
+            <div class="patient-search">
+                <input type="text" id="search"
+                    placeholder="Search by MMR or Phone Number">
+
+                <button onclick="searchPatient()">Search</button>
+                <button onclick="displayPatients()">Show All</button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>MMR No</th>
+                            <th>Name</th>
+                            <th>DOB</th>
+                            <th>Phone</th>
+                            <th>Gender</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="patientList">
+                    </tbody>
+                </table>
+            </div>
+
+            <br>
+
+            <a href="dashboard.html">← Go Back</a>
+
+        </main>
+
+    </div>
+
+    <script>
+
+        // Get patients from LocalStorage
+        let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+        let list = document.getElementById("patientList");
+
+        // Display patients
+        function displayPatients(data = patients) {
+
+            list.innerHTML = "";
+
+            if (data.length === 0) {
+                list.innerHTML = `
+                    <tr>
+                        <td colspan="5">No patients found</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            data.forEach(function(patient) {
+
+                list.innerHTML += `
+                    <tr>
+                        <td>${patient.MMR || "N/A"}</td>
+                        <td>${patient.name || "N/A"}</td>
+                        <td>${patient.dob || "N/A"}</td>
+                        <td>${patient.phone || "N/A"}</td>
+                        <td>${patient.gender || "N/A"}</td>
+                    </tr>
+                `;
+
+            });
+        }
+
+        // Search by MMR or Phone Number
+        function searchPatient() {
+
+            let value = document.getElementById("search").value.trim().toLowerCase();
+
+            if (value === "") {
+                alert("Please enter MMR number or phone number");
+                return;
+            }
+
+            let result = patients.filter(function(patient) {
+
+                let mmr = String(patient.MMR || "").toLowerCase();
+                let phone = String(patient.phone || "");
+
+                return mmr.includes(value) || phone.includes(value);
+
+            });
+
+            displayPatients(result);
+        }
+
+        // Show all patients
+        function displayAllPatients() {
+            displayPatients(patients);
+        }
+
+        // Initially display all patients
+        displayPatients();
+
+    </script>
+
+</body>
+</html>
+
+
+
+search-----------------------
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Patient</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- Common Sidebar -->
+        <iframe src="sidebar.html" class="sidebar-frame"></iframe>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <h1>Search Patient</h1>
+            <p>Search using MMR number or phone number.</p>
+
+            <div>
+                <input type="text" id="search"
+                       placeholder="Enter MMR Number or Phone Number">
+
+                <button onclick="searchPatient()">Search</button>
+            </div>
+
+            <div id="result"></div>
+
+            <br>
+            <a href="dashboard.html">← Back to Dashboard</a>
+
+        </main>
+
+    </div>
+
+    <script>
+
+        function searchPatient() {
+
+            let value = document.getElementById("search").value.trim();
+            let output = document.getElementById("result");
+
+            // Check empty input
+            if (value === "") {
+                output.innerHTML = "<h3>Please enter MMR number or phone number.</h3>";
+                return;
+            }
+
+            // Get latest patient data from LocalStorage
+            let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+            // Search by MMR or phone
+            let result = patients.filter(function(p) {
+                return String(p.MMR).toLowerCase() === value.toLowerCase()
+                    || String(p.phone).trim() === value;
+            });
+
+            if (result.length > 0) {
+
+                output.innerHTML = result.map(function(patient) {
+                    return `
+                        <div class="card patient-result">
+                            <h3>Patient Found!</h3>
+
+                            <p><strong>MMR:</strong> ${escapeHTML(patient.MMR)}</p>
+                            <p><strong>Name:</strong> ${escapeHTML(patient.name)}</p>
+                            <p><strong>DOB:</strong> ${escapeHTML(patient.dob)}</p>
+                            <p><strong>Address:</strong> ${escapeHTML(patient.address)}</p>
+                            <p><strong>Phone:</strong> ${escapeHTML(patient.phone)}</p>
+                            <p><strong>Email:</strong> ${escapeHTML(patient.email)}</p>
+                            <p><strong>Blood Group:</strong> ${escapeHTML(patient.bloodGroup)}</p>
+                            <p><strong>Gender:</strong> ${escapeHTML(patient.gender)}</p>
+
+                            <button class="book-btn" data-mmr="${escapeHTML(patient.MMR)}">
+                                Book Appointment
+                            </button>
+                        </div>
+                    `;
+                }).join("");
+
+                // Book Appointment buttons
+                document.querySelectorAll(".book-btn").forEach(function(button) {
+                    button.addEventListener("click", function() {
+                        bookAppointment(button.dataset.mmr);
+                    });
+                });
+
+            } else {
+
+                output.innerHTML = `
+                    <div class="card">
+                        <h3>Patient Not Found</h3>
+                        <p>No patient found with this MMR number or phone number.</p>
+
+                        <button onclick="registerPatient()">
+                            Register New Patient
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Prevent HTML injection when displaying patient data
+        function escapeHTML(value) {
+            return String(value ?? "").replace(/[&<>"']/g, function(char) {
+                return {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                }[char];
+            });
+        }
+
+        // Go to Registration page
+        function registerPatient() {
+            window.location.href = "register.html";
+        }
+
+        // Go to Appointment page
+        function bookAppointment(mmr) {
+            localStorage.setItem("selectedPatientMMR", mmr);
+            window.location.href = "appointment_new.html";
+        }
+
+    </script>
+
+</body>
+</html>
+
+

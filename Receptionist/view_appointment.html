@@ -1,0 +1,422 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>View Appointments</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- SIDEBAR -->
+        <iframe src="sidebar.html" class="sidebar-frame"></iframe>
+
+        <!-- MAIN CONTENT -->
+        <main class="main">
+
+            <h1>View Appointments</h1>
+
+            <p>View and manage patient appointments.</p>
+
+
+            <!-- FILTER SECTION -->
+            <div class="appointment-card">
+
+                <h2>Filter Appointments</h2>
+
+                <div class="form-grid">
+
+                    <!-- DATE -->
+                    <div class="form-group">
+
+                        <label for="appointmentDate">
+                            Select Date
+                        </label>
+
+                        <input type="date" id="appointmentDate">
+
+                    </div>
+
+
+                    <!-- DEPARTMENT -->
+                    <div class="form-group">
+
+                        <label for="department">
+                            Select Department
+                        </label>
+
+                        <select id="department">
+
+                            <option value="">All Departments</option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- DOCTOR -->
+                    <div class="form-group">
+
+                        <label for="doctor">
+                            Select Doctor
+                        </label>
+
+                        <select id="doctor">
+
+                            <option value="">All Doctors</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- APPOINTMENT SUMMARY -->
+            <div class="appointment-card">
+
+                <h2>Appointment Summary</h2>
+
+                <h3 id="totalAppointments">
+                    Total Appointments: 0
+                </h3>
+
+            </div>
+
+
+            <!-- APPOINTMENT TABLE -->
+            <div class="appointment-card">
+
+                <h2>Appointment Details</h2>
+
+                <div class="table-container">
+
+                    <table class="appointment-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Token</th>
+                                <th>MMR</th>
+                                <th>Patient Name</th>
+                                <th>Department</th>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Phone</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="appointmentList">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <p id="noAppointments" class="no-appointments"></p>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        // ---------------- LOCAL STORAGE ----------------
+
+        const BOOKINGS_KEY = "quad_clinic_bookings_strict_v7";
+
+        const STAFF_KEY = "quad_clinic_staff_strict_v7";
+
+
+        // Get appointments from Local Storage
+        let appointments = JSON.parse(
+            localStorage.getItem(BOOKINGS_KEY)
+        ) || [];
+
+
+        // Get staff data from Admin
+        let staffList = JSON.parse(
+            localStorage.getItem(STAFF_KEY)
+        ) || [];
+
+
+        // Get doctors
+        let doctors = staffList.filter(function(staff) {
+
+            return staff.role === "Doctor";
+
+        });
+
+
+        // ---------------- HTML ELEMENTS ----------------
+
+        let dateInput = document.getElementById("appointmentDate");
+
+        let departmentSelect = document.getElementById("department");
+
+        let doctorSelect = document.getElementById("doctor");
+
+        let appointmentList = document.getElementById("appointmentList");
+
+        let totalAppointments = document.getElementById("totalAppointments");
+
+        let noAppointments = document.getElementById("noAppointments");
+
+
+        // ---------------- DATE FORMAT ----------------
+
+        function formatDate(date) {
+
+            let year = date.getFullYear();
+
+            let month = String(date.getMonth() + 1).padStart(2, "0");
+
+            let day = String(date.getDate()).padStart(2, "0");
+
+            return year + "-" + month + "-" + day;
+
+        }
+
+
+        // Initially select today's date
+        let today = new Date();
+
+        dateInput.value = formatDate(today);
+
+
+        // ---------------- DEPARTMENT DROPDOWN ----------------
+
+        let departments = [...new Set(doctors.map(function(doctor) {
+
+            return doctor.dept;
+
+        }).filter(Boolean))];
+
+
+        departments.forEach(function(department) {
+
+            departmentSelect.innerHTML += `
+                <option value="${department}">
+                    ${department}
+                </option>
+            `;
+
+        });
+
+
+        // ---------------- DOCTOR DROPDOWN ----------------
+
+        function loadDoctors() {
+
+            let selectedDepartment = departmentSelect.value;
+
+            doctorSelect.innerHTML = `
+                <option value="">All Doctors</option>
+            `;
+
+
+            let filteredDoctors = doctors.filter(function(doctor) {
+
+                return selectedDepartment === "" ||
+                    doctor.dept === selectedDepartment;
+
+            });
+
+
+            filteredDoctors.forEach(function(doctor) {
+
+                doctorSelect.innerHTML += `
+                    <option value="${doctor.name}">
+                        ${doctor.name}
+                    </option>
+                `;
+
+            });
+
+        }
+
+
+        // ---------------- DISPLAY APPOINTMENTS ----------------
+
+        function displayAppointments() {
+
+            // Get selected filters
+            let selectedDate = dateInput.value;
+
+            let selectedDepartment = departmentSelect.value;
+
+            let selectedDoctor = doctorSelect.value;
+
+
+            // Filter appointments
+            let filteredAppointments = appointments.filter(function(appointment) {
+
+                let dateMatch =
+                    appointment.date === selectedDate;
+
+                let departmentMatch =
+                    selectedDepartment === "" ||
+                    appointment.dept === selectedDepartment;
+
+                let doctorMatch =
+                    selectedDoctor === "" ||
+                    appointment.doctor === selectedDoctor;
+
+                return dateMatch && departmentMatch && doctorMatch;
+
+            });
+
+
+            // Sort appointments by time
+            filteredAppointments.sort(function(a, b) {
+
+                return convertTime(a.slot) - convertTime(b.slot);
+
+            });
+
+
+            // Clear previous table data
+            appointmentList.innerHTML = "";
+
+
+            // Update total
+            totalAppointments.innerHTML =
+                "Total Appointments: " + filteredAppointments.length;
+
+
+            // No appointments found
+            if (filteredAppointments.length === 0) {
+
+                noAppointments.innerHTML =
+                    "No appointments available for the selected filters.";
+
+                return;
+
+            }
+
+
+            noAppointments.innerHTML = "";
+
+
+            // Display appointments
+            filteredAppointments.forEach(function(appointment) {
+
+                appointmentList.innerHTML += `
+
+                    <tr>
+
+                        <td>${appointment.token ?? "-"}</td>
+
+                        <td>${appointment.mmr || "-"}</td>
+
+                        <td>${appointment.patientName || "-"}</td>
+
+                        <td>${appointment.dept || "-"}</td>
+
+                        <td>${appointment.doctor || "-"}</td>
+
+                        <td>${appointment.date || "-"}</td>
+
+                        <td>${appointment.slot || "-"}</td>
+
+                        <td>${appointment.patientPhone || "-"}</td>
+
+                        <td>${appointment.fee || "-"}</td>
+
+                        <td>${appointment.status || "-"}</td>
+
+                    </tr>
+
+                `;
+
+            });
+
+        }
+
+
+        // ---------------- CONVERT TIME ----------------
+
+        function convertTime(time) {
+
+            if (!time) {
+                return 0;
+            }
+
+            let parts = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+
+            if (!parts) {
+                return 0;
+            }
+
+            let hours = Number(parts[1]);
+
+            let minutes = Number(parts[2]);
+
+            let period = parts[3].toUpperCase();
+
+            if (period === "PM" && hours !== 12) {
+                hours += 12;
+            }
+
+            if (period === "AM" && hours === 12) {
+                hours = 0;
+            }
+
+            return hours * 60 + minutes;
+
+        }
+
+
+        // ---------------- FILTER EVENTS ----------------
+
+        dateInput.addEventListener("change", function() {
+
+            displayAppointments();
+
+        });
+
+
+        departmentSelect.addEventListener("change", function() {
+
+            loadDoctors();
+
+            displayAppointments();
+
+        });
+
+
+        doctorSelect.addEventListener("change", function() {
+
+            displayAppointments();
+
+        });
+
+
+        // ---------------- INITIAL DISPLAY ----------------
+
+        loadDoctors();
+
+        displayAppointments();
+
+    </script>
+
+</body>
+
+</html>

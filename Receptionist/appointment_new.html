@@ -1,0 +1,837 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Book Appointment</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+
+        /* ================= APPOINTMENT PAGE ================= */
+
+        /* Patient Details Card */
+        .appointment-card {
+            background-color: white;
+            padding: 28px;
+            border-radius: 10px;
+            border: 1px solid #dbeafe;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .appointment-card h2 {
+            color: #2563eb;
+            font-size: 19px;
+            margin-bottom: 20px;
+        }
+
+        /* Patient Details */
+        .patient-details {
+            background-color: #eff6ff;
+            border-radius: 8px;
+            padding: 18px;
+            line-height: 2;
+            color: #334155;
+        }
+
+        .patient-details h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .patient-details p {
+            margin-bottom: 5px;
+            color: #475569;
+        }
+
+        /* Form Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            outline: none;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: #2563eb;
+        }
+
+        /* Doctor Fee */
+        .doctor-fee {
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Time Slots */
+        .slot-section {
+            margin-top: 30px;
+        }
+
+        .slot-section h2 {
+            margin-bottom: 15px;
+        }
+
+        .time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .time-slots button {
+            padding: 11px 20px;
+            background-color: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #93c5fd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .time-slots button:hover {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        /* Selected Slot */
+        .selected-slot {
+            color: #1e40af;
+            font-weight: bold;
+            margin-top: 18px;
+        }
+
+        /* Confirm Button */
+        .confirm-btn {
+            margin-top: 25px;
+            padding: 13px 25px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .confirm-btn:hover:not(:disabled) {
+            background-color: #1d4ed8;
+        }
+
+        .confirm-btn:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* Appointment Confirmation */
+        #confirmation {
+            margin-top: 20px;
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #bfdbfe;
+            border-left: 5px solid #2563eb;
+            line-height: 2;
+        }
+
+        #confirmation h2 {
+            color: #2563eb;
+            margin-bottom: 12px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .appointment-card {
+                padding: 18px;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .time-slots button {
+                flex: 1 1 40%;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- SIDEBAR -->
+        <iframe src="sidebar.html" class="sidebar-frame"></iframe>
+
+
+        <!-- MAIN CONTENT -->
+        <main class="main">
+
+            <h1>Book Appointment</h1>
+
+            <p>Schedule an appointment for the selected patient.</p>
+
+
+            <!-- PATIENT DETAILS -->
+            <div class="appointment-card">
+
+                <h2>Patient Details</h2>
+
+                <div id="patientDetails" class="patient-details"></div>
+
+            </div>
+
+
+            <!-- APPOINTMENT INFORMATION -->
+            <div class="appointment-card">
+
+                <h2>Appointment Information</h2>
+
+
+                <div class="form-grid">
+
+                    <!-- Department -->
+                    <div class="form-group">
+
+                        <label>Select Department</label>
+
+                        <select id="department">
+
+                            <option value="">Select Department</option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Doctor -->
+                    <div class="form-group">
+
+                        <label>Select Doctor</label>
+
+                        <select id="doctor">
+
+                            <option value="">Select Doctor</option>
+
+                        </select>
+
+                        <p id="doctorFee" class="doctor-fee"></p>
+
+                    </div>
+
+
+                    <!-- Date -->
+                    <div class="form-group">
+
+                        <label>Select Appointment Date</label>
+
+                        <input type="date" id="appointmentDate">
+
+                    </div>
+
+                </div>
+
+
+                <!-- TIME SLOTS -->
+                <div class="slot-section">
+
+                    <h2>Available Time Slots</h2>
+
+                    <div id="timeSlots" class="time-slots"></div>
+
+                    <p id="selectedSlot" class="selected-slot"></p>
+
+                </div>
+
+
+                <!-- CONFIRM BUTTON -->
+                <button
+                    id="confirmBtn"
+                    class="confirm-btn"
+                    onclick="confirmAppointment()"
+                    disabled>
+
+                    Confirm Appointment
+
+                </button>
+
+            </div>
+
+
+            <!-- APPOINTMENT CONFIRMATION -->
+            <div id="confirmation"></div>
+
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        // ---------------- PATIENT DETAILS ----------------
+
+        // Get patient data from Local Storage
+        let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+        // Get selected patient's MMR
+        let selectedMMR = localStorage.getItem("selectedPatientMMR");
+
+        // Find selected patient
+        let patient = patients.find(function(p) {
+            return p.MMR === selectedMMR;
+        });
+
+        // Get patient details div
+        let details = document.getElementById("patientDetails");
+
+        // Display patient details
+        if (patient) {
+
+            details.innerHTML = `
+                <h3>Patient Details</h3>
+                <p>MMR: ${patient.MMR}</p>
+                <p>Name: ${patient.name}</p>
+                <p>Phone: ${patient.phone}</p>
+            `;
+
+        } else {
+
+            details.innerHTML = "<p>Patient not found!</p>";
+
+        }
+
+
+        // ---------------- GET ACTUAL ADMIN DATA ----------------
+
+        // Admin staff storage key
+        const STAFF_KEY = "quad_clinic_staff_strict_v7";
+
+        // Admin appointment storage key
+        const BOOKINGS_KEY = "quad_clinic_bookings_strict_v7";
+
+        // Get staff data from Admin
+        let staffList = JSON.parse(localStorage.getItem(STAFF_KEY)) || [];
+
+        // Get doctors from Admin
+        let doctors = staffList.filter(function(staff) {
+
+            return staff.role === "Doctor" && staff.status !== "Inactive";
+
+        });
+
+        // Get existing appointments
+        let appointments = JSON.parse(localStorage.getItem(BOOKINGS_KEY)) || [];
+
+
+        // ---------------- TIME SLOTS ----------------
+
+        // Morning shift
+        const MORNING_SLOTS = [
+            "09:00 AM",
+            "09:30 AM",
+            "10:00 AM",
+            "10:30 AM",
+            "11:00 AM",
+            "11:30 AM"
+        ];
+
+        // Afternoon shift
+        const AFTERNOON_SLOTS = [
+            "02:00 PM",
+            "02:30 PM",
+            "03:00 PM",
+            "03:30 PM"
+        ];
+
+
+        // ---------------- DEPARTMENT DROPDOWN ----------------
+
+        let departmentSelect = document.getElementById("department");
+
+        let doctorSelect = document.getElementById("doctor");
+
+        // Get unique departments from Admin doctors
+        let departments = [...new Set(doctors.map(function(doctor) {
+
+            return doctor.dept;
+
+        }))];
+
+        // Display departments
+        departments.forEach(function(department) {
+
+            departmentSelect.innerHTML += `
+                <option value="${department}">
+                    ${department}
+                </option>
+            `;
+
+        });
+
+
+        // Check whether doctors are available
+        if (doctors.length === 0) {
+
+            departmentSelect.innerHTML = `
+                <option value="">No doctors available</option>
+            `;
+
+            doctorSelect.innerHTML = `
+                <option value="">No doctors available</option>
+            `;
+
+        }
+
+
+        // ---------------- DISPLAY DOCTORS ----------------
+
+        departmentSelect.addEventListener("change", function() {
+
+            // Clear previous doctors
+            doctorSelect.innerHTML = `
+                <option value="">Select Doctor</option>
+            `;
+
+            // Clear previous data
+            document.getElementById("timeSlots").innerHTML = "";
+
+            document.getElementById("selectedSlot").innerHTML = "";
+
+            document.getElementById("confirmation").innerHTML = "";
+
+            document.getElementById("doctorFee").innerHTML = "";
+
+            // Reset selected time
+            selectedTime = "";
+
+            document.getElementById("confirmBtn").disabled = true;
+
+            // Get selected department
+            let selectedDepartment = departmentSelect.value;
+
+            // Filter doctors
+            let filteredDoctors = doctors.filter(function(doctor) {
+
+                return doctor.dept === selectedDepartment;
+
+            });
+
+            // Display doctors
+            filteredDoctors.forEach(function(doctor) {
+
+                doctorSelect.innerHTML += `
+                    <option value="${doctor.id}">
+                        ${doctor.name}
+                    </option>
+                `;
+
+            });
+
+        });
+
+
+        // ---------------- APPOINTMENT DATE ----------------
+
+        let dateInput = document.getElementById("appointmentDate");
+
+        // Format date
+        function formatDate(date) {
+
+            let year = date.getFullYear();
+
+            let month = String(date.getMonth() + 1).padStart(2, "0");
+
+            let day = String(date.getDate()).padStart(2, "0");
+
+            return year + "-" + month + "-" + day;
+
+        }
+
+        // Today's date
+        let today = new Date();
+
+        dateInput.min = formatDate(today);
+
+        // Tomorrow's date
+        let tomorrow = new Date();
+
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        dateInput.max = formatDate(tomorrow);
+
+
+        // ---------------- DOCTOR CHANGE ----------------
+
+        doctorSelect.addEventListener("change", function() {
+
+            document.getElementById("confirmation").innerHTML = "";
+
+            displaySlots();
+
+        });
+
+
+        // ---------------- DATE CHANGE ----------------
+
+        dateInput.addEventListener("change", function() {
+
+            document.getElementById("confirmation").innerHTML = "";
+
+            displaySlots();
+
+        });
+
+
+        // ---------------- DISPLAY TIME SLOTS ----------------
+
+        let selectedTime = "";
+
+        function displaySlots() {
+
+            // Get selected doctor
+            let selectedDoctor = doctorSelect.value;
+
+            // Get selected date
+            let selectedDate = dateInput.value;
+
+            // Get slots div
+            let slotDiv = document.getElementById("timeSlots");
+
+            // Clear previous slots
+            slotDiv.innerHTML = "";
+
+            document.getElementById("selectedSlot").innerHTML = "";
+
+            document.getElementById("doctorFee").innerHTML = "";
+
+            selectedTime = "";
+
+            document.getElementById("confirmBtn").disabled = true;
+
+
+            if (selectedDoctor === "" || selectedDate === "") {
+
+                return;
+
+            }
+
+
+            // Find selected doctor
+            let doctor = doctors.find(function(d) {
+
+                return d.id === selectedDoctor;
+
+            });
+
+
+            if (!doctor) {
+
+                slotDiv.innerHTML = "<p>Doctor not found.</p>";
+
+                return;
+
+            }
+
+
+            // Display consultation fee
+            document.getElementById("doctorFee").innerHTML =
+                "Consultation Fee: ₹" + (doctor.fee || 500);
+
+
+            // Get doctor's shift
+            let shift = doctor.shift || "Both";
+
+            let availableSlots = [];
+
+
+            // Morning slots
+            if (shift === "Morning" || shift === "Both") {
+
+                availableSlots = availableSlots.concat(MORNING_SLOTS);
+
+            }
+
+
+            // Afternoon slots
+            if (shift === "Afternoon" || shift === "Both") {
+
+                availableSlots = availableSlots.concat(AFTERNOON_SLOTS);
+
+            }
+
+
+            // Find already booked slots
+            let bookedSlots = appointments.filter(function(appointment) {
+
+                return appointment.doctor === doctor.name
+                    && appointment.date === selectedDate
+                    && appointment.status === "Confirmed";
+
+            }).map(function(appointment) {
+
+                return appointment.slot;
+
+            });
+
+
+            // Display available slots
+            availableSlots.forEach(function(slot) {
+
+                let isBooked = bookedSlots.includes(slot);
+
+                if (!isBooked) {
+
+                    slotDiv.innerHTML += `
+                        <button type="button"
+                            onclick="selectSlot('${slot}')">
+
+                            ${slot}
+
+                        </button>
+                    `;
+
+                }
+
+            });
+
+
+            // If no slots are available
+            if (slotDiv.innerHTML === "") {
+
+                slotDiv.innerHTML = "<p>No available slots.</p>";
+
+            }
+
+        }
+
+
+        // ---------------- SELECT TIME SLOT ----------------
+
+        function selectSlot(slot) {
+
+            selectedTime = slot;
+
+            document.getElementById("selectedSlot").innerHTML =
+                "Selected Time: " + slot;
+
+            document.getElementById("confirmBtn").disabled = false;
+
+            document.getElementById("confirmation").innerHTML = "";
+
+        }
+
+
+        // ---------------- CONFIRM APPOINTMENT ----------------
+
+        function confirmAppointment() {
+
+            // Check patient
+            if (!patient) {
+
+                alert("Patient not found!");
+
+                return;
+
+            }
+
+
+            // Get selected values
+            let department = departmentSelect.value;
+
+            let doctorId = doctorSelect.value;
+
+            let date = dateInput.value;
+
+
+            // Validate selections
+            if (department === "" || doctorId === "" ||
+                date === "" || selectedTime === "") {
+
+                alert("Please select department, doctor, date and time.");
+
+                return;
+
+            }
+
+
+            // Find selected doctor
+            let doctor = doctors.find(function(d) {
+
+                return d.id === doctorId;
+
+            });
+
+
+            if (!doctor) {
+
+                alert("Please select a valid doctor.");
+
+                return;
+
+            }
+
+
+            // Check duplicate booking
+            let alreadyBooked = appointments.some(function(appointment) {
+
+                return appointment.doctor === doctor.name
+                    && appointment.date === date
+                    && appointment.slot === selectedTime
+                    && appointment.status === "Confirmed";
+
+            });
+
+
+            if (alreadyBooked) {
+
+                alert("This slot is already booked!");
+
+                displaySlots();
+
+                return;
+
+            }
+
+
+            // ---------------- GENERATE TOKEN ----------------
+
+            // Find appointments for selected date
+            let dailyAppointments = appointments.filter(function(appointment) {
+
+                return appointment.date === date;
+
+            });
+
+            // Generate next token
+            let token = dailyAppointments.length + 1;
+
+
+            // ---------------- CREATE APPOINTMENT ----------------
+
+            let newAppointment = {
+
+                id: "BOK-" + Date.now(),
+
+                token: token,
+
+                mmr: patient.MMR,
+
+                patientEmail: patient.email || "",
+
+                patientName: patient.name,
+
+                patientGender: patient.gender || "",
+
+                patientBloodGroup: patient.bloodGroup || "",
+
+                patientPhone: patient.phone,
+
+                doctor: doctor.name,
+
+                dept: doctor.dept,
+
+                date: date,
+
+                slot: selectedTime,
+
+                fee: "₹" + (doctor.fee || 500),
+
+                status: "Confirmed"
+
+            };
+
+
+            // Add appointment
+            appointments.push(newAppointment);
+
+
+            // Save appointment in Admin Local Storage
+            localStorage.setItem(
+                BOOKINGS_KEY,
+                JSON.stringify(appointments)
+            );
+
+
+            // ---------------- DISPLAY CONFIRMATION ----------------
+
+            document.getElementById("confirmation").innerHTML = `
+
+                <h2>Appointment Booked Successfully!</h2>
+
+                <p>Token Number: ${token}</p>
+
+                <p>Patient Name: ${patient.name}</p>
+
+                <p>MMR: ${patient.MMR}</p>
+
+                <p>Department: ${doctor.dept}</p>
+
+                <p>Doctor: ${doctor.name}</p>
+
+                <p>Consultation Fee: ₹${doctor.fee || 500}</p>
+
+                <p>Date: ${date}</p>
+
+                <p>Time: ${selectedTime}</p>
+
+            `;
+
+
+            // Reset selected time
+            selectedTime = "";
+
+            document.getElementById("confirmBtn").disabled = true;
+
+
+            // Refresh available slots
+            // Confirmation remains visible
+            displaySlots();
+
+        }
+
+    </script>
+
+</body>
+
+</html>

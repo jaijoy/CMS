@@ -1,0 +1,269 @@
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Registered Patients</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- COMMON SIDEBAR -->
+        <iframe src="sidebar.html" class="sidebar-frame"></iframe>
+
+        <!-- MAIN CONTENT -->
+        <main class="main">
+
+            <div class="patients-header">
+
+                <div>
+                    <h1>Registered Patients</h1>
+                    <p>View, search and manage registered patient records.</p>
+                </div>
+
+                <div class="patient-count">
+                    <span>Total Patients</span>
+                    <h2 id="totalPatients">0</h2>
+                </div>
+
+            </div>
+
+
+            <!-- PATIENT SEARCH CARD -->
+            <div class="patients-card">
+
+                <div class="patients-card-heading">
+                    <div>
+                        <h2>Patient Records</h2>
+                        <p>Search patients using their MMR number or phone number.</p>
+                    </div>
+
+                    <span class="record-label">Patient Database</span>
+                </div>
+
+
+                <!-- SEARCH SECTION -->
+                <div class="patient-search">
+
+                    <div class="search-input-wrapper">
+
+                        <span class="search-icon">⌕</span>
+
+                        <input
+                            type="text"
+                            id="search"
+                            placeholder="Search by MMR number or phone number..."
+                        >
+
+                    </div>
+
+                    <button class="search-btn" onclick="searchPatient()">
+                        Search
+                    </button>
+
+                    <button class="show-all-btn" onclick="displayAllPatients()">
+                        Show All
+                    </button>
+
+                </div>
+
+
+                <!-- TABLE -->
+                <div class="table-container">
+
+                    <table class="patients-table">
+
+                        <thead>
+                            <tr>
+                                <th>MMR Number</th>
+                                <th>Patient Name</th>
+                                <th>Date of Birth</th>
+                                <th>Phone Number</th>
+                                <th>Gender</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="patientList">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- RESULT MESSAGE -->
+                <p id="resultMessage" class="result-message"></p>
+
+            </div>
+
+
+            <a href="dashboard.html" class="back-link">
+                ← Back to Dashboard
+            </a>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        // GET PATIENTS FROM LOCAL STORAGE
+
+        let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+        let list = document.getElementById("patientList");
+
+        let totalPatients = document.getElementById("totalPatients");
+
+        let resultMessage = document.getElementById("resultMessage");
+
+
+        // UPDATE TOTAL PATIENT COUNT
+
+        totalPatients.innerHTML = patients.length;
+
+
+        // DISPLAY PATIENTS
+
+        function displayPatients(data = patients) {
+
+            list.innerHTML = "";
+
+            totalPatients.innerHTML = data.length;
+
+            resultMessage.innerHTML = "";
+
+            if (data.length === 0) {
+
+                list.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-row">
+                            No patients found.
+                        </td>
+                    </tr>
+                `;
+
+                resultMessage.innerHTML = "No matching patient records found.";
+
+                return;
+            }
+
+
+            data.forEach(function(patient) {
+
+                list.innerHTML += `
+
+                    <tr>
+
+                        <td>
+                            <span class="mmr-badge">
+                                ${patient.MMR || "N/A"}
+                            </span>
+                        </td>
+
+                        <td class="patient-name">
+                            ${patient.name || "N/A"}
+                        </td>
+
+                        <td>${patient.dob || "N/A"}</td>
+
+                        <td>${patient.phone || "N/A"}</td>
+
+                        <td>
+                            <span class="gender-badge">
+                                ${patient.gender || "N/A"}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                `;
+
+            });
+
+            resultMessage.innerHTML =
+                "Showing " + data.length + " patient record(s).";
+
+        }
+
+
+        // SEARCH BY MMR OR PHONE NUMBER
+
+        function searchPatient() {
+
+            let value = document.getElementById("search")
+                .value.trim().toLowerCase();
+
+            if (value === "") {
+
+                alert("Please enter MMR number or phone number.");
+
+                return;
+
+            }
+
+
+            let result = patients.filter(function(patient) {
+
+                let mmr = String(patient.MMR || "").toLowerCase();
+
+                let phone = String(patient.phone || "");
+
+                return mmr.includes(value) || phone.includes(value);
+
+            });
+
+
+            displayPatients(result);
+
+        }
+
+
+        // SHOW ALL PATIENTS
+
+        function displayAllPatients() {
+
+            document.getElementById("search").value = "";
+
+            displayPatients(patients);
+
+        }
+
+
+        // SEARCH WHEN ENTER KEY IS PRESSED
+
+        document.getElementById("search").addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+
+                searchPatient();
+
+            }
+
+        });
+
+
+        // INITIAL DISPLAY
+
+        displayPatients();
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- Common Sidebar -->
+        <iframe src="sidebar.html" class="sidebar-frame"></iframe>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <h1>Patient Registration</h1>
+
+            <form id="patientForm">
+
+                <!-- Patient Name -->
+                <label for="pname">Patient Name</label>
+                <input type="text" name="p_name" id="pname" required>
+                <br>
+
+                <!-- Date of Birth -->
+                <label for="dob">Date Of Birth</label>
+                <input type="date" name="dob" id="dob" required>
+                <br>
+
+                <!-- Address -->
+                <label for="address">Address</label>
+                <textarea name="address" id="address" required></textarea>
+                <br>
+
+                <!-- Phone Number -->
+                <label for="pno">Phone Number</label>
+                <input type="tel" name="phone" id="pno"
+                       pattern="[789][0-9]{9}"
+                       maxlength="10"
+                       title="Phone number must start with 7, 8, or 9 and contain exactly 10 digits"
+                       required>
+                <br>
+
+                <!-- Email -->
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email">
+                <br>
+
+                <!-- Blood Group -->
+                <label for="bloodGroup">Blood Group</label>
+                <select name="bloodGroup" id="bloodGroup" required>
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+                <br>
+
+                <!-- Gender -->
+                <label>Gender</label>
+
+                <input type="radio" id="f" name="gender" value="Female" required>
+                <label for="f">Female</label>
+
+                <input type="radio" id="m" name="gender" value="Male">
+                <label for="m">Male</label>
+
+                <input type="radio" id="o" name="gender" value="Other">
+                <label for="o">Other</label>
+                <br>
+
+                <!-- Submit -->
+                <button type="submit">Register Patient</button>
+
+                <br>
+                <a href="dashboard.html">← Back to Dashboard</a>
+
+            </form>
+
+        </main>
+
+    </div>
+
+    <script>
+
+        let form = document.getElementById("patientForm");
+
+        let dobInput = document.getElementById("dob");
+
+        // Prevent selecting a future date
+        let today = new Date();
+
+        let year = today.getFullYear();
+        let month = String(today.getMonth() + 1).padStart(2, "0");
+        let day = String(today.getDate()).padStart(2, "0");
+
+        let todayDate = year + "-" + month + "-" + day;
+
+        dobInput.max = todayDate;
+
+
+        form.addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+            // Get form values
+            let name = document.getElementById("pname").value.trim();
+            let dob = document.getElementById("dob").value;
+            let address = document.getElementById("address").value.trim();
+            let ph = document.getElementById("pno").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let bloodGroup = document.getElementById("bloodGroup").value;
+
+            // 1. Name validation
+            // Only letters, spaces, hyphens and apostrophes allowed
+            let namePattern = /^[A-Za-z\s'-]+$/;
+            let letterCount = name.replace(/[^A-Za-z]/g, "").length;
+
+            if (!namePattern.test(name) || letterCount < 3) {
+                alert("Name must contain at least 3 letters and should not contain numbers.");
+                return;
+            }
+
+            // 2. DOB validation
+            if (dob > todayDate) {
+                alert("Date of birth cannot be a future date.");
+                return;
+            }
+
+            // 3. Address validation
+            if (address.length < 10) {
+                alert("Address must contain at least 10 characters.");
+                return;
+            }
+
+            // 4. Phone validation
+            let phonePattern = /^[789]\d{9}$/;
+
+            if (!phonePattern.test(ph)) {
+                alert("Phone number must start with 7, 8, or 9 and contain exactly 10 digits.");
+                return;
+            }
+
+            // Get selected gender
+            let genderInput = document.querySelector('input[name="gender"]:checked');
+
+            if (!genderInput) {
+                alert("Please select gender.");
+                return;
+            }
+
+            let gender = genderInput.value;
+
+            // Get existing patients from LocalStorage
+            let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+            // Generate next MMR safely
+            let highestMMR = 1000;
+
+            patients.forEach(function(patient) {
+
+                if (patient.MMR) {
+
+                    let number = parseInt(
+                        String(patient.MMR).replace("MMR", ""),
+                        10
+                    );
+
+                    if (!isNaN(number) && number > highestMMR) {
+                        highestMMR = number;
+                    }
+                }
+
+            });
+
+            // Create new MMR
+            let mmr = "MMR" + (highestMMR + 1);
+
+            // Create patient object
+            let patient = {
+                MMR: mmr,
+                name: name,
+                dob: dob,
+                address: address,
+                phone: ph,
+                email: email,
+                bloodGroup: bloodGroup,
+                gender: gender
+            };
+
+            // Add patient to array
+            patients.push(patient);
+
+            // Save patients in LocalStorage
+            localStorage.setItem("patients", JSON.stringify(patients));
+
+            // Success message
+            alert("Patient registered successfully!\nMMR Number: " + mmr);
+
+            // Clear form
+            form.reset();
+
+        });
+
+    </script>
+
+</body>
+</html>
+

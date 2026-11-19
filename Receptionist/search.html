@@ -1,0 +1,361 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Patient</title>
+</head>
+<body>
+
+    <h1>Search Patient</h1>
+
+    <input type="text" id="search" placeholder="Enter MMR Number or Phone Number">
+    <button onclick="searchPatient()">Search</button>
+
+    <div id="result"></div>
+
+    <a href="index.html">← Back to Dashboard</a>
+
+    <script>
+        let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+        function searchPatient() {
+            let value = document.getElementById("search").value.trim();
+
+            let result = patients.filter(function(p) {
+                return String(p.MMR).toLowerCase() === value.toLowerCase()
+                    || String(p.phone) === value;
+            });
+
+            let output = document.getElementById("result");
+
+            if (result.length > 0) {
+                output.innerHTML = result.map(function(patient) {
+                    return `
+                        <div>
+                            <h3>Patient Found!</h3>
+                            <p>MMR: ${patient.MMR}</p>
+                            <p>Name: ${patient.name}</p>
+                            <p>DOB: ${patient.dob}</p>
+                            <p>Address: ${patient.address}</p>
+                            <p>Phone: ${patient.phone}</p>
+                            <p>Gender: ${patient.gender}</p>
+
+                            <button onclick="bookAppointment('${patient.MMR}')">
+                                Book Appointment
+                            </button>
+                        </div>
+                    `;
+                }).join("");
+            } 
+            else {
+                output.innerHTML = `
+                    <h3>Patient Not Found</h3>
+                    <button onclick="registerPatient()">Register New Patient</button>
+                `;
+            }
+        }
+
+        function registerPatient() {
+            window.location.href = "register.html";
+        }
+
+        function bookAppointment(mmr) {
+            localStorage.setItem("selectedPatientMMR", mmr);
+            window.location.href = "appointment_new.html";
+
+        }
+    </script>
+
+</body>
+</html> -->
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Search Patient</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- COMMON SIDEBAR -->
+        <iframe src="sidebar.html" class="sidebar-frame"></iframe>
+
+        <!-- MAIN CONTENT -->
+        <main class="main">
+
+            <div class="search-page-header">
+                <h1>Search Patient</h1>
+                <p>Find registered patients using their MMR number or phone number.</p>
+            </div>
+
+
+            <!-- SEARCH CARD -->
+            <div class="search-patient-card">
+
+                <div class="search-card-heading">
+                    <h2>Patient Lookup</h2>
+                    <p>Enter the patient's details to find their medical record.</p>
+                </div>
+
+
+                <div class="patient-lookup">
+
+                    <div class="lookup-input">
+
+                        <span class="lookup-icon">⌕</span>
+
+                        <input
+                            type="text"
+                            id="search"
+                            placeholder="Enter MMR Number or Phone Number"
+                        >
+
+                    </div>
+
+                    <button class="patient-search-btn" onclick="searchPatient()">
+                        Search Patient
+                    </button>
+
+                </div>
+
+                <p class="search-hint">
+                    You can search using the patient's MMR number or registered mobile number.
+                </p>
+
+            </div>
+
+
+            <!-- SEARCH RESULTS -->
+            <div id="result"></div>
+
+
+            <!-- BACK LINK -->
+            <a href="dashboard.html" class="back-link">
+                ← Back to Dashboard
+            </a>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        function searchPatient() {
+
+            let value = document.getElementById("search").value.trim();
+
+            let output = document.getElementById("result");
+
+
+            // Check empty input
+            if (value === "") {
+
+                output.innerHTML = `
+                    <div class="search-message warning-message">
+                        <h3>Please enter MMR number or phone number.</h3>
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            // Get latest patient data from LocalStorage
+            let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+
+            // Search by MMR or phone
+            let result = patients.filter(function(p) {
+
+                return String(p.MMR || "").toLowerCase() === value.toLowerCase()
+                    || String(p.phone || "").trim() === value;
+
+            });
+
+
+            if (result.length > 0) {
+
+                output.innerHTML = result.map(function(patient) {
+
+                    return `
+
+                        <div class="patient-result-card">
+
+                            <div class="patient-result-header">
+
+                                <div>
+                                    <h2>Patient Found!</h2>
+                                    <p>Patient information is available.</p>
+                                </div>
+
+                                <span class="found-badge">Found</span>
+
+                            </div>
+
+
+                            <div class="patient-info-grid">
+
+                                <div class="patient-info-item">
+                                    <span>MMR Number</span>
+                                    <strong>${escapeHTML(patient.MMR)}</strong>
+                                </div>
+
+                                <div class="patient-info-item">
+                                    <span>Patient Name</span>
+                                    <strong>${escapeHTML(patient.name)}</strong>
+                                </div>
+
+                                <div class="patient-info-item">
+                                    <span>Date of Birth</span>
+                                    <strong>${escapeHTML(patient.dob)}</strong>
+                                </div>
+
+                                <div class="patient-info-item">
+                                    <span>Phone Number</span>
+                                    <strong>${escapeHTML(patient.phone)}</strong>
+                                </div>
+
+                                <div class="patient-info-item">
+                                    <span>Email</span>
+                                    <strong>${escapeHTML(patient.email)}</strong>
+                                </div>
+
+                                <div class="patient-info-item">
+                                    <span>Blood Group</span>
+                                    <strong>${escapeHTML(patient.bloodGroup)}</strong>
+                                </div>
+
+                                <div class="patient-info-item">
+                                    <span>Gender</span>
+                                    <strong>${escapeHTML(patient.gender)}</strong>
+                                </div>
+
+                                <div class="patient-info-item full-width">
+                                    <span>Address</span>
+                                    <strong>${escapeHTML(patient.address)}</strong>
+                                </div>
+
+                            </div>
+
+
+                            <button class="book-btn" data-mmr="${escapeHTML(patient.MMR)}">
+
+                                <span>＋</span> Book Appointment
+
+                            </button>
+
+                        </div>
+
+                    `;
+
+                }).join("");
+
+
+                // Book Appointment buttons
+                document.querySelectorAll(".book-btn").forEach(function(button) {
+
+                    button.addEventListener("click", function() {
+
+                        bookAppointment(button.dataset.mmr);
+
+                    });
+
+                });
+
+            } else {
+
+                output.innerHTML = `
+
+                    <div class="patient-not-found">
+
+                        <div class="not-found-icon">!</div>
+
+                        <h2>Patient Not Found</h2>
+
+                        <p>No patient found with this MMR number or phone number.</p>
+
+                        <button class="register-btn" onclick="registerPatient()">
+                            + Register New Patient
+                        </button>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        // Prevent HTML injection
+        function escapeHTML(value) {
+
+            return String(value ?? "").replace(/[&<>"']/g, function(char) {
+
+                return {
+
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+
+                }[char];
+
+            });
+
+        }
+
+
+        // Go to Registration page
+        function registerPatient() {
+
+            window.location.href = "register.html";
+
+        }
+
+
+        // Go to Appointment page
+        function bookAppointment(mmr) {
+
+            localStorage.setItem("selectedPatientMMR", mmr);
+
+            window.location.href = "appointment_new.html";
+
+        }
+
+
+        // Search when Enter key is pressed
+        document.getElementById("search").addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+
+                searchPatient();
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+
