@@ -1,10 +1,10 @@
 /* =========================================================
-   QUAD CLINIC - STRICT VALIDATION (STAFF & PATIENT ENTRY)
+   QUAD CLINIC - STRICT VALIDATION & SCHEDULING ENGINE
    ========================================================= */
 
-const DB_STAFF_KEY = 'quad_clinic_staff_strict_v7';
-const DB_PATIENT_KEY = 'quad_clinic_patients_strict_v7';
-const DB_BOOKINGS_KEY = 'quad_clinic_bookings_strict_v7';
+const DB_STAFF_KEY = 'quad_clinic_staff_strict_v8';
+const DB_PATIENT_KEY = 'quad_clinic_patients_strict_v8';
+const DB_BOOKINGS_KEY = 'quad_clinic_bookings_strict_v8';
 const SESSION_KEY = 'quad_clinic_user_session';
 
 // Standard 30-Minute Shifts
@@ -163,7 +163,7 @@ const DEFAULT_PATIENTS = [
   { id: '3', mmr: 'MMR4186', name: 'new', gender: 'Female', bloodGroup: 'B+', dob: '1995-11-25', email: 'new@gmail.com', phone: '7987654321' }
 ];
 
-// Seed Bookings matching image reference
+// Seed Bookings
 const DEFAULT_BOOKINGS = [
   {
     id: 'BOK-101',
@@ -250,7 +250,36 @@ function parseSlotDateTime(dateStr, slotStr) {
 }
 
 /* =========================================================
-   STRICT VALIDATION FUNCTIONS
+   RANDOM PASSWORD GENERATOR
+   ========================================================= */
+function generateRandomPassword() {
+  const charsUpper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const charsLower = "abcdefghjkmnpqrstuvwxyz";
+  const charsNums = "23456789";
+  const charsSpecial = "@#$%=+";
+
+  let pass = "";
+  pass += charsUpper.charAt(Math.floor(Math.random() * charsUpper.length));
+  pass += charsLower.charAt(Math.floor(Math.random() * charsLower.length));
+  pass += charsNums.charAt(Math.floor(Math.random() * charsNums.length));
+  pass += charsSpecial.charAt(Math.floor(Math.random() * charsSpecial.length));
+
+  const allChars = charsUpper + charsLower + charsNums + charsSpecial;
+  for (let i = 0; i < 4; i++) {
+    pass += allChars.charAt(Math.floor(Math.random() * allChars.length));
+  }
+
+  // Shuffle string
+  return pass.split('').sort(() => 0.5 - Math.random()).join('');
+}
+
+function generateNewPasswordForStaff() {
+  const passField = document.getElementById('staffPass');
+  passField.value = generateRandomPassword();
+}
+
+/* =========================================================
+   STRICT VALIDATION UTILITIES
    ========================================================= */
 
 // Calculate exact age in years from YYYY-MM-DD
@@ -300,98 +329,61 @@ function isNotFutureDate(dateStr) {
 }
 
 /* =========================================================
-   1. LOGIN
+   1. UNIFIED LOGIN (AUTO-DETECT ROLE)
    ========================================================= */
-function handleRoleChange(role) {
-  const tip = document.getElementById('patientNotice');
-  const userLabel = document.getElementById('loginUserLabel');
-  const passLabel = document.getElementById('loginPassLabel');
-
-  if (role === 'Patient') {
-    tip.style.display = 'block';
-    userLabel.textContent = 'Patient Email';
-    passLabel.textContent = 'Password (Phone Number)';
-  } else {
-    tip.style.display = 'none';
-    userLabel.textContent = 'Email Address';
-    passLabel.textContent = 'Password';
-  }
-}
-
 function handleLogin(event) {
   event.preventDefault();
   const msg = document.getElementById('loginMsg');
   msg.style.display = 'none';
 
-  const role = document.getElementById('loginRole').value;
   const username = document.getElementById('loginUser').value.trim().toLowerCase();
   const password = document.getElementById('loginPass').value.trim();
 
-  if (!role) {
-    msg.textContent = 'Please select a system role.';
+  if (!username || !password) {
+    msg.textContent = 'Please enter both username and password.';
     msg.style.display = 'block';
     return;
   }
 
-  // Admin Login
-  if (role === 'Admin') {
-    if ((username === 'admin@quadclinic.com' || username === 'admin') && password === 'admin123') {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Admin', user: username }));
-      showAdminView();
-      return;
-    } else {
-      msg.textContent = 'Invalid credentials. Use admin@quadclinic.com / admin123';
-      msg.style.display = 'block';
-      return;
-    }
-  }
-
-  // Patient Login (Email + Phone Number)
-  if (role === 'Patient') {
-    const patient = patientList.find(p => p.email.toLowerCase() === username);
-    if (!patient) {
-      msg.textContent = `No patient found with email "${username}". Please register first.`;
-      msg.style.display = 'block';
-      return;
-    }
-    if (patient.phone !== password) {
-      msg.textContent = 'Invalid password. (Your password is your registered 10-digit phone number).';
-      msg.style.display = 'block';
-      return;
-    }
-
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Patient', ...patient }));
-    showPatientView(patient);
+  // Check 1: Administrator Credentials
+  if ((username === 'admin@quadclinic.com' || username === 'admin') && password === 'admin123') {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Admin', user: username }));
+    showAdminView();
     return;
   }
 
-  // Staff Login
-  const staff = staffList.find(s => 
-    s.role === role && 
-    (s.email.toLowerCase() === username || s.name.toLowerCase() === username)
+  // Check 2: Staff Member Credentials (Doctor, Receptionist, Lab Tech, Pharmacist)
+  const matchedStaff = staffList.find(s => 
+    s.email.toLowerCase() === username && s.password === password
   );
 
-  if (!staff) {
-    msg.textContent = `No ${role} found matching "${username}".`;
-    msg.style.display = 'block';
+  if (matchedStaff) {
+    const pages = {
+      'Receptionist': 'receptionist.html',
+      'Doctor': 'doctor.html',
+      'Lab Technician': 'lab.html',
+      'Pharmacist': 'pharmacist.html'
+    };
+
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(matchedStaff));
+    window.location.href = pages[matchedStaff.role];
     return;
   }
 
-  if (staff.password !== password) {
-    msg.textContent = `Incorrect password for ${staff.name}.`;
-    msg.style.display = 'block';
+  // Check 3: Patient Credentials (Email + Phone Number as password)
+  const matchedPatient = patientList.find(p => 
+    p.email.toLowerCase() === username && p.phone === password
+  );
+
+  if (matchedPatient) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Patient', ...matchedPatient }));
+    showPatientView(matchedPatient);
     return;
   }
 
-  const pages = {
-    'Receptionist': 'receptionist.html',
-    'Doctor': 'doctor.html',
-    'Lab Technician': 'lab.html',
-    'Pharmacist': 'pharmacist.html'
-  };
-
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(staff));
-  window.location.href = pages[role];
+  // If no match found
+  msg.textContent = 'Invalid username/email or password. Please verify your credentials.';
+  msg.style.display = 'block';
 }
 
 function handleLogout() {
@@ -668,7 +660,9 @@ function openAddForm(presetRole) {
   const maleRadio = form.querySelector('input[name="staffGender"][value="Male"]');
   if (maleRadio) maleRadio.checked = true;
 
-  document.getElementById('staffPass').value = 'staff123';
+  // Auto-generate random secure password for newly added staff
+  document.getElementById('staffPass').value = generateRandomPassword();
+
   switchAdminTab('add');
 }
 
@@ -702,15 +696,25 @@ function handleStaffSubmit(event) {
   }
 
   // 2. DOB Check
+  if (!dob) {
+    showStaffValidationError("Please provide a valid Date of Birth.");
+    return;
+  }
   if (!isNotFutureDate(dob)) {
-    showStaffValidationError("Date of Birth is invalid or in the future.");
+    showStaffValidationError("Date of Birth cannot be in the future.");
     return;
   }
 
   // Age calculation
   const age = calculateAge(dob);
 
-  // 3. Age Restrictions
+  // Maximum realistic age check (<= 100 years)
+  if (age > 100) {
+    showStaffValidationError(`Date of Birth indicates age ${age} years. Maximum valid age is 100 years.`);
+    return;
+  }
+
+  // 3. Minimum Age Restrictions
   if (role === 'Doctor' && age <= 27) {
     showStaffValidationError(`Doctor age must be strictly greater than 27 years. (Current: ${age} years).`);
     return;
@@ -721,12 +725,21 @@ function handleStaffSubmit(event) {
   }
 
   // 4. Joining Date Check
+  if (!joiningDate) {
+    showStaffValidationError("Please provide a valid Date of Joining.");
+    return;
+  }
   if (!isNotFutureDate(joiningDate)) {
     showStaffValidationError("Joining Date cannot be in the future.");
     return;
   }
   if (new Date(joiningDate) < new Date(dob)) {
     showStaffValidationError("Joining Date cannot precede Date of Birth.");
+    return;
+  }
+  const ageAtJoining = new Date(joiningDate).getFullYear() - new Date(dob).getFullYear();
+  if (ageAtJoining < 18) {
+    showStaffValidationError("Employee must be at least 18 years old at joining.");
     return;
   }
 
@@ -739,6 +752,12 @@ function handleStaffSubmit(event) {
   // 6. Email Validation
   if (!isValidEmail(email)) {
     showStaffValidationError("Please enter a valid email address.");
+    return;
+  }
+
+  // 7. Password check
+  if (!password || password.length < 4) {
+    showStaffValidationError("Password must be at least 4 characters long.");
     return;
   }
 
@@ -1053,7 +1072,7 @@ function handlePatientEntrySubmit(event) {
 
   // 1. Name validation
   if (!isValidName(name)) {
-    showPatientEntryError("Patient Name must be at least 3 letters long, alphabets and spaces only (no numbers or special characters).");
+    showPatientEntryError("Patient Name must be at least 3 letters long, alphabets and spaces only.");
     return;
   }
 
@@ -1065,19 +1084,28 @@ function handlePatientEntrySubmit(event) {
 
   // 3. Blood Group validation
   if (!isValidBloodGroup(bloodGroup)) {
-    showPatientEntryError("Invalid blood group selected. Must be a valid human blood group.");
+    showPatientEntryError("Invalid blood group selected.");
     return;
   }
 
-  // 4. DOB validation: cannot be in future
+  // 4. DOB validation: cannot be in future, and realistic age (<= 100 yrs)
+  if (!dob) {
+    showPatientEntryError("Please provide a valid Date of Birth.");
+    return;
+  }
   if (!isNotFutureDate(dob)) {
-    showPatientEntryError("Patient Date of Birth cannot be empty or in the future.");
+    showPatientEntryError("Patient Date of Birth cannot be in the future.");
+    return;
+  }
+  const ptAge = calculateAge(dob);
+  if (ptAge > 100) {
+    showPatientEntryError(`Patient age is ${ptAge} years. Maximum valid age is 100 years.`);
     return;
   }
 
   // 5. Phone validation: exactly 10 digits starting with 6, 7, 8, or 9
   if (!isValidPhone(phone)) {
-    showPatientEntryError("Phone Number must be exactly 10 digits and start with 6, 7, 8, or 9 (digits only).");
+    showPatientEntryError("Phone Number must be exactly 10 digits and start with 6, 7, 8, or 9.");
     return;
   }
 
@@ -1087,17 +1115,17 @@ function handlePatientEntrySubmit(event) {
     return;
   }
 
-  // Check duplicate patient email or phone
+  // Duplicate Check
   const duplicate = patientList.find(p => p.email.toLowerCase() === email || p.phone === phone);
   if (duplicate) {
-    showPatientEntryError(`A patient is already registered with this email or phone number (MMR: ${duplicate.mmr}, Name: ${duplicate.name}).`);
+    showPatientEntryError(`A patient already exists with this email or phone number (MMR: ${duplicate.mmr}, Name: ${duplicate.name}).`);
     return;
   }
 
   // 7. Doctor and Slot validations
   const doc = staffList.find(s => s.id === doctorId && s.role === 'Doctor');
   if (!doc) {
-    showPatientEntryError("Please select a valid doctor.");
+    showPatientEntryError("Please select an active doctor.");
     return;
   }
 
@@ -1124,7 +1152,7 @@ function handlePatientEntrySubmit(event) {
     return;
   }
 
-  // Prevent double booking
+  // Double booking check
   const conflict = bookingList.find(b => b.doctor === doc.name && b.date === date && b.slot === slot && b.status === 'Confirmed');
   if (conflict) {
     showPatientEntryError("This time slot has just been reserved. Please select another slot.");
@@ -1175,7 +1203,6 @@ function showPatientEntryError(message) {
   const alertBox = document.getElementById('patientValidationAlert');
   alertBox.textContent = message;
   alertBox.style.display = 'block';
-  alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function resetPatientEntryForm() {

@@ -55,9 +55,9 @@ body {
 /* Login Panel */
 .login-panel {
   background: #ffffff;
-  max-width: 400px;
+  max-width: 420px;
   margin: 50px auto;
-  padding: 25px;
+  padding: 28px;
   border: 1px solid #cccccc;
   border-radius: 4px;
 }
@@ -104,6 +104,32 @@ body {
   font-size: 11px;
   color: #777777;
   margin-top: 3px;
+}
+
+/* Password Input with Generate Button */
+.password-input-group {
+  display: flex;
+  gap: 6px;
+}
+
+.password-input-group input {
+  flex: 1;
+}
+
+.btn-generate {
+  background-color: #f0ad4e;
+  color: #ffffff;
+  border: 1px solid #eea236;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 3px;
+  cursor: pointer;
+  height: 34px;
+}
+
+.btn-generate:hover {
+  background-color: #ec971f;
 }
 
 /* Radio Button Group */
@@ -176,6 +202,7 @@ body {
   color: #31708f;
   font-size: 12px;
   border-radius: 3px;
+  line-height: 1.5;
 }
 
 /* Patient Booking Box */

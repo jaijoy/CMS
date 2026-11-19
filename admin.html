@@ -20,43 +20,33 @@
   </header>
 
   <!-- =========================================================
-       1. LOGIN SECTION
+       1. LOGIN SECTION (NO ROLE DROPDOWN)
        ========================================================= -->
   <main id="loginView" class="container">
     <div class="login-panel">
       <h3>User Login</h3>
-      <p class="hint">Select your role and enter credentials to continue</p>
+      <p class="hint">Enter your email / username and password to sign in</p>
 
       <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
         <div class="form-group">
-          <label for="loginRole">Select Role</label>
-          <select id="loginRole" onchange="handleRoleChange(this.value)" required>
-            <option value="" disabled selected>-- Select Role --</option>
-            <option value="Admin">Administrator</option>
-            <option value="Receptionist">Receptionist</option>
-            <option value="Doctor">Doctor</option>
-            <option value="Lab Technician">Lab Technician</option>
-            <option value="Pharmacist">Pharmacist</option>
-            <option value="Patient">Patient</option>
-          </select>
+          <label for="loginUser">Email / Username</label>
+          <input type="text" id="loginUser" placeholder="e.g. admin@quadclinic.com or patient@gmail.com" required />
         </div>
 
         <div class="form-group">
-          <label for="loginUser" id="loginUserLabel">Email Address</label>
-          <input type="text" id="loginUser" placeholder="admin@quadclinic.com" required />
-        </div>
-
-        <div class="form-group">
-          <label for="loginPass" id="loginPassLabel">Password</label>
-          <input type="password" id="loginPass" placeholder="Enter password" required />
+          <label for="loginPass">Password</label>
+          <input type="password" id="loginPass" placeholder="Enter password (Phone No. for Patients)" required />
         </div>
 
         <button type="submit" class="btn-standard full">Login</button>
       </form>
 
       <div id="loginMsg" class="error-text" style="display: none;"></div>
-      <div id="patientNotice" class="info-text" style="display: none;">
-        Patient sign-in: Use registered <strong>Email</strong> as username and <strong>Phone Number</strong> as password. Demo: <code>jaii@gmail.com</code> / <code>9846012345</code>[cite: 1, 2].
+      <div class="info-text" style="margin-top: 15px;">
+        <strong>Login Guide:</strong><br>
+        &bull; <strong>Admin:</strong> <code>admin@quadclinic.com</code> / <code>admin123</code><br>
+        &bull; <strong>Staff:</strong> Their registered clinic email &amp; assigned password<br>
+        &bull; <strong>Patient:</strong> Registered Email &amp; Phone Number as password (e.g., <code>jaii@gmail.com</code> / <code>9846012345</code>)
       </div>
     </div>
   </main>
@@ -74,10 +64,10 @@
       <!-- Patient Details Header -->
       <div class="patient-info">
         <h3>Patient Details</h3>
-        <p><strong>MMR:</strong> <span id="displayMMR">MMR1003</span>[cite: 1, 2]</p>
-        <p><strong>Name:</strong> <span id="displayName">jaii</span>[cite: 1, 2]</p>
+        <p><strong>MMR:</strong> <span id="displayMMR">MMR1003</span></p>
+        <p><strong>Name:</strong> <span id="displayName">jaii</span></p>
         <p><strong>Phone:</strong> <span id="displayPhone">9846012345</span></p>
-        <p><strong>Gender:</strong> <span id="displayGender">Female</span>[cite: 2]</p>
+        <p><strong>Gender:</strong> <span id="displayGender">Female</span></p>
         <p><strong>Blood Group:</strong> <span id="displayBloodGroup">O+</span></p>
       </div>
 
@@ -228,13 +218,13 @@
             <div class="form-group">
               <label for="staffDOB">Date of Birth (DOB) *</label>
               <input type="date" id="staffDOB" required />
-              <small class="field-hint">Doctor: Age &gt; 27 yrs | Staff: Age &ge; 21 yrs</small>
+              <small class="field-hint">Doctor: Age &gt; 27 yrs | Staff: 21–100 yrs</small>
             </div>
 
             <div class="form-group">
               <label for="staffJoiningDate">Joining Date *</label>
               <input type="date" id="staffJoiningDate" required />
-              <small class="field-hint">Cannot be in the future</small>
+              <small class="field-hint">Cannot be in the future (Min 18 yrs after DOB)</small>
             </div>
 
             <div class="form-group">
@@ -252,9 +242,14 @@
               <input type="number" id="staffSalary" placeholder="45000" min="5000" required />
             </div>
 
+            <!-- Password with Random Generator -->
             <div class="form-group">
               <label for="staffPass">Login Password *</label>
-              <input type="text" id="staffPass" placeholder="staff123" required />
+              <div class="password-input-group">
+                <input type="text" id="staffPass" placeholder="Click generate" required />
+                <button type="button" class="btn-generate" onclick="generateNewPasswordForStaff()">Generate</button>
+              </div>
+              <small class="field-hint">Auto-generated secure random password</small>
             </div>
           </div>
 
@@ -338,10 +333,10 @@
     <!-- 3D. Patient Directory Table & Dedicated Patient Entry Section -->
     <div id="tabPatients" class="tab-content" style="display: none;">
       
-      <!-- INLINE PATIENT ENTRY FORM WITH STRICT VALIDATIONS -->
+      <!-- INLINE PATIENT ENTRY FORM -->
       <div class="form-container" id="patientEntrySection" style="margin-bottom: 24px;">
         <h3>Patient Registration &amp; Appointment Booking</h3>
-        <p class="hint">Register patient with full validations. Generates automatic MMR.</p>
+        <p class="hint">Register patient with age &le; 100 yrs, valid phone, and automatic MMR.</p>
 
         <div id="patientValidationAlert" class="error-text" style="display: none; margin-bottom: 15px;"></div>
 
@@ -378,7 +373,7 @@
             <div class="form-group">
               <label for="newPtDOB">Date of Birth (DOB) *</label>
               <input type="date" id="newPtDOB" required />
-              <small class="field-hint">Cannot be in the future</small>
+              <small class="field-hint">Max age: 100 years. Cannot be future.</small>
             </div>
 
             <div class="form-group">
@@ -432,7 +427,7 @@
       <!-- PATIENT APPOINTMENTS DIRECTORY TABLE -->
       <div class="table-container">
         <div class="table-bar">
-          <h4>Patient Records &amp; Appointments[cite: 2]</h4>
+          <h4>Patient Records &amp; Appointments</h4>
         </div>
 
         <table class="grid-table">
