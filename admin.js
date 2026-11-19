@@ -1,10 +1,10 @@
 /* =========================================================
-   QUAD CLINIC - STRICT VALIDATION & SCHEDULING ENGINE
+   QUAD CLINIC - STRICT VALIDATION (AGE < 60 ENFORCED)
    ========================================================= */
 
-const DB_STAFF_KEY = 'quad_clinic_staff_strict_v8';
-const DB_PATIENT_KEY = 'quad_clinic_patients_strict_v8';
-const DB_BOOKINGS_KEY = 'quad_clinic_bookings_strict_v8';
+const DB_STAFF_KEY = 'quad_clinic_staff_strict_v9';
+const DB_PATIENT_KEY = 'quad_clinic_patients_strict_v9';
+const DB_BOOKINGS_KEY = 'quad_clinic_bookings_strict_v9';
 const SESSION_KEY = 'quad_clinic_user_session';
 
 // Standard 30-Minute Shifts
@@ -16,7 +16,7 @@ const AFTERNOON_SLOTS = [
   "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM"
 ];
 
-// Seed Staff
+// Seed Staff (All compliant with: 21 <= Staff < 60, 27 < Doctor < 60)
 const DEFAULT_STAFF = [
   { 
     id: '1', 
@@ -25,7 +25,7 @@ const DEFAULT_STAFF = [
     dept: 'Cardiology',
     gender: 'Male',
     bloodGroup: 'O+',
-    dob: '1984-05-12',
+    dob: '1984-05-12', // ~42 yrs
     joiningDate: '2020-01-15',
     email: 'arun@quadclinic.com', 
     contact: '9447112233', 
@@ -42,7 +42,7 @@ const DEFAULT_STAFF = [
     dept: 'General Medicine',
     gender: 'Male',
     bloodGroup: 'B+',
-    dob: '1982-10-24',
+    dob: '1982-10-24', // ~44 yrs
     joiningDate: '2019-06-01',
     email: 'doctor@quadclinic.com', 
     contact: '9447122334', 
@@ -59,7 +59,7 @@ const DEFAULT_STAFF = [
     dept: 'Pediatrics',
     gender: 'Female',
     bloodGroup: 'A+',
-    dob: '1988-03-18',
+    dob: '1988-03-18', // ~38 yrs
     joiningDate: '2021-08-10',
     email: 'meera@quadclinic.com', 
     contact: '9895233445', 
@@ -76,7 +76,7 @@ const DEFAULT_STAFF = [
     dept: 'Orthopedics',
     gender: 'Female',
     bloodGroup: 'AB+',
-    dob: '1985-11-05',
+    dob: '1985-11-05', // ~41 yrs
     joiningDate: '2020-11-20',
     email: 'deepa@quadclinic.com', 
     contact: '9895001122', 
@@ -93,7 +93,7 @@ const DEFAULT_STAFF = [
     dept: 'Dermatology',
     gender: 'Male',
     bloodGroup: 'O-',
-    dob: '1986-07-29',
+    dob: '1986-07-29', // ~40 yrs
     joiningDate: '2022-03-01',
     email: 'sanjay@quadclinic.com', 
     contact: '9811223344', 
@@ -110,7 +110,7 @@ const DEFAULT_STAFF = [
     dept: 'Administration',
     gender: 'Female',
     bloodGroup: 'A+',
-    dob: '1998-09-14',
+    dob: '1998-09-14', // ~28 yrs
     joiningDate: '2023-02-15',
     email: 'reception@quadclinic.com', 
     contact: '9847011223', 
@@ -127,7 +127,7 @@ const DEFAULT_STAFF = [
     dept: 'Pathology',
     gender: 'Male',
     bloodGroup: 'B-',
-    dob: '1995-12-03',
+    dob: '1995-12-03', // ~31 yrs
     joiningDate: '2022-07-10',
     email: 'lab@quadclinic.com', 
     contact: '9746344556', 
@@ -144,7 +144,7 @@ const DEFAULT_STAFF = [
     dept: 'Dispensary',
     gender: 'Female',
     bloodGroup: 'O+',
-    dob: '1996-04-22',
+    dob: '1996-04-22', // ~30 yrs
     joiningDate: '2023-01-05',
     email: 'pharmacy@quadclinic.com', 
     contact: '9633455667', 
@@ -236,7 +236,6 @@ function saveData() {
   localStorage.setItem(DB_BOOKINGS_KEY, JSON.stringify(bookingList));
 }
 
-// Convert "09:30 AM" + "YYYY-MM-DD" into Date object for accurate time checking
 function parseSlotDateTime(dateStr, slotStr) {
   const [time, modifier] = slotStr.split(' ');
   let [hours, minutes] = time.split(':').map(Number);
@@ -250,7 +249,7 @@ function parseSlotDateTime(dateStr, slotStr) {
 }
 
 /* =========================================================
-   RANDOM PASSWORD GENERATOR
+   PASSWORD GENERATOR
    ========================================================= */
 function generateRandomPassword() {
   const charsUpper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -269,20 +268,16 @@ function generateRandomPassword() {
     pass += allChars.charAt(Math.floor(Math.random() * allChars.length));
   }
 
-  // Shuffle string
   return pass.split('').sort(() => 0.5 - Math.random()).join('');
 }
 
 function generateNewPasswordForStaff() {
-  const passField = document.getElementById('staffPass');
-  passField.value = generateRandomPassword();
+  document.getElementById('staffPass').value = generateRandomPassword();
 }
 
 /* =========================================================
-   STRICT VALIDATION UTILITIES
+   VALIDATION HELPERS
    ========================================================= */
-
-// Calculate exact age in years from YYYY-MM-DD
 function calculateAge(dobString) {
   const birth = new Date(dobString);
   const now = new Date();
@@ -294,96 +289,122 @@ function calculateAge(dobString) {
   return age;
 }
 
-// Name: Minimum 3 letters, alphabets and spaces/dots only
 function isValidName(name) {
-  const trimmed = (name || '').trim();
-  const regex = /^[A-Za-z. ]{3,}$/;
-  return regex.test(trimmed);
+  return /^[A-Za-z. ]{3,}$/.test((name || '').trim());
 }
 
-// Phone: Exactly 10 digits starting with 6, 7, 8, or 9
 function isValidPhone(phone) {
-  const regex = /^[6-9]\d{9}$/;
-  return regex.test((phone || '').trim());
+  return /^[6-9]\d{9}$/.test((phone || '').trim());
 }
 
-// Email: Standard email structure
 function isValidEmail(email) {
-  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return regex.test((email || '').trim());
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test((email || '').trim());
 }
 
-// Blood Groups: Only real human groups
 function isValidBloodGroup(bg) {
-  const validGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  return validGroups.includes(bg);
+  return ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].includes(bg);
 }
 
-// Date: Cannot be in the future
 function isNotFutureDate(dateStr) {
   if (!dateStr) return false;
   const today = new Date();
   today.setHours(23, 59, 59, 999);
-  const inputDate = new Date(dateStr);
-  return inputDate <= today;
+  return new Date(dateStr) <= today;
 }
 
 /* =========================================================
-   1. UNIFIED LOGIN (AUTO-DETECT ROLE)
+   1. LOGIN
    ========================================================= */
+function handleRoleChange(role) {
+  const tip = document.getElementById('patientNotice');
+  const userLabel = document.getElementById('loginUserLabel');
+  const passLabel = document.getElementById('loginPassLabel');
+
+  if (role === 'Patient') {
+    tip.style.display = 'block';
+    userLabel.textContent = 'Patient Email';
+    passLabel.textContent = 'Password (Phone Number)';
+  } else {
+    tip.style.display = 'none';
+    userLabel.textContent = 'Email Address';
+    passLabel.textContent = 'Password';
+  }
+}
+
 function handleLogin(event) {
   event.preventDefault();
   const msg = document.getElementById('loginMsg');
   msg.style.display = 'none';
 
+  const role = document.getElementById('loginRole').value;
   const username = document.getElementById('loginUser').value.trim().toLowerCase();
   const password = document.getElementById('loginPass').value.trim();
 
-  if (!username || !password) {
-    msg.textContent = 'Please enter both username and password.';
+  if (!role) {
+    msg.textContent = 'Please select a system role.';
     msg.style.display = 'block';
     return;
   }
 
-  // Check 1: Administrator Credentials
-  if ((username === 'admin@quadclinic.com' || username === 'admin') && password === 'admin123') {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Admin', user: username }));
-    showAdminView();
+  // Admin Login
+  if (role === 'Admin') {
+    if ((username === 'admin@quadclinic.com' || username === 'admin') && password === 'admin123') {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Admin', user: username }));
+      showAdminView();
+      return;
+    } else {
+      msg.textContent = 'Invalid credentials. Use admin@quadclinic.com / admin123';
+      msg.style.display = 'block';
+      return;
+    }
+  }
+
+  // Patient Login
+  if (role === 'Patient') {
+    const patient = patientList.find(p => p.email.toLowerCase() === username);
+    if (!patient) {
+      msg.textContent = `No patient found with email "${username}". Please register first.`;
+      msg.style.display = 'block';
+      return;
+    }
+    if (patient.phone !== password) {
+      msg.textContent = 'Invalid password. (Password is your 10-digit phone number).';
+      msg.style.display = 'block';
+      return;
+    }
+
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Patient', ...patient }));
+    showPatientView(patient);
     return;
   }
 
-  // Check 2: Staff Member Credentials (Doctor, Receptionist, Lab Tech, Pharmacist)
-  const matchedStaff = staffList.find(s => 
-    s.email.toLowerCase() === username && s.password === password
+  // Staff Login
+  const staff = staffList.find(s => 
+    s.role === role && 
+    (s.email.toLowerCase() === username || s.name.toLowerCase() === username)
   );
 
-  if (matchedStaff) {
-    const pages = {
-      'Receptionist': 'receptionist.html',
-      'Doctor': 'doctor.html',
-      'Lab Technician': 'lab.html',
-      'Pharmacist': 'pharmacist.html'
-    };
-
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(matchedStaff));
-    window.location.href = pages[matchedStaff.role];
+  if (!staff) {
+    msg.textContent = `No ${role} record found matching "${username}".`;
+    msg.style.display = 'block';
     return;
   }
 
-  // Check 3: Patient Credentials (Email + Phone Number as password)
-  const matchedPatient = patientList.find(p => 
-    p.email.toLowerCase() === username && p.phone === password
-  );
-
-  if (matchedPatient) {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'Patient', ...matchedPatient }));
-    showPatientView(matchedPatient);
+  if (staff.password !== password) {
+    msg.textContent = `Incorrect password for ${staff.name}.`;
+    msg.style.display = 'block';
     return;
   }
 
-  // If no match found
-  msg.textContent = 'Invalid username/email or password. Please verify your credentials.';
-  msg.style.display = 'block';
+  const pages = {
+    'Receptionist': 'receptionist.html',
+    'Doctor': 'doctor.html',
+    'Lab Technician': 'lab.html',
+    'Pharmacist': 'pharmacist.html'
+  };
+
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(staff));
+  window.location.href = pages[role];
 }
 
 function handleLogout() {
@@ -396,7 +417,7 @@ function handleLogout() {
 }
 
 /* =========================================================
-   2. PATIENT BOOKING UI & RECORDS
+   2. PATIENT BOOKING UI
    ========================================================= */
 function showPatientView(patient) {
   document.getElementById('loginView').style.display = 'none';
@@ -404,20 +425,17 @@ function showPatientView(patient) {
   document.getElementById('patientView').style.display = 'block';
   document.getElementById('navUserBar').style.display = 'none';
 
-  // Display Patient Details
   document.getElementById('displayMMR').textContent = patient.mmr || 'MMR1003';
   document.getElementById('displayName').textContent = patient.name;
   document.getElementById('displayPhone').textContent = patient.phone;
   document.getElementById('displayGender').textContent = patient.gender || 'Female';
   document.getElementById('displayBloodGroup').textContent = patient.bloodGroup || 'O+';
 
-  // Appointment date default to today; cannot select past
   const todayStr = new Date().toISOString().split('T')[0];
   const datePicker = document.getElementById('selectDate');
   datePicker.min = todayStr;
   datePicker.value = todayStr;
 
-  // Initialize Department
   const dept = document.getElementById('selectDept');
   dept.value = 'Cardiology';
   onDepartmentChanged('Cardiology');
@@ -455,7 +473,6 @@ function refreshTimeSlotButtons() {
   const shiftType = doc.shift || 'Both';
   const now = new Date();
 
-  // Find all booked slots for this doctor on the chosen date
   const booked = bookingList
     .filter(b => b.doctor === doc.name && b.date === dateVal && b.status === 'Confirmed')
     .map(b => b.slot);
@@ -463,7 +480,6 @@ function refreshTimeSlotButtons() {
   let firstAvailable = null;
   let html = '';
 
-  // Render Morning Slots (09:00 AM - 12:00 PM)
   if (shiftType === 'Morning' || shiftType === 'Both') {
     html += '<div class="shift-section-title">Morning Shift (09:00 AM - 12:00 PM)</div><div class="slots-row">';
     MORNING_SLOTS.forEach(slot => {
@@ -480,7 +496,6 @@ function refreshTimeSlotButtons() {
     html += '</div>';
   }
 
-  // Render Afternoon Slots (02:00 PM - 04:00 PM)
   if (shiftType === 'Afternoon' || shiftType === 'Both') {
     html += '<div class="shift-section-title">Afternoon Shift (02:00 PM - 04:00 PM)</div><div class="slots-row">';
     AFTERNOON_SLOTS.forEach(slot => {
@@ -538,7 +553,6 @@ function handleConfirmBooking(event) {
     return;
   }
 
-  // Prevent double booking collision
   const exists = bookingList.find(b => b.doctor === doc.name && b.date === date && b.slot === slot && b.status === 'Confirmed');
   if (exists) {
     alert("This slot has just been reserved. Please pick another available time slot.");
@@ -660,14 +674,13 @@ function openAddForm(presetRole) {
   const maleRadio = form.querySelector('input[name="staffGender"][value="Male"]');
   if (maleRadio) maleRadio.checked = true;
 
-  // Auto-generate random secure password for newly added staff
+  // Auto-generate random secure password
   document.getElementById('staffPass').value = generateRandomPassword();
-
   switchAdminTab('add');
 }
 
 /* =========================================================
-   STAFF SUBMIT WITH STRICT VALIDATIONS
+   STAFF SUBMISSION (STRICT AGE < 60 CHECK)
    ========================================================= */
 function handleStaffSubmit(event) {
   event.preventDefault();
@@ -705,23 +718,26 @@ function handleStaffSubmit(event) {
     return;
   }
 
-  // Age calculation
+  // 3. Exact Age Logical Validation
   const age = calculateAge(dob);
 
-  // Maximum realistic age check (<= 100 years)
-  if (age > 100) {
-    showStaffValidationError(`Date of Birth indicates age ${age} years. Maximum valid age is 100 years.`);
+  // Maximum Working Age Check (< 60 years)
+  if (age >= 60) {
+    showStaffValidationError(`Staff member must be below 60 years of age (Current age from DOB: ${age} years).`);
     return;
   }
 
-  // 3. Minimum Age Restrictions
-  if (role === 'Doctor' && age <= 27) {
-    showStaffValidationError(`Doctor age must be strictly greater than 27 years. (Current: ${age} years).`);
-    return;
-  }
-  if (role !== 'Doctor' && age < 21) {
-    showStaffValidationError(`${role} age must be at least 21 years old. (Current: ${age} years).`);
-    return;
+  // Minimum Age Checks
+  if (role === 'Doctor') {
+    if (age <= 27) {
+      showStaffValidationError(`Doctor age must be strictly greater than 27 years (Current age from DOB: ${age} years).`);
+      return;
+    }
+  } else {
+    if (age < 21) {
+      showStaffValidationError(`${role} age must be at least 21 years old (Current age from DOB: ${age} years).`);
+      return;
+    }
   }
 
   // 4. Joining Date Check
@@ -755,7 +771,7 @@ function handleStaffSubmit(event) {
     return;
   }
 
-  // 7. Password check
+  // 7. Password Check
   if (!password || password.length < 4) {
     showStaffValidationError("Password must be at least 4 characters long.");
     return;
@@ -978,9 +994,8 @@ function deleteStaff(id) {
 }
 
 /* =========================================================
-   4. PATIENT ENTRY INLINE FORM & STRICT VALIDATIONS
+   4. INLINE PATIENT REGISTRATION & ENTRY
    ========================================================= */
-
 function initAdminPatientEntryForm() {
   const todayStr = new Date().toISOString().split('T')[0];
   const dateInput = document.getElementById('newPtDate');
@@ -1024,7 +1039,6 @@ function onAdminPatientDateChange() {
   const shiftType = doc.shift || 'Both';
   const now = new Date();
 
-  // Find booked slots for this doctor on selected date
   const booked = bookingList
     .filter(b => b.doctor === doc.name && b.date === dateVal && b.status === 'Confirmed')
     .map(b => b.slot);
