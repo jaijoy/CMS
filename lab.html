@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quad Clinic - Lab Technician</title>
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="lab.css" />
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="brand">
+      <h2>Quad Multi-Speciality Clinic — Laboratory</h2>
+    </div>
+    <div class="nav-right">
+      <span id="labUserDisplay">Technician: Rahul Vijayan</span>
+      <button onclick="handleLabLogout()" class="btn-logout">Logout</button>
+    </div>
+  </header>
+
+  <div class="portal-shell">
+    <!-- Sidebar -->
+    <aside class="portal-sidebar">
+      <div>
+        <div class="user-profile-badge">
+          <div class="profile-avatar-circle">LT</div>
+          <div class="profile-meta">
+            <h4 id="labTechName">Rahul Vijayan</h4>
+            <span>Lab Technician</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-menu">
+          <button class="menu-btn active" id="btnTabTests" onclick="switchLabTab('tests')">
+            <span>&#128221;</span> Prescriptions &amp; Tests
+          </button>
+          <button class="menu-btn" id="btnTabRateCard" onclick="switchLabTab('rates')">
+            <span>&#128176;</span> Test Price &amp; Rate List
+          </button>
+          <button class="menu-btn" id="btnTabBill" onclick="switchLabTab('bill')">
+            <span>&#128179;</span> Generate Test Bill
+          </button>
+        </nav>
+      </div>
+
+      <div>
+        <button class="btn-cancel" style="width: 100%;" onclick="handleLabLogout()">Log Out</button>
+      </div>
+    </aside>
+
+    <!-- Workspace -->
+    <main class="portal-content">
+      
+      <!-- TAB 1: Doctor Prescriptions with Test Name & Price -->
+      <section id="paneTests" class="content-pane active">
+        <div class="panel-box" style="padding: 24px;">
+          <div class="panel-title-row">
+            <div>
+              <h2>Prescriptions &amp; Lab Requests (From Doctor)</h2>
+              <p class="hint">Includes prescribed test name, test price, and specimen result status.</p>
+            </div>
+          </div>
+
+          <div class="table-bar">
+            <input type="text" id="searchLabInput" placeholder="Search Patient MMR, Name, Test..." oninput="renderLabTestsTable()" />
+          </div>
+
+          <table class="grid-table" style="margin-top: 14px;">
+            <thead>
+              <tr>
+                <th>Test ID</th>
+                <th>Patient MMR</th>
+                <th>Patient Name</th>
+                <th>Doctor</th>
+                <th>Test Name</th>
+                <th>Test Price</th>
+                <th>Test Availability</th>
+                <th>Result Value</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="labTestsTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 2: Test Price & Rate Card -->
+      <section id="paneRates" class="content-pane">
+        <div class="panel-box" style="padding: 24px;">
+          <div class="panel-title-row">
+            <div>
+              <h2>Diagnostic Test Names &amp; Price List</h2>
+              <p class="hint">Clinic standard laboratory charges and reagent availability.</p>
+            </div>
+            <button class="btn-sm" onclick="promptAddNewTestRate()">+ Add New Test &amp; Price</button>
+          </div>
+
+          <table class="grid-table" style="margin-top: 14px;">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Test Name</th>
+                <th>Clinical Profile</th>
+                <th>Standard Price (INR)</th>
+                <th>Availability</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="labRatesTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: Generate Bill -->
+      <section id="paneBill" class="content-pane">
+        <div class="form-container" style="max-width: 720px;">
+          <h3>Laboratory Test Billing</h3>
+          <p class="hint">Select completed test to generate bill with official price.</p>
+
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label for="billSelectReport">Select Patient Test</label>
+              <select id="billSelectReport" onchange="previewLabInvoice(this.value)">
+                <option value="" disabled selected>-- Select Patient Test --</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="printableBillArea" class="bill-preview-box" style="display: none;">
+            <div class="bill-header">
+              <div>
+                <h3 style="color: #0b3c5d;">QUAD MULTI-SPECIALITY CLINIC</h3>
+                <small>Pathology Laboratory</small>
+              </div>
+              <div style="text-align: right;">
+                <h4 id="billInvoiceNo">INV-LAB-101</h4>
+                <small id="billDateDisplay">Date: 2026-11-19</small>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 15px; font-size: 13.5px; line-height: 1.6;">
+              <p><strong>Patient:</strong> <span id="billPtName">-</span> (<strong>MMR:</strong> <span id="billPtMMR">-</span>)</p>
+              <p><strong>Referred By:</strong> <span id="billDocName">-</span></p>
+            </div>
+
+            <table class="grid-table">
+              <thead>
+                <tr>
+                  <th>Test Conducted</th>
+                  <th>Observed Result</th>
+                  <th style="text-align: right;">Test Price (INR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="billItemName">-</td>
+                  <td id="billItemObserved">-</td>
+                  <td id="billItemPrice" style="text-align: right;">₹0</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="bill-total-row">
+              <span>Total Amount:</span>
+              <span id="billGrandTotal" style="color: #0b3c5d;">₹0</span>
+            </div>
+
+            <div class="button-row" style="margin-top: 20px; justify-content: flex-end;">
+              <button type="button" class="btn-standard" onclick="window.print()">Print Receipt</button>
+              <button type="button" class="btn-cancel" onclick="markBillPaid()">Mark as Paid</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="lab.js"></script>
+</body>
+</html>

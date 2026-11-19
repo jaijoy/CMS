@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quad Clinic - Pharmacy</title>
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="pharmacist.css" />
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="brand">
+      <h2>Quad Multi-Speciality Clinic — Pharmacy</h2>
+    </div>
+    <div class="nav-right">
+      <span id="pharmUserDisplay">Pharmacist: Sneha Thomas</span>
+      <button onclick="handlePharmLogout()" class="btn-logout">Logout</button>
+    </div>
+  </header>
+
+  <div class="portal-shell">
+    <!-- Sidebar -->
+    <aside class="portal-sidebar">
+      <div>
+        <div class="user-profile-badge">
+          <div class="profile-avatar-circle">PH</div>
+          <div class="profile-meta">
+            <h4 id="pharmName">Sneha Thomas</h4>
+            <span>Pharmacist</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-menu">
+          <button class="menu-btn active" id="btnTabRx" onclick="switchPharmTab('rx')">
+            <span>&#128138;</span> Prescriptions &amp; Orders
+          </button>
+          <button class="menu-btn" id="btnTabRates" onclick="switchPharmTab('rates')">
+            <span>&#128176;</span> Medicine Price &amp; Rates
+          </button>
+          <button class="menu-btn" id="btnTabInventory" onclick="switchPharmTab('inventory')">
+            <span>&#128230;</span> Live Stock Inventory
+          </button>
+        </nav>
+      </div>
+
+      <div>
+        <button class="btn-cancel" style="width: 100%;" onclick="handlePharmLogout()">Log Out</button>
+      </div>
+    </aside>
+
+    <!-- Workspace -->
+    <main class="portal-content">
+      
+      <!-- TAB 1: Doctor Prescriptions with Medicine Name & Price -->
+      <section id="paneRx" class="content-pane active">
+        <div class="panel-box" style="padding: 24px;">
+          <div class="panel-title-row">
+            <div>
+              <h2>Prescriptions &amp; Medication Orders (From Doctor)</h2>
+              <p class="hint">Shows prescribed medicine name, unit price, quantity, and live stock deduction.</p>
+            </div>
+          </div>
+
+          <div class="table-bar">
+            <input type="text" id="searchRxInput" placeholder="Search Patient MMR, Name, Medicine, Doctor..." oninput="renderPrescriptionsTable()" />
+          </div>
+
+          <table class="grid-table" style="margin-top: 14px;">
+            <thead>
+              <tr>
+                <th>Rx ID</th>
+                <th>Patient MMR</th>
+                <th>Patient Name</th>
+                <th>Doctor</th>
+                <th>Medicine Name</th>
+                <th>Unit Price</th>
+                <th>Prescribed Qty</th>
+                <th>Total Cost</th>
+                <th>Stock Left</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="prescriptionsTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 2: Medicine Price & Rates List -->
+      <section id="paneRates" class="content-pane">
+        <div class="panel-box" style="padding: 24px;">
+          <div class="panel-title-row">
+            <div>
+              <h2>Medicine Master Price &amp; Rate List</h2>
+              <p class="hint">Standard retail prices per tablet/capsule/tube in dispensary inventory.</p>
+            </div>
+            <button class="btn-sm" onclick="promptAddNewMedicine()">+ Add New Medicine &amp; Price</button>
+          </div>
+
+          <table class="grid-table" style="margin-top: 14px;">
+            <thead>
+              <tr>
+                <th>Item Code</th>
+                <th>Medicine Name</th>
+                <th>Unit Price (INR)</th>
+                <th>Current Stock</th>
+                <th>Availability</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="ratesTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: Medicine Inventory Stock Management -->
+      <section id="paneInventory" class="content-pane">
+        <div class="panel-box" style="padding: 24px;">
+          <div class="panel-title-row">
+            <div>
+              <h2>Dispensary Medicine Inventory</h2>
+              <p class="hint">Real-time stock decreases automatically when medicines are dispensed.</p>
+            </div>
+            <button class="btn-sm" onclick="promptAddNewMedicine()">+ Add New Stock</button>
+          </div>
+
+          <table class="grid-table" style="margin-top: 14px;">
+            <thead>
+              <tr>
+                <th>Item Code</th>
+                <th>Medicine Name</th>
+                <th>Unit Price (INR)</th>
+                <th>Available Quantity (Stock)</th>
+                <th>Stock Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="pharmacist.js"></script>
+</body>
+</html>
