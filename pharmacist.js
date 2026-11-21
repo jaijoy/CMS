@@ -1,11 +1,10 @@
-/* =========================================================
-   PHARMACIST LOGIC - MEDICINE NAME, PRICE & REAL-TIME STOCK
-   ========================================================= */
-const DB_PHARM_RX_KEY = 'quad_clinic_doctor_prescriptions_v3';
-const DB_INVENTORY_KEY = 'quad_clinic_clean_inventory_v3';
+/* =========================================================================
+   PHARMACIST LOGIC WITH STRICT INVENTORY DEPLETION & DRUG VALIDATIONS
+   ========================================================================= */
+const DB_PHARM_RX_KEY = 'quad_clinic_doctor_prescriptions_v4';
+const DB_INVENTORY_KEY = 'quad_clinic_clean_inventory_v4';
 const SESSION_KEY = 'quad_clinic_user_session';
 
-// Standard Medicine Master with Code, Name, Price, and Stock
 const DEFAULT_STOCK = [
   { code: 'MED-01', name: 'Tab. Paracetamol 650mg', price: 3.5, stock: 450 },
   { code: 'MED-02', name: 'Cap. Amoxicillin 500mg', price: 12.0, stock: 120 },
@@ -14,10 +13,9 @@ const DEFAULT_STOCK = [
   { code: 'MED-05', name: 'Tab. Cetirizine 10mg', price: 5.0, stock: 20 },
   { code: 'MED-06', name: 'Tab. Metformin 500mg', price: 6.0, stock: 400 },
   { code: 'MED-07', name: 'Tab. Telmisartan 40mg', price: 11.5, stock: 150 },
-  { code: 'MED-08', name: 'Hydrocortisone Ointment', price: 65.0, stock: 0 } // Out of stock example
+  { code: 'MED-08', name: 'Hydrocortisone Ointment', price: 65.0, stock: 0 } // Out of stock
 ];
 
-// Prescriptions Sent from Doctor Consultations
 const DEFAULT_DOCTOR_PRESCRIPTIONS = [
   {
     id: 'RX-501',
@@ -128,7 +126,21 @@ function renderPrescriptionsTable() {
   tbody.innerHTML = filtered.map(r => {
     const med = inventory.find(m => m.name === r.medicineName) || { price: 0, stock: 0 };
     const totalCost = (med.price * r.qty).toFixed(2);
-    const canDispense = r.status === 'Pending' && med.stock >= r.qty;
+    const hasEnoughStock = med.stock >= r.qty;
+    const canDispense = r.status === 'Pending' && hasEnoughStock;
+
+    let statusText = 'Pending';
+    let statusClass = 'leave';
+    if (r.status === 'Dispensed') {
+      statusText = 'Dispensed';
+      statusClass = 'active';
+    } else if (med.stock === 0) {
+      statusText = 'Out of Stock';
+      statusClass = 'inactive';
+    } else if (!hasEnoughStock) {
+      statusText = 'Low Stock';
+      statusClass = 'inactive';
+    }
 
     return `
       <tr>
@@ -142,8 +154,8 @@ function renderPrescriptionsTable() {
         <td><strong>₹${totalCost}</strong></td>
         <td>${med.stock}</td>
         <td>
-          <span class="status-tag ${r.status === 'Dispensed' ? 'active' : (med.stock < r.qty ? 'inactive' : 'leave')}">
-            ${r.status === 'Dispensed' ? 'Dispensed' : (med.stock < r.qty ? 'Out of Stock' : 'Pending')}
+          <span class="status-tag ${statusClass}">
+            ${statusText}
           </span>
         </td>
         <td>
@@ -159,24 +171,55 @@ function renderPrescriptionsTable() {
   }).join('');
 }
 
-// REAL-TIME STOCK DEDUCTION
+/* =========================================================================
+   STRICT DISPENSING & STOCK SUBTRACTION LOGIC
+   ========================================================================= */
 function dispenseMedicine(rxId) {
   const rx = prescriptions.find(r => r.id === rxId);
   if (!rx) return;
 
+  if (rx.status === 'Dispensed') {
+    alert("This prescription has already been dispensed.");
+    return;
+  }
+
+  // 1. Prescription Quantity Sanity Guard
+  const qtyToDispense = parseInt(rx.qty, 10);
+  if (isNaN(qtyToDispense) || qtyToDispense <= 0 || qtyToDispense > 500) {
+    alert(`Invalid prescription quantity (${rx.qty}). Quantities must be positive integers not exceeding 500 units.`);
+    return;
+  }
+
+  // 2. Find medicine in live stock
   const med = inventory.find(m => m.name === rx.medicineName);
   if (!med) {
-    alert("Medicine not found in inventory!");
+    alert(`MEDICATION ERROR: "${rx.medicineName}" is not registered in the dispensary inventory.`);
     return;
   }
 
-  if (med.stock < rx.qty) {
-    alert(`Insufficient Stock! Only ${med.stock} units available, but ${rx.qty} prescribed.`);
+  // 3. Out of stock validation
+  if (med.stock <= 0) {
+    alert(`OUT OF STOCK: "${med.name}" has 0 units remaining. Cannot dispense until restocked.`);
     return;
   }
 
-  // Deduct directly from live stock
-  med.stock -= rx.qty;
+  // 4. Insufficient quantity validation
+  if (med.stock < qtyToDispense) {
+    alert(`INSUFFICIENT INVENTORY: Requested ${qtyToDispense} units of "${med.name}", but only ${med.stock} units are currently in stock.`);
+    return;
+  }
+
+  // 5. Confirm Transaction
+  const unitPrice = parseFloat(med.price);
+  const totalAmount = (unitPrice * qtyToDispense).toFixed(2);
+  const confirmMessage = `Confirm Medication Dispense:\n\nPatient: ${rx.patientName} (${rx.mmr})\nMedicine: ${med.name}\nQuantity: ${qtyToDispense} units\nUnit Rate: ₹${unitPrice.toFixed(2)}\nTotal Amount: ₹${totalAmount}\n\nRemaining stock after dispense: ${med.stock - qtyToDispense}`;
+  
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  // 6. Deduct from live stock
+  med.stock -= qtyToDispense;
   rx.status = 'Dispensed';
 
   savePharmData();
@@ -184,11 +227,9 @@ function dispenseMedicine(rxId) {
   renderRatesTable();
   renderInventoryTable();
 
-  const totalBill = (med.price * rx.qty).toFixed(2);
-  alert(`Dispensed ${rx.qty} units of ${med.name} to ${rx.patientName}.\nUnit Price: ₹${med.price.toFixed(2)}\nTotal Amount: ₹${totalBill}\nRemaining Stock: ${med.stock}`);
+  alert(`Dispense successful! Stock updated. Invoiced: ₹${totalAmount}`);
 }
 
-// Render Master Rates Table
 function renderRatesTable() {
   const tbody = document.getElementById('ratesTableBody');
   tbody.innerHTML = inventory.map(item => `
@@ -213,18 +254,23 @@ function updateMedicinePrice(code) {
   const item = inventory.find(m => m.code === code);
   if (!item) return;
 
-  const newPrice = prompt(`Enter new price for ${item.name} (Current: ₹${item.price}):`, item.price);
-  const p = parseFloat(newPrice);
-  if (!isNaN(p) && p > 0) {
-    item.price = p;
-    savePharmData();
-    renderRatesTable();
-    renderPrescriptionsTable();
-    renderInventoryTable();
+  const newPriceStr = prompt(`Enter new unit price for ${item.name} (Current: ₹${item.price.toFixed(2)}):`, item.price);
+  if (newPriceStr === null) return;
+
+  const p = parseFloat(newPriceStr.trim());
+  if (isNaN(p) || p < 0.50 || p > 10000.00) {
+    alert("Invalid Price! Medicine unit rate must be between ₹0.50 and ₹10,000.00.");
+    return;
   }
+
+  item.price = p;
+  savePharmData();
+  renderRatesTable();
+  renderPrescriptionsTable();
+  renderInventoryTable();
+  alert(`Price updated for ${item.name} to ₹${p.toFixed(2)}`);
 }
 
-// Render Live Stock Table
 function renderInventoryTable() {
   const tbody = document.getElementById('inventoryTableBody');
   tbody.innerHTML = inventory.map(item => {
@@ -259,42 +305,52 @@ function addStockQuantity(code) {
   if (!med) return;
 
   const input = prompt(`Enter quantity to add to ${med.name} (Current Stock: ${med.stock}):`, "50");
-  const qty = parseInt(input, 10);
-  if (!isNaN(qty) && qty > 0) {
-    med.stock += qty;
-    savePharmData();
-    renderInventoryTable();
-    renderRatesTable();
-    renderPrescriptionsTable();
+  if (input === null) return;
+
+  const qty = parseInt(input.trim(), 10);
+  if (isNaN(qty) || qty <= 0 || qty > 10000) {
+    alert("Invalid Restock Quantity: Must be an integer between 1 and 10,000 units.");
+    return;
   }
+
+  med.stock += qty;
+  savePharmData();
+  renderInventoryTable();
+  renderRatesTable();
+  renderPrescriptionsTable();
+  alert(`Successfully restocked ${qty} units of ${med.name}. Total stock: ${med.stock}`);
 }
 
 function promptAddNewMedicine() {
-  const name = prompt("Enter Medicine Name (e.g. Tab. Dolo 650mg):");
-  if (!name || !name.trim()) return;
-
-  const priceStr = prompt("Enter Unit Rate / Price (INR):", "5.00");
-  const price = parseFloat(priceStr);
-  if (isNaN(price) || price <= 0) {
-    alert("Invalid price.");
+  const name = prompt("Enter Medicine Name & Strength (e.g., Tab. Pantoprazole 40mg):");
+  if (!name || name.trim().length < 3) {
+    alert("Invalid Name: Medicine name must be at least 3 characters long.");
     return;
   }
 
-  const stockStr = prompt("Enter Initial Quantity (Stock):", "100");
-  const stock = parseInt(stockStr, 10);
-  if (isNaN(stock) || stock < 0) {
-    alert("Invalid stock quantity.");
+  const priceStr = prompt("Enter Unit Rate / Price (INR):", "8.50");
+  const price = parseFloat(priceStr ? priceStr.trim() : '');
+  if (isNaN(price) || price < 0.50 || price > 10000.00) {
+    alert("Invalid Unit Price: Must be between ₹0.50 and ₹10,000.00.");
     return;
   }
 
-  const code = `MED-0${inventory.length + 1}`;
+  const stockStr = prompt("Enter Initial Stock Quantity:", "100");
+  const stock = parseInt(stockStr ? stockStr.trim() : '', 10);
+  if (isNaN(stock) || stock < 0 || stock > 50000) {
+    alert("Invalid Quantity: Must be between 0 and 50,000 units.");
+    return;
+  }
+
+  const code = `MED-${String(inventory.length + 1).padStart(2, '0')}`;
   inventory.push({ code, name: name.trim(), price, stock });
 
   savePharmData();
   renderRatesTable();
   renderInventoryTable();
   renderPrescriptionsTable();
-  alert(`Added ${name} at ₹${price.toFixed(2)} with ${stock} units in stock!`);
+  alert(`Added ${name.trim()} at ₹${price.toFixed(2)} with ${stock} units to dispensary stock.`);
 }
 
 window.addEventListener('DOMContentLoaded', initPharmPortal);
+

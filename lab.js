@@ -1,11 +1,10 @@
-/* =========================================================
-   LABORATORY TECHNICIAN LOGIC (TEST NAME & PRICE INCLUDED)
-   ========================================================= */
-const DB_DOCTOR_TESTS_KEY = 'quad_clinic_doctor_prescribed_tests_v2';
-const DB_LAB_RATES_KEY = 'quad_clinic_lab_rates_list_v2';
+/* =========================================================================
+   LABORATORY TECHNICIAN LOGIC WITH PHYSIOLOGICAL & REAL-LIFE VALIDATIONS
+   ========================================================================= */
+const DB_DOCTOR_TESTS_KEY = 'quad_clinic_doctor_prescribed_tests_v4';
+const DB_LAB_RATES_KEY = 'quad_clinic_lab_rates_list_v4';
 const SESSION_KEY = 'quad_clinic_user_session';
 
-// Standard Test Catalog with Test Name and Test Price
 const DEFAULT_TEST_RATES = [
   { code: 'LT-01', name: 'Fasting Blood Sugar (FBS)', profile: 'Diabetes', price: 150, available: true },
   { code: 'LT-02', name: 'Postprandial Blood Sugar (PPBS)', profile: 'Diabetes', price: 150, available: true },
@@ -18,7 +17,6 @@ const DEFAULT_TEST_RATES = [
   { code: 'LT-09', name: 'Thyroid Stimulating Hormone (TSH)', profile: 'Thyroid', price: 400, available: true }
 ];
 
-// Prescribed Tests from Doctors with Test Name and Test Price
 const SEED_DOCTOR_TESTS = [
   {
     id: 'TEST-101',
@@ -54,7 +52,7 @@ const SEED_DOCTOR_TESTS = [
     doctor: 'Dr. Arvind Nair',
     testType: 'HbA1c Glycated Hemoglobin',
     cost: 500,
-    available: false, // Out of stock/unavailable
+    available: false,
     resultValue: '',
     status: 'Pending',
     paid: false
@@ -176,7 +174,7 @@ function renderRatesTable() {
       <td><strong>₹${r.price}</strong></td>
       <td>
         <span class="status-tag ${r.available ? 'active' : 'inactive'}">
-          ${r.available ? 'Available' : 'Out of Stock'}
+          ${r.available ? 'Available' : 'Unavailable'}
         </span>
       </td>
       <td>
@@ -184,38 +182,6 @@ function renderRatesTable() {
       </td>
     </tr>
   `).join('');
-}
-
-function updateTestPrice(code) {
-  const item = testRates.find(r => r.code === code);
-  if (!item) return;
-
-  const newPrice = prompt(`Enter new price for ${item.name} (Current: ₹${item.price}):`, item.price);
-  const p = parseFloat(newPrice);
-  if (!isNaN(p) && p > 0) {
-    item.price = p;
-    saveLabData();
-    renderRatesTable();
-  }
-}
-
-function promptAddNewTestRate() {
-  const name = prompt("Enter Diagnostic Test Name (e.g. Serum Calcium):");
-  if (!name || !name.trim()) return;
-
-  const profile = prompt("Enter Profile/Group (e.g. Bone & Mineral, Diabetes):", "General");
-  const priceStr = prompt("Enter Test Price (INR):", "300");
-  const price = parseFloat(priceStr);
-  if (isNaN(price) || price <= 0) {
-    alert("Invalid price.");
-    return;
-  }
-
-  const code = `LT-0${testRates.length + 1}`;
-  testRates.push({ code, name: name.trim(), profile: profile.trim(), price, available: true });
-  saveLabData();
-  renderRatesTable();
-  alert(`Added ${name} with price ₹${price}!`);
 }
 
 function toggleAvailability(id) {
@@ -226,31 +192,179 @@ function toggleAvailability(id) {
   renderLabTestsTable();
 }
 
+/* =========================================================================
+   STRICT PHYSIOLOGICAL LOGICAL VALIDATION FOR TEST RESULTS
+   ========================================================================= */
+function validateTestResult(testType, rawVal) {
+  const val = rawVal.trim();
+  if (!val) return { valid: false, message: "Result value cannot be empty." };
+
+  // 1. Diabetes: FBS or PPBS (Blood Glucose)
+  if (testType.includes('Blood Sugar') || testType.includes('FBS') || testType.includes('PPBS')) {
+    const numericMatch = val.match(/^(\d+(\.\d+)?)\s*(mg\/dL)?$/i);
+    if (!numericMatch) {
+      return { valid: false, message: "Invalid Glucose format. Enter numeric value in mg/dL (e.g., 105 or 140 mg/dL)." };
+    }
+    const num = parseFloat(numericMatch[1]);
+    if (num < 20 || num > 1000) {
+      return { valid: false, message: `Physiologically impossible Blood Sugar (${num} mg/dL). Must be between 20 and 1000 mg/dL.` };
+    }
+    return { valid: true, formatted: `${num} mg/dL` };
+  }
+
+  // 2. Diabetes: HbA1c Percentage
+  if (testType.includes('HbA1c')) {
+    const numericMatch = val.match(/^(\d+(\.\d+)?)\s*%?$/);
+    if (!numericMatch) {
+      return { valid: false, message: "Invalid HbA1c format. Enter percentage value (e.g., 5.7 or 7.2%)." };
+    }
+    const num = parseFloat(numericMatch[1]);
+    if (num < 2.5 || num > 20.0) {
+      return { valid: false, message: `Physiologically impossible HbA1c (${num}%). Must be between 2.5% and 20.0%.` };
+    }
+    return { valid: true, formatted: `${num}%` };
+  }
+
+  // 3. Blood Pressure: Systolic / Diastolic
+  if (testType.includes('Blood Pressure') || testType.includes('BP')) {
+    const bpMatch = val.match(/^(\d{2,3})\s*\/\s*(\d{2,3})(\s*mmHg)?$/i);
+    if (!bpMatch) {
+      return { valid: false, message: "Invalid Blood Pressure format. Use Systolic/Diastolic format (e.g., 120/80 or 130/85 mmHg)." };
+    }
+    const sys = parseInt(bpMatch[1], 10);
+    const dia = parseInt(bpMatch[2], 10);
+
+    if (sys < 60 || sys > 260) {
+      return { valid: false, message: `Systolic pressure (${sys} mmHg) is outside human survivable range (60 - 260 mmHg).` };
+    }
+    if (dia < 40 || dia > 150) {
+      return { valid: false, message: `Diastolic pressure (${dia} mmHg) is outside human survivable range (40 - 150 mmHg).` };
+    }
+    if (sys <= dia) {
+      return { valid: false, message: "Systolic pressure must be strictly greater than Diastolic pressure." };
+    }
+    return { valid: true, formatted: `${sys}/${dia} mmHg` };
+  }
+
+  // General check: disallow random special characters or single-letter nonsense
+  if (val.length < 2 || !/[A-Za-z0-9]/.test(val)) {
+    return { valid: false, message: "Result must contain valid diagnostic notes or measurements." };
+  }
+
+  return { valid: true, formatted: val };
+}
+
 function enterResult(id) {
   const test = labTests.find(t => t.id === id);
   if (!test) return;
 
+  // Real-life guard: Cannot run test if reagents are out of stock
   if (!test.available) {
-    alert("This test is currently UNAVAILABLE. Reagents need to be marked Available first.");
+    alert(`TEST UNAVAILABLE: Reagents/kits for "${test.testType}" are currently marked Out of Stock. Mark available first once replenished.`);
     return;
   }
 
-  const val = prompt(`Enter test result for ${test.patientName} (${test.testType}):`, "e.g. 110 mg/dL");
-  if (val && val.trim()) {
-    test.resultValue = val.trim();
-    test.status = 'Completed';
-    saveLabData();
-    renderLabTestsTable();
+  const input = prompt(`Enter clinical observed result for ${test.patientName} (${test.testType}):\nExamples: 105 mg/dL, 5.8%, or 120/80 mmHg`);
+  if (input === null) return; // User cancelled
+
+  const check = validateTestResult(test.testType, input);
+  if (!check.valid) {
+    alert(`Validation Error:\n${check.message}`);
+    return;
   }
+
+  test.resultValue = check.formatted;
+  test.status = 'Completed';
+  saveLabData();
+  renderLabTestsTable();
+  populateBillDropdown();
+  alert(`Result recorded successfully: ${test.resultValue}`);
+}
+
+function updateTestPrice(code) {
+  const item = testRates.find(r => r.code === code);
+  if (!item) return;
+
+  const newPriceStr = prompt(`Enter new price for ${item.name} (Current: ₹${item.price}):`, item.price);
+  if (newPriceStr === null) return;
+
+  const p = parseFloat(newPriceStr.trim());
+  if (isNaN(p) || p < 10 || p > 50000) {
+    alert("Invalid Price! Test price must be a valid positive amount between ₹10 and ₹50,000.");
+    return;
+  }
+
+  item.price = p;
+  // Update any pending unbilled tests matching this test name
+  labTests.forEach(t => {
+    if (t.testType === item.name && !t.paid) t.cost = p;
+  });
+
+  saveLabData();
+  renderRatesTable();
+  renderLabTestsTable();
+  populateBillDropdown();
+  alert(`Price updated for ${item.name} to ₹${p}`);
+}
+
+function promptAddNewTestRate() {
+  const name = prompt("Enter Diagnostic Test Name (e.g. Serum Creatinine):");
+  if (!name || name.trim().length < 3) {
+    alert("Invalid Test Name: Must be at least 3 characters long.");
+    return;
+  }
+
+  const profile = prompt("Enter Clinical Profile / Group (e.g. Renal, Diabetes, Cardiac):", "General");
+  if (!profile || !profile.trim()) {
+    alert("Clinical profile cannot be empty.");
+    return;
+  }
+
+  const priceStr = prompt("Enter Standard Test Price (INR):", "350");
+  const price = parseFloat(priceStr ? priceStr.trim() : '');
+  if (isNaN(price) || price < 10 || price > 50000) {
+    alert("Invalid Price: Must be between ₹10 and ₹50,000.");
+    return;
+  }
+
+  const code = `LT-${String(testRates.length + 1).padStart(2, '0')}`;
+  testRates.push({ code, name: name.trim(), profile: profile.trim(), price, available: true });
+  saveLabData();
+  renderRatesTable();
+  alert(`Added ${name} (₹${price}) to rate list!`);
 }
 
 function populateBillDropdown() {
   const select = document.getElementById('billSelectReport');
-  select.innerHTML = '<option value="" disabled selected>-- Select Patient Test --</option>' +
-    labTests.map(t => `<option value="${t.id}">${t.id} - ${t.patientName} (${t.testType}) - ₹${t.cost}</option>`).join('');
+  if (!select) return;
+
+  // Real-life billing rule: Can only generate bills for completed/conducted tests
+  const billable = labTests.filter(t => t.status === 'Completed' && !t.paid);
+
+  if (billable.length === 0) {
+    select.innerHTML = '<option value="" disabled selected>-- No Unpaid Completed Tests Available --</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="" disabled selected>-- Select Patient Test to Bill --</option>' +
+    billable.map(t => `<option value="${t.id}">${t.id} - ${t.patientName} (${t.testType}) - ₹${t.cost}</option>`).join('');
 }
 
 function openBillTabFor(id) {
+  const test = labTests.find(t => t.id === id);
+  if (!test) return;
+
+  // Real-life validation check before billing
+  if (test.status !== 'Completed') {
+    alert("Cannot generate bill! Test has not been completed. Please enter test results first.");
+    return;
+  }
+
+  if (test.paid) {
+    alert(`Test ${test.id} for ${test.patientName} is already PAID.`);
+    return;
+  }
+
   switchLabTab('bill');
   document.getElementById('billSelectReport').value = id;
   previewLabInvoice(id);
@@ -261,13 +375,13 @@ function previewLabInvoice(id) {
   if (!test) return;
 
   document.getElementById('billInvoiceNo').textContent = `INV-${test.id}`;
-  document.getElementById('billDateDisplay').textContent = `Date: 2026-11-19`;
+  document.getElementById('billDateDisplay').textContent = `Date: 2026-11-21`;
   document.getElementById('billPtName').textContent = test.patientName;
   document.getElementById('billPtMMR').textContent = test.mmr;
   document.getElementById('billDocName').textContent = test.doctor;
 
   document.getElementById('billItemName').textContent = test.testType;
-  document.getElementById('billItemObserved').textContent = test.resultValue || 'Pending Result';
+  document.getElementById('billItemObserved').textContent = test.resultValue || 'N/A';
   document.getElementById('billItemPrice').textContent = `₹${test.cost}`;
   document.getElementById('billGrandTotal').textContent = `₹${test.cost}`;
 
@@ -275,14 +389,27 @@ function previewLabInvoice(id) {
 }
 
 function markBillPaid() {
-  const id = document.getElementById('billSelectReport').value;
+  const select = document.getElementById('billSelectReport');
+  const id = select.value;
   const test = labTests.find(t => t.id === id);
-  if (test) {
-    test.paid = true;
-    saveLabData();
-    alert(`Payment of ₹${test.cost} for ${test.testType} recorded as Paid!`);
-    switchLabTab('tests');
+
+  if (!test) {
+    alert("Please select a test from the dropdown first.");
+    return;
   }
+
+  if (test.paid) {
+    alert("This bill is already recorded as Paid.");
+    return;
+  }
+
+  test.paid = true;
+  saveLabData();
+  renderLabTestsTable();
+  populateBillDropdown();
+  document.getElementById('printableBillArea').style.display = 'none';
+  alert(`Payment of ₹${test.cost} for ${test.testType} (Patient: ${test.patientName}) recorded successfully!`);
+  switchLabTab('tests');
 }
 
 window.addEventListener('DOMContentLoaded', initLabPortal);

@@ -59,7 +59,7 @@
           <div class="panel-title-row">
             <div>
               <h2>Prescriptions &amp; Lab Requests (From Doctor)</h2>
-              <p class="hint">Includes prescribed test name, test price, and specimen result status.</p>
+              <p class="hint">Includes prescribed test name, test price, and specimen result status with physiological bounds checking.</p>
             </div>
           </div>
 
@@ -76,8 +76,8 @@
                 <th>Doctor</th>
                 <th>Test Name</th>
                 <th>Test Price</th>
-                <th>Test Availability</th>
-                <th>Result Value</th>
+                <th>Reagent Avail.</th>
+                <th>Observed Result</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -107,7 +107,7 @@
                 <th>Test Name</th>
                 <th>Clinical Profile</th>
                 <th>Standard Price (INR)</th>
-                <th>Availability</th>
+                <th>Reagent Status</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -122,11 +122,11 @@
       <section id="paneBill" class="content-pane">
         <div class="form-container" style="max-width: 720px;">
           <h3>Laboratory Test Billing</h3>
-          <p class="hint">Select completed test to generate bill with official price.</p>
+          <p class="hint">Select completed investigation to generate invoice.</p>
 
           <div class="form-grid">
             <div class="form-group span-2">
-              <label for="billSelectReport">Select Patient Test</label>
+              <label for="billSelectReport">Select Patient Test (Completed Tests Only)</label>
               <select id="billSelectReport" onchange="previewLabInvoice(this.value)">
                 <option value="" disabled selected>-- Select Patient Test --</option>
               </select>
@@ -141,7 +141,7 @@
               </div>
               <div style="text-align: right;">
                 <h4 id="billInvoiceNo">INV-LAB-101</h4>
-                <small id="billDateDisplay">Date: 2026-11-19</small>
+                <small id="billDateDisplay">Date: 2026-11-21</small>
               </div>
             </div>
 
