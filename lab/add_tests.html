@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Laboratory Tests</title>
+
+    <link rel="stylesheet" href="lab.css">
+</head>
+
+<body data-page="tests">
+
+
+    <!-- Navbar -->
+    <header class="navbar">
+
+        <div class="brand">
+            <h2>🧪 QUAD CLINIC - LABORATORY</h2>
+        </div>
+
+        <div class="nav-right">
+            <span id="navRoleLabel">Lab Technician</span>
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+
+        <!-- Page Heading -->
+        <div class="panel-title-row">
+
+            <h1>Laboratory Test Master</h1>
+
+        </div>
+
+
+        <!-- Navigation -->
+        <div class="tabs">
+
+            <a href="lab.html" class="tab-link">
+                Dashboard
+            </a>
+
+            <a href="add-test.html" class="tab-link active">
+                Manage Tests
+            </a>
+
+        </div>
+
+
+        <!-- Add Test Form -->
+        <section class="form-container">
+
+            <h3 id="formHeading">Add New Test</h3>
+
+            <p class="hint">
+                Enter the laboratory test details below.
+            </p>
+
+
+            <form id="testForm">
+
+                <input
+                    type="hidden"
+                    id="editTestId"
+                >
+
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="testName">
+                            Test Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="testName"
+                            placeholder="e.g., Hemoglobin"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="normalRange">
+                            Normal Range
+                        </label>
+
+                        <input
+                            type="text"
+                            id="normalRange"
+                            placeholder="e.g., 13.5 - 17.5 g/dL"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="testPrice">
+                            Price (₹)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="testPrice"
+                            placeholder="e.g., 500"
+                            min="0"
+                            step="0.01"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group span-2">
+
+                        <div class="button-row">
+
+                            <button
+                                type="submit"
+                                class="btn-standard"
+                                id="submitButton"
+                            >
+                                Add Test
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn-cancel"
+                                id="cancelEdit"
+                                hidden
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- Available Tests -->
+        <section class="table-container tests-section">
+
+            <div class="table-bar">
+
+                <h3>Available Laboratory Tests</h3>
+
+                <input
+                    type="text"
+                    id="searchTest"
+                    placeholder="Search test name..."
+                >
+
+            </div>
+
+
+            <div class="table-scroll">
+
+                <table class="grid-table">
+
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Test Name</th>
+                            <th>Normal Range</th>
+                            <th>Price (₹)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+
+                    <tbody id="testsTable">
+
+                    </tbody>
+
+                </table>
+
+
+                <p id="noTests" class="empty-message">
+                    No laboratory tests added yet.
+                </p>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <script src="lab.js"></script>
+
+</body>
+</html>

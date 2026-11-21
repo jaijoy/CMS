@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Lab Dashboard</title>
+
+    <link rel="stylesheet" href="lab.css">
+</head>
+
+<body data-page="dashboard">
+
+    <!-- Navbar -->
+    <header class="navbar">
+
+        <div class="brand">
+            <h2>🧪 QUAD CLINIC - LABORATORY</h2>
+        </div>
+
+        <div class="nav-right">
+            <span id="navRoleLabel">Lab Technician</span>
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        <!-- Page Heading -->
+        <div class="panel-title-row">
+
+            <h1>Laboratory Dashboard</h1>
+
+            <button class="btn-standard" onclick="loadDashboard()">
+                Refresh
+            </button>
+
+        </div>
+
+
+        <!-- Navigation -->
+        <div class="tabs">
+
+            <a href="lab.html" class="tab-link active">
+                Dashboard
+            </a>
+
+            <a href="add_tests.html" class="tab-link">
+                Manage Tests
+            </a>
+
+        </div>
+
+
+        <!-- Dashboard Statistics -->
+        <section class="overview-boxes">
+
+            <div class="overview-box">
+                <h4>Total Requested Tests</h4>
+                <h2 id="totalTests">0</h2>
+                <p>Tests received from doctors</p>
+            </div>
+
+            <div class="overview-box">
+                <h4>Pending Samples</h4>
+                <h2 id="pendingSamples">0</h2>
+                <p>Waiting for sample collection</p>
+            </div>
+
+            <div class="overview-box">
+                <h4>Samples Collected</h4>
+                <h2 id="collectedSamples">0</h2>
+                <p>Waiting for test results</p>
+            </div>
+
+            <div class="overview-box">
+                <h4>Completed Tests</h4>
+                <h2 id="completedTests">0</h2>
+                <p>Results entered successfully</p>
+            </div>
+
+        </section>
+
+
+        <!-- Test Requests -->
+        <section class="table-container lab-orders-section">
+
+            <div class="table-bar">
+
+                <h3>Laboratory Test Requests</h3>
+
+                <input
+                    type="text"
+                    id="searchOrder"
+                    placeholder="Search patient / MMR / test..."
+                >
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <button class="pill active" data-filter="All">
+                    All
+                </button>
+
+                <button class="pill" data-filter="Pending">
+                    Pending
+                </button>
+
+                <button class="pill" data-filter="Collected">
+                    Collected
+                </button>
+
+                <button class="pill" data-filter="Completed">
+                    Completed
+                </button>
+
+            </div>
+
+
+            <div class="table-scroll">
+
+                <table class="grid-table">
+
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Patient Name</th>
+                            <th>MMR Number</th>
+                            <th>Doctor</th>
+                            <th>Test Name</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="ordersTable">
+
+                    </tbody>
+
+                </table>
+
+                <p id="noOrders" class="empty-message">
+                    No laboratory test requests available.
+                </p>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- Result Entry Modal -->
+    <div id="resultModal" class="modal-overlay">
+
+        <div class="modal-box">
+
+            <h3>Add Test Result</h3>
+
+            <p id="resultTestName" class="modal-info"></p>
+
+            <form id="resultForm">
+
+                <div class="form-group">
+
+                    <label for="resultValue">Test Result</label>
+
+                    <input
+                        type="text"
+                        id="resultValue"
+                        placeholder="Enter test result"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="resultRemarks">Remarks</label>
+
+                    <input
+                        type="text"
+                        id="resultRemarks"
+                        placeholder="Enter remarks (optional)"
+                    >
+
+                </div>
+
+
+                <div class="button-row">
+
+                    <button type="submit" class="btn-standard">
+                        Save Result
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn-cancel"
+                        id="closeResultModal"
+                    >
+                        Cancel
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <script src="lab.js"></script>
+
+</body>
+</html>
