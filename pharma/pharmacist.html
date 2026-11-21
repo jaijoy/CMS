@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacist Dashboard</title>
+    <link rel="stylesheet" href="pharmacist.css">
+</head>
+<body data-page="dashboard">
+
+    <nav class="navbar">
+        <h2>CMS - Pharmacy</h2>
+
+        <div class="nav-links">
+            <a href="pharmacist.html" class="active">Dashboard</a>
+            <a href="medicine_add.html">Manage Medicines</a>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <div class="page-heading">
+            <div>
+                <h1>Pharmacist Dashboard</h1>
+                <p>Manage medicines and view available quantities.</p>
+            </div>
+
+            <a href="medicine_add.html" class="btn-standard">
+                Manage Medicines
+            </a>
+        </div>
+
+        <!-- Dashboard Statistics -->
+        <section class="overview-boxes">
+
+            <div class="overview-box">
+                <h3>Total Medicines</h3>
+                <p id="totalMedicines">0</p>
+            </div>
+
+            <div class="overview-box">
+                <h3>Total Available Quantity</h3>
+                <p id="totalQuantity">0</p>
+            </div>
+
+            <div class="overview-box">
+                <h3>Out of Stock</h3>
+                <p id="outOfStock">0</p>
+            </div>
+
+            <div class="overview-box">
+                <h3>Expired Medicines</h3>
+                <p id="expiredMedicines">0</p>
+            </div>
+
+        </section>
+
+        <!-- Out of Stock Medicines -->
+        <section class="panel">
+
+            <div class="panel-title-row">
+                <h2>Out of Stock Medicines</h2>
+                <a href="medicines.html" class="text-link">View All</a>
+            </div>
+
+            <div class="table-container">
+
+                <table class="grid-table">
+                    <thead>
+                        <tr>
+                            <th>Medicine Name</th>
+                            <th>Strength</th>
+                            <th>Available Quantity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="outOfStockTable">
+                        <tr>
+                            <td colspan="4">No out of stock medicines.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+        <!-- Recently Added Medicines -->
+        <section class="panel">
+
+            <div class="panel-title-row">
+                <h2>Recently Added Medicines</h2>
+                <a href="medicines.html" class="text-link">View All</a>
+            </div>
+
+            <div class="table-container">
+
+                <table class="grid-table">
+                    <thead>
+                        <tr>
+                            <th>Medicine Name</th>
+                            <th>Category</th>
+                            <th>Strength</th>
+                            <th>Available Quantity</th>
+                            <th>Expiry Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="recentMedicinesTable">
+                        <tr>
+                            <td colspan="5">No medicines added yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="pharmacist.js"></script>
+</body>
+</html>
